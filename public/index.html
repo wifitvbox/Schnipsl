@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>Zuul-AC User data</title>
+	<script language="javascript" type="text/javascript">
+		let ws_protocol = "ws://"
+		if (window.location.protocol == "https:") {
+			ws_protocol = "wss://"
+		}
+		var wsUri = ws_protocol + window.location.hostname + ":" + window.location.port
+		var output;
+		var users;
+		var timetables;
+
+		function init() {
+			users = document.getElementById("users");
+			timetables = document.getElementById("timetables");
+			output = document.getElementById("output");
+			testWebSocket();
+		}
+
+		function testWebSocket() {
+			websocket = new WebSocket(wsUri);
+			websocket.onopen = function (evt) { onOpen(evt) };
+			websocket.onclose = function (evt) { onClose(evt) };
+			websocket.onmessage = function (evt) { onMessage(evt) };
+			websocket.onerror = function (evt) { onError(evt) };
+		}
+
+		function onOpen(evt) {
+			writeToScreen("CONNECTED");
+			doSend("st_tree", "");
+		}
+
+		function onClose(evt) {
+			writeToScreen("DISCONNECTED");
+		}
+
+		function onMessage(evt) {
+			var data = JSON.parse(evt.data)
+			writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data + '</span>');
+			console.log(data)
+			if (data.type == "tree") {
+				editor.setValue(data.config.config_data)
+				user_data = data.config.user_data
+				for (var user_id in user_data.users) {
+					var li = document.createElement("li");
+					var time_table_string = user_data.users[user_id].time_table ? user_data.users[user_id].time_table[0] : "inactive"
+					var user_info = user_data.users[user_id].user.first_name + ' ' + user_data.users[user_id].user.last_name + " (" + user_id + ") <" + time_table_string + ">"
+					li.appendChild(document.createTextNode(user_info));
+					users.appendChild(li);
+				}
+				var ul = document.createElement("ul");
+				for (var user_id in user_data.timetables) {
+					var li = document.createElement("li");
+					var user_info = user_data.users[user_id].user.first_name + ' ' + user_data.users[user_id].user.last_name + " (" + user_id + ") [" + user_data.timetables[user_id]["1"].deletion_timestamp + "]"
+					li.appendChild(document.createTextNode(user_info));
+					var sub_ul = document.createElement("ul");
+					for (var follower_id in user_data.timetables[user_id]["1"].users) {
+						var sub_li = document.createElement("li");
+						if (user_data.users[follower_id]) {
+							user_info = user_data.users[follower_id].user.first_name + ' ' + user_data.users[follower_id].user.last_name + " (" + follower_id + ") [" + user_data.timetables[user_id]["1"].users[follower_id] + "]"
+						} else {
+							user_info = "(" + follower_id + ") [" + user_data.timetables[user_id]["1"].users[follower_id] + "]"
+						}
+						sub_li.appendChild(document.createTextNode(user_info));
+						sub_ul.appendChild(sub_li);
+					}
+					li.appendChild(sub_ul);
+					ul.appendChild(li);
+				}
+				timetables.appendChild(ul);
+			}
+		}
+
+		function onError(evt) {
+			writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+		}
+
+		function doSend(type, data) {
+			//writeToScreen("SENT: " + message);
+			message = JSON.stringify({ "type": type, "config": data })
+			websocket.send(message);
+		}
+
+		function writeToScreen(message) {
+			var pre = document.createElement("p");
+			pre.style.wordWrap = "break-word";
+			pre.innerHTML = message;
+			output.appendChild(pre);
+		}
+
+		window.addEventListener("load", init, false);
+
+	</script>
+	<script src="https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js"></script>
+</head>
+
+<body>
+
+	<h2>Zuul-AC User data</h2>
+
+	<div id="users">
+		<h3>Users</h3>
+	</div>
+	<div id="timetables">
+		<h3>Time Tables</h3>
+	</div>
+	<div id="output"></div>
+
+	<div id='editor_holder'></div>
+	<button id='submit'>Save &amp; Restart</button>
+
+	<script>
+		// Initialize the editor with a JSON schema
+		// JSON Editor comes from: https://github.com/json-editor/json-editor
+		var editor = new JSONEditor(document.getElementById('editor_holder'), {
+			schema: {
+				type: "object",
+				title: "Zuul Configuration",
+				properties: {
+					messenger_token: {
+						title: "Telegram Bot Token",
+						type: "string",
+					},
+					admins: {
+						"type": "array",
+						"format": "table",
+						title: "IDs of the Door Admins",
+						"items": {
+							"type": "string",
+						}
+					},
+					timetolive: {
+						type: "integer",
+						title: "Max depth to lend keys",
+						enum: [
+							0, 1, 2, 3, 4, 5
+						],
+						default: 5
+					},
+				}
+			}
+		});
+
+		// Hook up the submit button to log to the console
+		document.getElementById('submit').addEventListener('click', function () {
+			// Get the value from the editor
+			console.log(editor.getValue());
+			doSend("ac_newconfig", editor.getValue());
+
+		});
+	</script>
+</body>
