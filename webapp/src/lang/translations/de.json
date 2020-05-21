@@ -1,4 +1,7 @@
 {
-	"translation1": "Übersetzung 1",
-	"translation2": "Übersetzung 2"
+	"main_title": "Schnipsl",
+	"main_templates": "Schnellsuche",
+	"settings": "Einstellungen",
+	"settings_name_intro" : "Wie soll Dein Name in Schnipsl sein?",
+	"settings_name_help" : "Gebe hier Deinen Wunsch-Namen ein"
 }

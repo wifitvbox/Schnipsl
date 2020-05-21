@@ -9,7 +9,7 @@
     >
       <v-app-bar-nav-icon @click="nav2Set()"></v-app-bar-nav-icon>
 
-      <v-toolbar-title>My files</v-toolbar-title>
+      <v-toolbar-title>{{ $t('main_title') }}</v-toolbar-title>
 
       <v-spacer></v-spacer>
 
@@ -23,7 +23,7 @@
     </v-toolbar>
 
     <v-list two-line subheader>
-      <v-subheader inset>Folders</v-subheader>
+      <v-subheader inset>{{ $t('main_templates') }}</v-subheader>
 
       <v-list-item
         v-for="item in items"

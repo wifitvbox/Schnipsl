@@ -1,10 +1,11 @@
 <template>
   <v-container>
-    <h1>{{ $t('translation1') }}</h1>
-    <v-form v-model="valid" ref="form">
+    <h1>{{ $t('settings') }}</h1>
+    {{ $t('settings_name_intro') }}
+    <v-form ref="form">
       <v-text-field
       v-model="userName"
-      label= '@:translation1'
+      :label= "$t('settings_name_help')"
       required
       ></v-text-field>
     </v-form>
@@ -31,13 +32,12 @@ export default {
     }
   },
   watch: {
-    user (newUser) {
+    userName (newUser) {
       localStorage.userName = newUser
     },
     pw (newPw) {
       localStorage.pw = newPw
     }
   }
-
 }
 </script>
