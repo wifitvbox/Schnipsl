@@ -7,34 +7,26 @@ import Edit from '@/components/Edit'
 
 Vue.use(VueRouter)
 
-  const routes = [
+const routes = [
   {
     path: '/',
     name: 'Home',
     component: Home
   },
   {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+    path: '/edit/:id',
+    name: 'Edit',
+    component: Edit
   },
-    {
-      path: '/edit/:id',
-      name: 'Edit',
-      component: Edit
-    },
-    {
-      path: '/set',
-      name: 'Settings',
-      component: Settings
-    },
-    {
-      path: '*',
-      redirect: '/Home'
-    }
+  {
+    path: '/set',
+    name: 'Settings',
+    component: Settings
+  },
+  {
+    path: '*',
+    redirect: '/Home'
+  }
 ]
 
 const router = new VueRouter({
