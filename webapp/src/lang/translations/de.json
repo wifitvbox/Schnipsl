@@ -5,11 +5,12 @@
 	"settings_name_intro" : "Wie soll Dein Name in Schnipsl sein?",
 	"settings_name_help" : "Gebe hier Deinen Wunsch-Namen ein",
 	"edit_select_header": "Suche nach",
+	"edit_select_name": "Gebe der Suche einen Namen, wenn Du sie als Schnellsuche benutzen möchstest",
 	"edit_select_source": "Quelle",
 	"edit_select_provider": "Anbieter",
 	"edit_select_categorie": "Kategorie",
-	"edit_select_content": "Inhalt - Titel - Album",
-	"edit_select_name": "Gebe der Suche einen Namen, um sie als Schnellsuche zu benutzen"
+	"edit_select_title": "Titel - Album",
+	"edit_select_content": "Inhalt"
 }
 
 

@@ -12,14 +12,14 @@
 			</v-btn>
 
 			<v-btn icon>
-				<v-icon>mdi-view-module</v-icon>
+				<v-icon>mdi-plus-circle</v-icon>
 			</v-btn>
 		</v-toolbar>
 
 		<v-list two-line subheader>
 			<v-subheader inset>{{ $t('main_templates') }}</v-subheader>
 
-			<v-list-item v-for="item in items" :key="item.title" @click="nav2Edit(2)">
+			<v-list-item v-for="item in items" :key="item.title" @click="nav2Play(item.title)">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
@@ -30,8 +30,8 @@
 				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon>
-						<v-icon color="grey lighten-1">mdi-information</v-icon>
+					<v-btn icon @click="nav2Edit(item.title)">
+						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
 				</v-list-item-action>
 			</v-list-item>
@@ -40,7 +40,7 @@
 
 			<v-subheader inset>Files</v-subheader>
 
-			<v-list-item v-for="item in items2" :key="item.title" @click="nav2Edit(1)">
+			<v-list-item v-for="item in items2" :key="item.title" @click="nav2Play(item.title)">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
@@ -51,21 +51,19 @@
 				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon>
-						<v-icon color="grey lighten-1">mdi-information</v-icon>
+					<v-btn icon @click="nav2Edit(item.title)">
+						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
 				</v-list-item-action>
 			</v-list-item>
 		</v-list>
-				<v-btn absolute dark fab bottom right color="pink">
-					<v-icon>mdi-plus</v-icon>
-				</v-btn>
 	</v-card>
 </template>
 
 
 <script>
 import router from "../router";
+import messenger from "../messenger";
 export default {
 	name: "HelloWorld",
 	data() {
@@ -74,95 +72,56 @@ export default {
 			items: [
 				{
 					icon: "mdi-magnify",
-					iconClass: "grey lighten-1 white--text",
+					iconClass: "red lighten-1 white--text",
 					title: "Photos1",
 					subtitle: "Jan 9, 2014"
 				},
 				{
-					icon: "edit",
-					iconClass: "grey lighten-1 white--text",
+					icon: "mdi-radio-tower",
+					iconClass: "green lighten-1 white--text",
 					title: "Recipes1",
 					subtitle: "Jan 17, 2014"
 				},
 				{
-					icon: "edit",
-					iconClass: "grey lighten-1 white--text",
+					icon: "mdi-play-pause",
+					iconClass: "orange white--text",
 					title: "Photos2",
 					subtitle: "Jan 9, 2014"
-				},
-				{
-					icon: "edit",
-					iconClass: "grey lighten-1 white--text",
-					title: "Recipes2",
-					subtitle: "Jan 17, 2014"
-				},
-				{
-					icon: "edit",
-					iconClass: "grey lighten-1 white--text",
-					title: "Photos3",
-					subtitle: "Jan 9, 2014"
-				},
-				{
-					icon: "edit",
-					iconClass: "grey lighten-1 white--text",
-					title: "Recipes3",
-					subtitle: "Jan 17, 2014"
-				},
-				{
-					icon: "edit",
-					iconClass: "grey lighten-1 white--text",
-					title: "Photos4",
-					subtitle: "Jan 9, 2014"
-				},
-				{
-					icon: "edit",
-					iconClass: "grey lighten-1 white--text",
-					title: "Recipes4",
-					subtitle: "Jan 17, 2014"
-				},
-				{
-					icon: "edit",
-					iconClass: "grey lighten-1 white--text",
-					title: "Photos5",
-					subtitle: "Jan 9, 2014"
-				},
-				{
-					icon: "edit",
-					iconClass: "grey lighten-1 white--text",
-					title: "Recipes5",
-					subtitle: "Jan 17, 2014"
-				},
-				{
-					icon: "edit",
-					iconClass: "grey lighten-1 white--text",
-					title: "Work",
-					subtitle: "Jan 28, 2014"
 				}
+
 			],
 			items2: [
 				{
-					icon: "edit",
+					icon: "mdi-play-pause",
 					iconClass: "blue white--text",
 					title: "Vacation itinerary",
 					subtitle: "Jan 20, 2014"
 				},
 				{
-					icon: "edit",
+					icon: "mdi-clock",
 					iconClass: "amber white--text",
 					title: "Kitchen remodel",
 					subtitle: "Jan 10, 2014"
 				}
-			],
-			icons: ["mdi-skip-previous","mdi-rewind-10", "mdi-play","mdi-pause", "mdi-fast-forward-10","mdi-skip-next", "mdi-record"]
+			]
 		};
 	},
+		created() {
+			messenger.register('home',this.messenger_onMessage,null,null)
+		},
 	methods: {
 		nav2Set() {
 			router.push({ name: "Settings" });
 		},
 		nav2Edit(item) {
-      console.log("click for edit");
+			console.log("click for edit",item);
 			router.push({ name: "Edit", params: { id: item } });
+		},
+		nav2Play(item) {
+			console.log("click for Play",item);
+		},
+		messenger_onMessage(type,data){
+			console.log(type,data)
 		},
 		sendToServer() {
 			// eslint-disable-next-line
