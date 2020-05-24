@@ -28,6 +28,9 @@ from pprint import pprint
 from socketserver import ThreadingMixIn
 from http.server import HTTPServer
 from io import StringIO
+from splthread import SplThread
+import defaults
+
 
 
 class WebsocketUser:
@@ -165,60 +168,68 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 			user.ws.emit(topic, data)
 
 
-def ws_create(modref):
-	''' creates the HTTP and websocket server
-	'''
-	# reads the config, if any
-	server_config = modref.store.read_config_value("server_config")
-	# set up the argument parser with values from the config
-	parser = argparse.ArgumentParser()
-	parser.add_argument("--host", default=server_config["host"],
-						help="the IP interface to bound the server to")
-	parser.add_argument("-p", "--port", default=server_config["port"],
-						help="the server port")
-	parser.add_argument("-s", "--secure", action="store_true", default=server_config["secure"],
-						help="use secure https: and wss:")
-	parser.add_argument("-c", "--credentials",  default=server_config["credentials"],
-						help="user credentials")
-	args = parser.parse_args()
-	server = ThreadedHTTPServer((args.host, args.port), WSZuulHandler)
-	server.daemon_threads = True
-	server.auth = b64encode(args.credentials.encode("ascii"))
-	if args.secure:
-		server.socket = ssl.wrap_socket(
-			server.socket, certfile='./server.pem', keyfile='./key.pem', server_side=True)
-		print('initialized secure https server at port %d' % (args.port))
-	else:
-		print('initialized http server at port %d' % (args.port))
-	return server
+class Webserver(SplThread):
+
+	def __init__(self, modref):
+		''' creates the HTTP and websocket server
+		'''
+
+		super().__init__(modref.message_handler,self)
+		# reads the config, if any
+		server_config = modref.store.read_config_value("server_config")
+		# set up the argument parser with values from the config
+		parser = argparse.ArgumentParser()
+		parser.add_argument("--host", default=server_config["host"],
+							help="the IP interface to bound the server to")
+		parser.add_argument("-p", "--port", default=server_config["port"],
+							help="the server port")
+		parser.add_argument("-s", "--secure", action="store_true", default=server_config["secure"],
+							help="use secure https: and wss:")
+		parser.add_argument("-c", "--credentials",  default=server_config["credentials"],
+							help="user credentials")
+		args = parser.parse_args()
+		self.server = ThreadedHTTPServer((args.host, args.port), WSZuulHandler)
+		self.server.daemon_threads = True
+		self.server.auth = b64encode(args.credentials.encode("ascii"))
+		if args.secure:
+			self.server.socket = ssl.wrap_socket(
+				self.server.socket, certfile='./server.pem', keyfile='./key.pem', server_side=True)
+			print('initialized secure https server at port %d' % (args.port))
+		else:
+			print('initialized http server at port %d' % (args.port))
 
 
-def _ws_main(server):
-	''' starts the server
-	'''
 
-	try:
-		origin_dir = os.path.dirname(__file__)
-		web_dir = os.path.join(os.path.dirname(__file__), 'public')
-		os.chdir(web_dir)
+	def _run(self):
+		''' starts the server
+		'''
 
-		server.serve_forever()
+		try:
+			origin_dir = os.path.dirname(__file__)
+			web_dir = os.path.join(os.path.dirname(__file__), defaults.WEB_ROOT_DIR)
+			os.chdir(web_dir)
 
-		os.chdir(origin_dir)
-	except KeyboardInterrupt:
-		print('^C received, shutting down server')
-		server.socket.close()
+			self.server.serve_forever()
 
+			os.chdir(origin_dir)
+		except KeyboardInterrupt:
+			print('^C received, shutting down server')
+			self.server.socket.close()
 
-def ws_thread(server):
-	''' starts the server as a seperate thread
-	'''
-	# Create a Thread with a function without any arguments
-	th = threading.Thread(target=_ws_main, args=(server,))
-	# Start the thread
-	th.setDaemon(True)
-	th.start()
-
+	def _stop(self):
+		self.server.socket.close()
 
 if __name__ == '__main__':
-	ws_thread()
+	from storage import Storage
+	class ModRef:
+		store = None
+		message_handler= None
+
+	modref=ModRef()
+	modref.store=Storage(modref)
+	ws=Webserver(modref)
+	ws.run()
+	while True:
+		time.sleep(1)
+	ws.stop()
+

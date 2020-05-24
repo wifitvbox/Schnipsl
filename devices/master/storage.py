@@ -4,14 +4,14 @@
 import os
 import json
 
-import zuullogger
+import schnipsllogger
 import translate
 import user
 import defaults
 
 _ = translate.gettext
 
-logger = zuullogger.getLogger(__name__)
+logger = schnipsllogger.getLogger(__name__)
 
 
 class Storage:

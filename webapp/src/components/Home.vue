@@ -108,6 +108,7 @@ export default {
 	},
 		created() {
 			messenger.register('home',this.messenger_onMessage,null,null)
+			messenger.init('steffen','bla','register')
 		},
 	methods: {
 		nav2Set() {

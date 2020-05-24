@@ -3,9 +3,7 @@
 
 import time
 import webserver
-import accessmanager
 import storage
-from messenger import Messenger
 import zuullogger
 
 class ModRef:
@@ -14,8 +12,6 @@ class ModRef:
 	
 	def __init__(self):
 		self.server = None
-		self.accessmanager = None
-		self.messenger = None
 		self.store = None
 
 
@@ -25,11 +21,12 @@ logger = zuullogger.getLogger(__name__)
 
 
 def restart():
-	''' (re)starts the messenger (after a config change)
+	''' (re)starts (after a config change)
 	'''
 	global modref
 
 	logger.info('try to restart')
+	'''
 	if modref.messenger:
 		modref.messenger.shutdown()
 	messenger_token = modref.store.read_config_value("messenger_token")
@@ -39,6 +36,7 @@ def restart():
 	else:
 		logger.error(
 			_("Config incomplete: No messenger_token or messenger_type"))
+	'''
 	logger.info('restarted')
 
 

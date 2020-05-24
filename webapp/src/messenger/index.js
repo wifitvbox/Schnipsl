@@ -10,7 +10,8 @@ class WebService {
     if (window.location.protocol == "https:") {
       ws_protocol = "wss://"
     }
-    this.SIGNALING_SERVER = ws_protocol + window.location.hostname + ":" + window.location.port
+    //this.SIGNALING_SERVER = ws_protocol + window.location.hostname + ":" + window.location.port
+    this.SIGNALING_SERVER = ws_protocol + window.location.hostname + ":8000"
     this.signaling_socket = null   /* our socket.io connection to our webserver */
     this.modules = {} /* contains the registered modules */
     //alias for sending JSON encoded messages
