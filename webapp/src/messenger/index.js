@@ -54,7 +54,6 @@ class WebService {
           this.modules[prefix].close()
         }
       }
-      window.showLogin()
     }
 
     //when we got a message from a signaling server 

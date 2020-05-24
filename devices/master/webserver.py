@@ -42,21 +42,11 @@ class WebsocketUser:
 		self.ws = ws
 
 
-modules = {}
+modref=None
 ws_clients = []
 
 
 class WSZuulHandler(HTTPWebSocketsHandler):
-
-	def get_module(self, prefix):
-		'''returns registered module by name
-		'''
-
-		global modules
-		try:
-			return modules[prefix]
-		except:
-			return None
 
 	def emit(self, type, config):
 		''' sends data object as JSON string to websocket client
@@ -70,11 +60,7 @@ class WSZuulHandler(HTTPWebSocketsHandler):
 		self.send_message(json.dumps(message))
 
 	def on_ws_message(self, message):
-		''' distributes incoming messages to the registered modules
-
-		the receiver is identified by the prefix of the message 'type'
-
-		the modules register their prefix during the 'register' function
+		''' distributes incoming messages to the registered event handlers
 
 		Args:
 				message (:obj:`str`): json string, representing object with 'type' as identifier and 'config' containing the data
@@ -92,38 +78,32 @@ class WSZuulHandler(HTTPWebSocketsHandler):
 
 		if data['type'] == 'msg':
 			self.log_message('msg %s', data['data'])
+		if data['type'] == '_join':
+			self.user.name= data['config']['name']
 
 		else:
-			unknown_msg = True
-			global modules
-			for id, module in modules.items():
-				if data['type'].lower().startswith(id):
-					module["msg"](data, self.user)
-					unknown_msg = False
-			if unknown_msg:
-				self.log_message("Command not found:"+data['type'])
+			global modref
+			modref.message_handler.queue_event(self.user,data['type'],data['data'])
 
 	def on_ws_connected(self):
-		''' informs all registered modules on websocket connect about that new connection
+		''' thows a connect event about that new connection
 		'''
 		#self.log_message('%s', 'websocket connected')
 		self.user = WebsocketUser("", self)
 		global ws_clients
 		ws_clients.append(self.user)
-		global modules
-		for module in modules.values():
-			module["onWebSocketOpen"](self.user)
+		global modref
+		modref.message_handler.queue_event(self.user,defaults.MSG_SOCKET_CONNECT,None)
 
 	def on_ws_closed(self):
-		''' informs all registered modules on websocket close about the closed connection
+		''' thows a close event about the closed connection
 		'''
 
 		#self.log_message('%s', 'websocket closed')
 		global ws_clients
 		ws_clients.remove(self.user)
-		global modules
-		for module_name, module in modules.items():
-			module["onWebSocketClose"](self.user)
+		global modref
+		modref.message_handler.queue_event(self.user,defaults.MSG_SOCKET_CLOSE,None)
 
 	def setup(self):
 		'''initialise the websocket
@@ -135,31 +115,6 @@ class WSZuulHandler(HTTPWebSocketsHandler):
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 	'''Threaded HTTP and Websocket server'''
 
-	def register(self, prefix, module, wsMsghandler, wsOnOpen, wsOnClose):
-		''' register other modules as Websocket message consumers
-
-		Args:
-		prefix (:obj:`string`): hash containing all active users as copy
-		module (:obj:`obj`): hash containing all active users as copy
-		wsMsghandler (:obj:`function`): the callback function when receiving a message
-		wsOnOpen (:obj:`function`): the callback function when a websocket connects
-		wsOnClose (:obj:`function`):: the callback function when a websocket closes
-		'''
-
-		global modules
-		modules[prefix] = {'module': module, 'msg': wsMsghandler,
-						   'onWebSocketOpen': wsOnOpen, 'onWebSocketClose': wsOnClose}
-
-	def get_module(self, prefix):
-		'''returns registered module by name
-		'''
-
-		global modules
-		try:
-			return modules[prefix]
-		except:
-			return None
-
 	def emit(self, topic, data):
 		'''broadcasts a message to all connected websocket clients
 		'''
@@ -167,12 +122,27 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 		for user in ws_clients:
 			user.ws.emit(topic, data)
 
+	def send_event_to_ws(self,queue_event):
+		''' checks all incoming queue_events if to be send to one or all users
+		'''
+		print("webserver event handler",queue_event.type,queue_event.user)
+		if queue_event.type=='home_test':
+			for user in ws_clients:
+				print('user loop')
+				if queue_event.user == None or queue_event.user==user:
+					 user.ws.emit(queue_event.type, queue_event.data)
+			return None # no futher handling of this event
+		return queue_event
+
+
 
 class Webserver(SplThread):
 
-	def __init__(self, modref):
+	def __init__(self, act_modref):
 		''' creates the HTTP and websocket server
 		'''
+		global modref
+		modref=act_modref
 
 		super().__init__(modref.message_handler,self)
 		# reads the config, if any
@@ -189,6 +159,7 @@ class Webserver(SplThread):
 							help="user credentials")
 		args = parser.parse_args()
 		self.server = ThreadedHTTPServer((args.host, args.port), WSZuulHandler)
+		modref.message_handler.add_handler('webserver', 0, self.server.send_event_to_ws)
 		self.server.daemon_threads = True
 		self.server.auth = b64encode(args.credentials.encode("ascii"))
 		if args.secure:

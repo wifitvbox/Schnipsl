@@ -122,7 +122,7 @@ export default {
 			console.log("click for Play",item);
 		},
 		messenger_onMessage(type,data){
-			console.log(type,data)
+			console.log("incoming message",type,data)
 		},
 		sendToServer() {
 			// eslint-disable-next-line

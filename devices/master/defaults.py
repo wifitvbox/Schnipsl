@@ -13,3 +13,8 @@ SMART_HOME_TIMEOUT = 2.0  # secs to wait for an answer from smart home interface
 CONFIG_FILE = 'config/config.json'
 USER_DATA_FILE = 'config/users.json'
 WEB_ROOT_DIR = '../../webapp/dist'
+
+
+# all the different message types
+MSG_SOCKET_CONNECT = 'wsconnect'
+MSG_SOCKET_CLOSE = 'wsclose'
