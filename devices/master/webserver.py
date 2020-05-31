@@ -81,9 +81,8 @@ class WSZuulHandler(HTTPWebSocketsHandler):
 		if data['type'] == '_join':
 			self.user.name= data['config']['name']
 
-		else:
-			global modref
-			modref.message_handler.queue_event(self.user,data['type'],data['data'])
+		global modref
+		modref.message_handler.queue_event(self.user,data['type'],data['config'])
 
 	def on_ws_connected(self):
 		''' thows a connect event about that new connection
@@ -122,15 +121,15 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 		for user in ws_clients:
 			user.ws.emit(topic, data)
 
-	def send_event_to_ws(self,queue_event):
+	def event_listener(self,queue_event):
 		''' checks all incoming queue_events if to be send to one or all users
 		'''
 		print("webserver event handler",queue_event.type,queue_event.user)
-		if queue_event.type=='home_test':
+		if queue_event.type==defaults.MSG_SOCKET_MSG:
 			for user in ws_clients:
 				print('user loop')
 				if queue_event.user == None or queue_event.user==user:
-					 user.ws.emit(queue_event.type, queue_event.data)
+					 user.ws.emit(queue_event.data['type'], queue_event.data['config'])
 			return None # no futher handling of this event
 		return queue_event
 
@@ -159,7 +158,7 @@ class Webserver(SplThread):
 							help="user credentials")
 		args = parser.parse_args()
 		self.server = ThreadedHTTPServer((args.host, args.port), WSZuulHandler)
-		modref.message_handler.add_handler('webserver', 0, self.server.send_event_to_ws)
+		modref.message_handler.add_handler('webserver', 0, self.server.event_listener)
 		self.server.daemon_threads = True
 		self.server.auth = b64encode(args.credentials.encode("ascii"))
 		if args.secure:

@@ -4,28 +4,31 @@
 			<router-view />
 			<v-footer padless fixed>
 				<v-card class="flex" flat tile>
+					<v-slider prepend-icon="mdi-volume-low" append-icon="mdi-volume-high"></v-slider>
 					<v-card-title class="teal">
-						<v-btn icon class="mx-4"  @click="dialog = true">
+						<v-btn icon class="mx-4" @click="dialog = true">
 							<v-icon size="24px">mdi-television-classic</v-icon>
 						</v-btn>
-						<v-btn icon class="mx-4">
+						<v-btn icon class="mx-4" @click="player_key('prev')">
 							<v-icon size="24px">mdi-skip-previous</v-icon>
 						</v-btn>
-						<v-btn icon class="mx-4">
+						<v-btn icon class="mx-4" @click="player_key('minus10')">
 							<v-icon size="24px">mdi-rewind-10</v-icon>
 						</v-btn>
-						<v-btn icon @click="play = !play">
-							<v-icon>{{ play ? 'mdi-pause' : 'mdi-play' }}</v-icon>
+						<v-btn icon class="mx-4" @click="player_key('play')">
+							<v-icon>{{ player.play ? 'mdi-pause' : 'mdi-play' }}</v-icon>
 						</v-btn>
-						<v-btn icon class="mx-4">
+						<v-btn icon class="mx-4" @click="player_key('plus10')">
 							<v-icon size="24px">mdi-fast-forward-10</v-icon>
 						</v-btn>
-						<v-btn icon class="mx-4">
+						<v-btn icon class="mx-4" @click="player_key('next')">
 							<v-icon size="24px">mdi-skip-next</v-icon>
 						</v-btn>
 					</v-card-title>
-
-					<v-progress-linear value="15" color="red"></v-progress-linear>
+					<v-card-title>
+						{{player.playTime}}
+						<v-slider v-model="player.position" append-icon="mdi-timer"></v-slider>
+					</v-card-title>
 				</v-card>
 			</v-footer>
 			<v-row justify="center">
@@ -68,15 +71,37 @@
 </template>
 
 <script>
+import messenger from "./messenger";
 export default {
 	data() {
 		return {
-			play: false,
+			player: {
+				play: false,
+				position: 55,
+				volume: 3,
+				playTime: "0:10",
+				remainingTime: "1:05"
+			},
 			dialogm1: "",
 			dialog: false
 		};
 	},
-	methods: {}
+	created() {
+		messenger.register("app", this.messenger_onMessage, null, null);
+	},
+	methods: {
+		messenger_onMessage(type, data) {
+			console.log("incoming message to app", type, data);
+			if (type == "app_player_pos") {
+				this.player = data;
+			}
+		},
+		player_key(id){
+			console.log("Send key")
+			messenger.emit('player_key', { "keyid": id })
+
+		}
+	}
 };
 </script>
 

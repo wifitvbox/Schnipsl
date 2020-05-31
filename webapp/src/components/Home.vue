@@ -19,7 +19,7 @@
 		<v-list two-line subheader>
 			<v-subheader inset>{{ $t('main_templates') }}</v-subheader>
 
-			<v-list-item v-for="item in items" :key="item.title" @click="nav2Play(item.title)">
+			<v-list-item v-for="item in items.templates" :key="item.title" @click="nav2Play(item.title)">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
@@ -36,11 +36,26 @@
 				</v-list-item-action>
 			</v-list-item>
 
-			<v-divider inset></v-divider>
+			<v-subheader inset>{{ $t('main_streams') }}</v-subheader>
+			<v-list-item v-for="item in items.streams" :key="item.title" @click="nav2Play(item.title)">
+				<v-list-item-avatar>
+					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
+				</v-list-item-avatar>
 
-			<v-subheader inset>Files</v-subheader>
+				<v-list-item-content>
+					<v-list-item-title v-text="item.title"></v-list-item-title>
+					<v-list-item-subtitle v-text="item.subtitle"></v-list-item-subtitle>
+				</v-list-item-content>
 
-			<v-list-item v-for="item in items2" :key="item.title" @click="nav2Play(item.title)">
+				<v-list-item-action>
+					<v-btn icon @click="nav2Edit(item.title)">
+						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
+					</v-btn>
+				</v-list-item-action>
+			</v-list-item>
+
+			<v-subheader inset>{{ $t('main_records') }}</v-subheader>
+			<v-list-item v-for="item in items.records" :key="item.title" @click="nav2Play(item.title)">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
@@ -57,6 +72,23 @@
 				</v-list-item-action>
 			</v-list-item>
 		</v-list>
+			<v-subheader inset>{{ $t('main_timers') }}</v-subheader>
+			<v-list-item v-for="item in items.timers" :key="item.title" @click="nav2Play(item.title)">
+				<v-list-item-avatar>
+					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
+				</v-list-item-avatar>
+
+				<v-list-item-content>
+					<v-list-item-title v-text="item.title"></v-list-item-title>
+					<v-list-item-subtitle v-text="item.subtitle"></v-list-item-subtitle>
+				</v-list-item-content>
+
+				<v-list-item-action>
+					<v-btn icon @click="nav2Edit(item.title)">
+						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
+					</v-btn>
+				</v-list-item-action>
+			</v-list-item>
 	</v-card>
 </template>
 
@@ -65,11 +97,15 @@
 import router from "../router";
 import messenger from "../messenger";
 export default {
-	name: "HelloWorld",
+	name: "Schnipsl",
+	title () {
+	return `${this.name}`
+  },
 	data() {
 		return {
 			msg: "Welcome to Your Vue.js App",
-			items: [
+			items: {
+				templates:[
 				{
 					icon: "mdi-magnify",
 					iconClass: "red lighten-1 white--text",
@@ -88,9 +124,8 @@ export default {
 					title: "Photos2",
 					subtitle: "Jan 9, 2014"
 				}
-
 			],
-			items2: [
+			records: [
 				{
 					icon: "mdi-play-pause",
 					iconClass: "blue white--text",
@@ -103,26 +138,32 @@ export default {
 					title: "Kitchen remodel",
 					subtitle: "Jan 10, 2014"
 				}
-			]
+			],
+			streams:[],
+			timers:[]
+			}
 		};
 	},
-		created() {
-			messenger.register('home',this.messenger_onMessage,null,null)
-			messenger.init('steffen','bla','register')
-		},
+	created() {
+		messenger.register("home", this.messenger_onMessage, null, null);
+		messenger.init("steffen", "bla", "register");
+	},
 	methods: {
 		nav2Set() {
 			router.push({ name: "Settings" });
 		},
 		nav2Edit(item) {
-			console.log("click for edit",item);
+			console.log("click for edit", item);
 			router.push({ name: "Edit", params: { id: item } });
 		},
 		nav2Play(item) {
-			console.log("click for Play",item);
+			console.log("click for Play", item);
 		},
-		messenger_onMessage(type,data){
-			console.log("incoming message",type,data)
+		messenger_onMessage(type, data) {
+			console.log("incoming message to home", type, data);
+			if (type == "home_data") {
+				this.items.streams = data;
+			}
 		},
 		sendToServer() {
 			// eslint-disable-next-line

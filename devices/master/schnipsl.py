@@ -3,6 +3,7 @@
 
 import time
 from webserver import Webserver
+from simulator import Simulator
 from messagehandler import MessageHandler
 import storage
 import schnipsllogger
@@ -26,7 +27,8 @@ modref = ModRef() # create object to store all module instances
 modref.store = storage.Storage(modref)
 modref.message_handler = MessageHandler(modref)
 modref.server = Webserver(modref)
-
+si=Simulator(modref)
+si.run()
 modref.server.run()
 
 while(True):

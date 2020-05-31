@@ -63,7 +63,7 @@ class MessageHandler:
 		while True:
 			queue_event = self.queue.get(
 				block=True)  # waits for incoming queue_event objects
-			print('found msg in queue')
+			print('found msg in queue',repr(queue_event))
 			for event_handler in self.event_listeners:
 				# allows the handler to modify the event (just for later extensions :-)
 				queue_event = event_handler.event_handler(queue_event)
@@ -71,8 +71,8 @@ class MessageHandler:
 					break
 			if queue_event:
 				new_event=copy.copy(queue_event)
-				new_event.type='home_test'
-				new_event.data='bla_string'
+				new_event.type=defaults.MSG_SOCKET_MSG
+				new_event.data={'type':'home_test','config':'bla_string'}
 				self.queue_event_obj(new_event)
 
 

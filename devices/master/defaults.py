@@ -18,3 +18,4 @@ WEB_ROOT_DIR = '../../webapp/dist'
 # all the different message types
 MSG_SOCKET_CONNECT = 'wsconnect'
 MSG_SOCKET_CLOSE = 'wsclose'
+MSG_SOCKET_MSG = 'wsmsg'
