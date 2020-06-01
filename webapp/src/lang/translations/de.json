@@ -13,7 +13,10 @@
 	"edit_select_provider": "Anbieter",
 	"edit_select_categorie": "Kategorie",
 	"edit_select_title": "Titel - Album",
-	"edit_select_content": "Inhalt"
+	"edit_select_content": "Inhalt",
+	"player_select_device_dialog_header": "Wähle Dein Ausgabegerät",
+	"player_select_device_dialog_cancel":"Abbruch",
+	"player_select_device_dialog_select":"Auswahl"
 }
 
 

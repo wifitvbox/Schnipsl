@@ -1,4 +1,8 @@
 <template>
+
+
+	<!-- Grid card layout für die gefundenen Einträge? Kuckst Du hier https://codepen.io/munieru_jp/pen/jpdJNV-->
+
 	<v-card max-width="600" class="mx-auto">
 		<v-toolbar color="yellow">
 			<v-toolbar-items class="hidden-sm-and-down">

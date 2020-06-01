@@ -19,76 +19,84 @@
 		<v-list two-line subheader>
 			<v-subheader inset>{{ $t('main_templates') }}</v-subheader>
 
-			<v-list-item v-for="item in items.templates" :key="item.title" @click="nav2Play(item.title)">
+			<v-list-item v-for="item in movie_info_list.templates" :key="item.id" @click="nav2Play(item.id)">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
 
 				<v-list-item-content>
-					<v-list-item-title v-text="item.title"></v-list-item-title>
-					<v-list-item-subtitle v-text="item.subtitle"></v-list-item-subtitle>
+					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
+					<v-list-item-subtitle
+						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
+					></v-list-item-subtitle>
 				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon @click="nav2Edit(item.title)">
+					<v-btn icon @click="nav2Edit(item.id)">
 						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
 				</v-list-item-action>
 			</v-list-item>
 
 			<v-subheader inset>{{ $t('main_streams') }}</v-subheader>
-			<v-list-item v-for="item in items.streams" :key="item.title" @click="nav2Play(item.title)">
+			<v-list-item v-for="item in movie_info_list.streams" :key="item.id" @click="nav2Play(item.id)">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
 
 				<v-list-item-content>
-					<v-list-item-title v-text="item.title"></v-list-item-title>
-					<v-list-item-subtitle v-text="item.subtitle"></v-list-item-subtitle>
+					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
+					<v-list-item-subtitle
+						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
+					></v-list-item-subtitle>
 				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon @click="nav2Edit(item.title)">
+					<v-btn icon @click="nav2Edit(item.id)">
 						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
 				</v-list-item-action>
 			</v-list-item>
 
 			<v-subheader inset>{{ $t('main_records') }}</v-subheader>
-			<v-list-item v-for="item in items.records" :key="item.title" @click="nav2Play(item.title)">
+			<v-list-item v-for="item in movie_info_list.records" :key="item.id" @click="nav2Play(item.id)">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
 
 				<v-list-item-content>
-					<v-list-item-title v-text="item.title"></v-list-item-title>
-					<v-list-item-subtitle v-text="item.subtitle"></v-list-item-subtitle>
+					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
+					<v-list-item-subtitle
+						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
+					></v-list-item-subtitle>
 				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon @click="nav2Edit(item.title)">
+					<v-btn icon @click="nav2Edit(item.id)">
 						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
 				</v-list-item-action>
 			</v-list-item>
 		</v-list>
-			<v-subheader inset>{{ $t('main_timers') }}</v-subheader>
-			<v-list-item v-for="item in items.timers" :key="item.title" @click="nav2Play(item.title)">
-				<v-list-item-avatar>
-					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
-				</v-list-item-avatar>
+		<v-subheader inset>{{ $t('main_timers') }}</v-subheader>
+		<v-list-item v-for="item in movie_info_list.timers" :key="item.id" @click="nav2Play(item.id)">
+			<v-list-item-avatar>
+				<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
+			</v-list-item-avatar>
 
-				<v-list-item-content>
-					<v-list-item-title v-text="item.title"></v-list-item-title>
-					<v-list-item-subtitle v-text="item.subtitle"></v-list-item-subtitle>
-				</v-list-item-content>
+			<v-list-item-content>
+				<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
+				<v-list-item-subtitle
+					v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
+				></v-list-item-subtitle>
+			</v-list-item-content>
 
-				<v-list-item-action>
-					<v-btn icon @click="nav2Edit(item.title)">
-						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
-					</v-btn>
-				</v-list-item-action>
-			</v-list-item>
+			<v-list-item-action>
+				<v-btn icon @click="nav2Edit(item.id)">
+					<v-icon color="grey lighten-1">mdi-pencil</v-icon>
+				</v-btn>
+			</v-list-item-action>
+		</v-list-item>
 	</v-card>
 </template>
 
@@ -98,49 +106,85 @@ import router from "../router";
 import messenger from "../messenger";
 export default {
 	name: "Schnipsl",
-	title () {
-	return `${this.name}`
-  },
+	title() {
+		return `${this.name}`;
+	},
 	data() {
 		return {
-			msg: "Welcome to Your Vue.js App",
-			items: {
-				templates:[
-				{
-					icon: "mdi-magnify",
-					iconClass: "red lighten-1 white--text",
-					title: "Photos1",
-					subtitle: "Jan 9, 2014"
-				},
-				{
-					icon: "mdi-radio-tower",
-					iconClass: "green lighten-1 white--text",
-					title: "Recipes1",
-					subtitle: "Jan 17, 2014"
-				},
-				{
-					icon: "mdi-play-pause",
-					iconClass: "orange white--text",
-					title: "Photos2",
-					subtitle: "Jan 9, 2014"
-				}
-			],
-			records: [
-				{
-					icon: "mdi-play-pause",
-					iconClass: "blue white--text",
-					title: "Vacation itinerary",
-					subtitle: "Jan 20, 2014"
-				},
-				{
-					icon: "mdi-clock",
-					iconClass: "amber white--text",
-					title: "Kitchen remodel",
-					subtitle: "Jan 10, 2014"
-				}
-			],
-			streams:[],
-			timers:[]
+			movie_info_list: {
+				templates: [
+					{
+						id: "1",
+						icon: "mdi-magnify",
+						iconClass: "red lighten-1 white--text",
+						movie_info: {
+							title: "Titel",
+							category: "Typ",
+							source: "Quelle",
+							date: "Datum",
+							duration: "Dauer",
+							viewed: "geschaut"
+						}
+					},
+					{
+						id: "2",
+						icon: "mdi-magnify",
+						iconClass: "red lighten-1 white--text",
+						movie_info: {
+							title: "Titel-2",
+							category: "Typ",
+							source: "Quelle",
+							date: "Datum",
+							duration: "Dauer",
+							viewed: "geschaut"
+						}
+					}
+				],
+				records: [
+					{
+						id: "1",
+						icon: "mdi-play-pause",
+						iconClass: "blue white--text",
+						movie_info: {
+							title: "Titel-Stream",
+							category: "Typ",
+							source: "Quelle",
+							date: "Datum",
+							duration: "Dauer",
+							viewed: "geschaut"
+						}
+					}
+				],
+				streams: [
+					{
+						id: "1",
+						icon: "mdi-radio-tower",
+						iconClass: "green lighten-1 white--text",
+						movie_info: {
+							title: "Titel-Stream",
+							category: "Typ",
+							source: "Quelle",
+							date: "Datum",
+							duration: "Dauer",
+							viewed: "geschaut"
+						}
+					}
+				],
+				timers: [
+					{
+						id: "1",
+						icon: "mdi-clock",
+						iconClass: "amber white--text",
+						movie_info: {
+							title: "Titel-Timer",
+							category: "Typ",
+							source: "Quelle",
+							date: "Datum",
+							duration: "Dauer",
+							viewed: "geschaut"
+						}
+					}
+				]
 			}
 		};
 	},
@@ -161,8 +205,8 @@ export default {
 		},
 		messenger_onMessage(type, data) {
 			console.log("incoming message to home", type, data);
-			if (type == "home_data") {
-				this.items.streams = data;
+			if (type == "home_movie_info_list") {
+				this.movie_info_list = data;
 			}
 		},
 		sendToServer() {

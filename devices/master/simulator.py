@@ -63,23 +63,113 @@ class Simulator(SplThread):
 		print("simulator event handler", queue_event.type, queue_event.user)
 		if queue_event.type == '_join':
 			if queue_event:
-				data = [
-					{
-						'icon': 'mdi-play-pause',
-						'iconClass': 'blue white--text',
-						'title': 'Steffen war hier',
-						'subtitle': 'Jan 20, 2014'
-					},
-					{
-						'icon': 'mdi-clock',
-						'iconClass': 'amber white--text',
-						'title': 'Blub',
-						'subtitle': 'Jan 10, 2014'
-					}
-				]
+				# we fill the schnipsl list
+				data = {
+					'templates': [
+						{
+							'id': '1',
+							'icon': 'mdi-magnify',
+							'iconClass': 'red lighten-1 white--text',
+							'movie_info': {
+									'title': 'Titel-S',
+									'category': 'Typ',
+								'source': 'Quelle',
+								'date': 'Datum',
+										'duration': 'Dauer',
+										'viewed': 'geschaut'
+							}
+						},
+						{
+							'id': '2',
+							'icon': 'mdi-magnify',
+							'iconClass': 'red lighten-1 white--text',
+							'movie_info': {
+									'title': 'Titel-2-S',
+									'category': 'Typ',
+								'source': 'Quelle',
+								'date': 'Datum',
+										'duration': 'Dauer',
+										'viewed': 'geschaut'
+							}
+						}
+					],
+					'records': [
+						{
+							'id': '1',
+							'icon': 'mdi-play-pause',
+							'iconClass': 'blue white--text',
+							'movie_info': {
+									'title': 'Titel-Stream-S',
+									'category': 'Typ',
+									'source': 'Quelle',
+								'date': 'Datum',
+										'duration': 'Dauer',
+										'viewed': 'geschaut'
+							}
+						}
+					],
+					'streams': [
+						{
+							'id': '1',
+							'icon': 'mdi-radio-tower',
+							'iconClass': 'green lighten-1 white--text',
+							'movie_info': {
+									'title': 'Titel-Stream-S',
+									'category': 'Typ',
+									'source': 'Quelle',
+								'date': 'Datum',
+										'duration': 'Dauer',
+										'viewed': 'geschaut'
+							}
+						}
+					],
+					'timers': [
+						{
+							'id': '1',
+							'icon': 'mdi-clock',
+							'iconClass': 'amber white--text',
+							'movie_info': {
+									'title': 'Titel-Timer-S',
+									'category': 'Typ',
+									'source': 'Quelle',
+								'date': 'Datum',
+										'duration': 'Dauer',
+										'viewed': 'geschaut'
+							}
+						}
+					]
+
+				}
+
 				new_event = copy.copy(queue_event)
 				new_event.type = defaults.MSG_SOCKET_MSG
-				new_event.data = {'type': 'home_data', 'config': data}
+				new_event.data = {'type': 'home_movie_info_list', 'config': data}
+				self.modref.message_handler.queue_event_obj(new_event)
+
+				# we set the player info
+				data = {
+					'title': 'Titel-aaa',
+					'category': 'Typ',
+					'source': 'Quelle',
+					'date': 'Datum',
+					'duration': 'Dauer',
+					'viewed': 'geschaut'
+				}
+
+				new_event = copy.copy(queue_event)
+				new_event.type = defaults.MSG_SOCKET_MSG
+				new_event.data = {'type': 'app_movie_info', 'config': data}
+				self.modref.message_handler.queue_event_obj(new_event)
+
+				# we set the device info
+				data = {
+					'actual_device': '',
+					'devices': ['TV Wohnzimmer-S', 'TV Küche-s', 'Chromecast Büro'],
+				},
+
+				new_event = copy.copy(queue_event)
+				new_event.type = defaults.MSG_SOCKET_MSG
+				new_event.data = {'type': 'app_device_info', 'config': data}
 				self.modref.message_handler.queue_event_obj(new_event)
 
 		if queue_event.type == 'player_key':
@@ -99,6 +189,9 @@ class Simulator(SplThread):
 				self.play_time = self.play_total_secs
 				self.player_info['play'] = False
 			self.send_player_status()
+		if queue_event.type == 'player_time':
+			self.play_time = queue_event.data['timer_pos'] * \
+				self.play_total_secs//100
 
 	def send_player_status(self):
 		self.player_info['position'] = self.play_time * \
