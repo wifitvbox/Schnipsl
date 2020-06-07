@@ -3,7 +3,7 @@
 
 import time
 from webserver import Webserver
-from simulator import Simulator
+
 from messagehandler import MessageHandler
 import storage
 import schnipsllogger

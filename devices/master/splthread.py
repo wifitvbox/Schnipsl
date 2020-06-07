@@ -28,6 +28,18 @@ class SplThread(metaclass=ABCMeta):
 		'''
 		pass
 
+	@abstractmethod
+	def  event_listener(self, queue_event):
+		''' handler for system events
+		'''
+		pass
+
+	@abstractmethod
+	def query_handler(self, queue_event, max_result_count):
+		''' handler for system queries
+		'''
+		pass
+
 	def run(self):
 		''' starts the child thread
 		'''

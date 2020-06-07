@@ -124,15 +124,13 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 	def event_listener(self,queue_event):
 		''' checks all incoming queue_events if to be send to one or all users
 		'''
-		print("webserver event handler",queue_event.type,queue_event.user)
+		#print("webserver event handler",queue_event.type,queue_event.user)
 		if queue_event.type==defaults.MSG_SOCKET_MSG:
 			for user in ws_clients:
-				print('user loop')
 				if queue_event.user == None or queue_event.user==user:
 					 user.ws.emit(queue_event.data['type'], queue_event.data['config'])
 			return None # no futher handling of this event
 		return queue_event
-
 
 
 class Webserver(SplThread):
@@ -158,7 +156,7 @@ class Webserver(SplThread):
 							help="user credentials")
 		args = parser.parse_args()
 		self.server = ThreadedHTTPServer((args.host, args.port), WSZuulHandler)
-		modref.message_handler.add_handler('webserver', 0, self.server.event_listener)
+		modref.message_handler.add_event_handler('webserver', 0, self.server.event_listener)
 		self.server.daemon_threads = True
 		self.server.auth = b64encode(args.credentials.encode("ascii"))
 		if args.secure:
@@ -188,6 +186,16 @@ class Webserver(SplThread):
 
 	def _stop(self):
 		self.server.socket.close()
+
+	def  event_listener(self, queue_event):
+		''' handler for system events
+		'''
+		pass
+
+	def query_handler(self, queue_event, max_result_count):
+		''' handler for system queries
+		'''
+		pass
 
 if __name__ == '__main__':
 	from storage import Storage

@@ -33,6 +33,7 @@ sys.path.append(os.path.abspath(ScriptPath))
 from splthread import SplThread
 import defaults
 from classes import MovieInfo
+from messagehandler import Query
 
 
 
@@ -45,7 +46,8 @@ class SplPlugin(SplThread):
 		self.modref = modref
 
 		super().__init__(modref.message_handler, self)
-		modref.message_handler.add_handler('simulator', 0, self.event_listener)
+		modref.message_handler.add_event_handler('simulator', 0, self.event_listener)
+		modref.message_handler.add_query_handler('simulator', 0, self.query_handler)
 		self.runFlag = True
 		self.play_time = 0
 		self.play_total_secs = 90*60
@@ -197,8 +199,18 @@ class SplPlugin(SplThread):
 			self.play_time = queue_event.data['timer_pos'] * \
 				self.play_total_secs//100
 		if queue_event.type == 'home_play_request':
-			self.send_player_devices(['TV Wohnzimmer-S', 'TV Küche-s', 'Chromecast Büro'])
+			#self.send_player_devices(['TV Wohnzimmer-S', 'TV Küche-s', 'Chromecast Büro'])
+			feasible_devices= self.modref.message_handler.query(Query(queue_event.user,defaults.QUERY_FEASIBLE_DEVICES,queue_event.data['itemId']))
+			self.send_player_devices(feasible_devices)
 			self.play_request(queue_event.data['itemId'])
+
+	def query_handler(self, queue_event, max_result_count):
+		''' try to send simulated answers
+		'''
+		print("simulator query handler", queue_event.type, queue_event.user,max_result_count)
+		if queue_event.type == defaults.QUERY_FEASIBLE_DEVICES:
+			return ['TV Wohnzimmer-S', 'TV Küche-s', 'Chromecast Büro']
+		return[]
 
 
 	def update_single_movie_clip(self, id):
@@ -223,7 +235,6 @@ class SplPlugin(SplThread):
 		}
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
 			'type': 'app_device_info', 'config': data})
-
 
 	def play_request(self, id):
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
