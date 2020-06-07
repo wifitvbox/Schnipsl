@@ -7,6 +7,7 @@ from simulator import Simulator
 from messagehandler import MessageHandler
 import storage
 import schnipsllogger
+from pluginmanager import PluginManager
 
 class ModRef:
 	''' helper class to store references to the global modules
@@ -27,8 +28,8 @@ modref = ModRef() # create object to store all module instances
 modref.store = storage.Storage(modref)
 modref.message_handler = MessageHandler(modref)
 modref.server = Webserver(modref)
-si=Simulator(modref)
-si.run()
+plugin_manager=PluginManager(modref,'plugins')
+
 modref.server.run()
 
 while(True):

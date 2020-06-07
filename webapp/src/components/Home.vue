@@ -206,6 +206,39 @@ export default {
 			if (type == "home_movie_info_list") {
 				this.movie_info_list = data;
 			}
+			if (type == "home_movie_info_update") {
+				var id=data.id
+				this.movie_info_list.records.forEach(function(movie_info) {
+					if (movie_info.id==id){
+						//replace movie_info
+						console.log('home_movie_info_update records')
+						movie_info.movie_info=data.movie_info.movie_info
+					}
+				});
+				this.movie_info_list.streams.forEach(function(movie_info) {
+					if (movie_info.id==id){
+						//replace movie_info
+						console.log('home_movie_info_update streams')
+						movie_info.movie_info=data.movie_info.movie_info
+					}
+				});
+				this.movie_info_list.templates.forEach(function(movie_info) {
+					if (movie_info.id==id){
+						//replace movie_info
+						console.log('home_movie_info_update templates')
+						movie_info.movie_info=data.movie_info.movie_info
+					}
+				});
+				this.movie_info_list.timers.forEach(function(movie_info) {
+					if (movie_info.id==id){
+						//replace movie_info
+						console.log('home_movie_info_update timers')
+						movie_info.movie_info=data.movie_info.movie_info
+					}
+				});
+ 
+				this.movie_info_list[data.id] = data;
+			}
 		},
 		sendToServer() {
 			// eslint-disable-next-line

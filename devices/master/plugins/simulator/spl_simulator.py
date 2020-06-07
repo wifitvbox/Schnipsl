@@ -37,7 +37,7 @@ from classes import MovieInfo
 
 
 
-class Simulator(SplThread):
+class SplPlugin(SplThread):
 
 	def __init__(self, modref):
 		''' creates the simulator
@@ -173,7 +173,7 @@ class Simulator(SplThread):
 					'type': 'home_movie_info_list', 'config': self.prepare_movie_list()}
 				print("new_event", new_event.data['config'])
 				self.modref.message_handler.queue_event_obj(new_event)
-
+				self.update_single_movie_clip('1')
 
 
 		if queue_event.type == 'player_key':
@@ -200,6 +200,11 @@ class Simulator(SplThread):
 			self.send_player_devices(['TV Wohnzimmer-S', 'TV Küche-s', 'Chromecast Büro'])
 			self.play_request(queue_event.data['itemId'])
 
+
+	def update_single_movie_clip(self, id):
+		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
+			'type': 'home_movie_info_update', 'config': {'id':id, 'movie_info':self.movielist[id]}})
+
 	def send_player_status(self):
 		self.player_info['position'] = self.play_time * \
 			100 // self.play_total_secs
@@ -218,6 +223,7 @@ class Simulator(SplThread):
 		}
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
 			'type': 'app_device_info', 'config': data})
+
 
 	def play_request(self, id):
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
