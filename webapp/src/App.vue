@@ -39,7 +39,7 @@
 						<div v-show="show">
 							<v-divider></v-divider>
 
-							<v-card-text>I'm a thing. But, like most politicians, he promised more than he could deliver. You won't have time for sleeping, soldier, not with all the bed making you'll be doing. Then we'll go with that data file! Hey, you add a one and two zeros to that or we walk! You're going to do his laundry? I've got to find a way to escape.</v-card-text>
+							<v-card-text>{{movie_info.description}}</v-card-text>
 						</div>
 					</v-expand-transition>
 				</v-card>
@@ -84,7 +84,8 @@ export default {
 				source: "Quelle",
 				date: "Datum",
 				duration: "Dauer",
-				viewed: "geschaut"
+				viewed: "geschaut",
+				description: "Beschreibung"
 			},
 			device_info :{
 				actual_device : "",
@@ -107,7 +108,10 @@ export default {
 				this.movie_info = data;
 			}
 			if (type == "app_device_info") {
-				this.device_info = data[0];
+				this.device_info = data;
+				if (!this.device_info.actual_device){
+					this.device_dialog_show=true
+				}
 			}
 		},
 		player_key(id) {

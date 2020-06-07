@@ -1,15 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from HTTPWebSocketsHandler import HTTPWebSocketsHandler
-'''
-credits:
-combined http(s) and websocket server copied from
-	https://github.com/PyOCL/httpwebsockethandler
-	The MIT License (MIT)
-	Copyright (c) 2015 Seven Watt
-
-'''
 
 # Standard module
 import sys
@@ -31,10 +22,19 @@ from socketserver import ThreadingMixIn
 from http.server import HTTPServer
 
 
+ScriptPath = os.path.realpath(os.path.join(
+	os.path.dirname(__file__), "../common"))
+
+
+# Add the directory containing your module to the Python path (wants absolute paths)
+sys.path.append(os.path.abspath(ScriptPath))
 # own local modules
 
 from splthread import SplThread
 import defaults
+from classes import MovieInfo
+
+
 
 
 class Simulator(SplThread):
@@ -56,6 +56,109 @@ class Simulator(SplThread):
 			'playTime': '00:00',
 			'remainingTime': '00:00'
 		}
+		self.movielist = {
+			'1': {
+				'type': 'template',
+				'movie_info': MovieInfo(
+						'Titel-S',
+						'Typ',
+						'Quelle',
+					'Datum',
+					'Dauer',
+					'geschaut',
+					'Lorem ipsum..'
+				)
+			},
+			'2': {
+				'type': 'template',
+				'movie_info': MovieInfo(
+						'Titel-2-S',
+						'Typ',
+						'Quelle',
+					'Datum',
+					'Dauer',
+					'geschaut',
+					'Lorem ipsum..'
+				)
+			},
+			'3': {
+				'type': 'record',
+				'movie_info': MovieInfo(
+						'Titel-Record-S',
+						'Typ',
+						'Quelle',
+					'Datum',
+					'Dauer',
+					'geschaut',
+					'Lorem ipsum..'
+				)
+			},
+			'4': {
+				'type': 'streams',
+				'movie_info': MovieInfo(
+						'Titel-Stream-S',
+						'Typ',
+						'Quelle',
+					'Datum',
+					'Dauer',
+					'geschaut',
+					'Lorem ipsum..'
+				)
+			},
+			'5': {
+				'type': 'timer',
+				'movie_info': MovieInfo(
+						'Titel-Timer-S',
+						'Typ',
+						'Quelle',
+					'Datum',
+					'Dauer',
+					'geschaut',
+					'Lorem ipsum..'
+				)
+			}
+		}
+
+	def prepare_movie_list(self):
+		res = {'templates': [], 'records': [], 'streams': [], 'timers': []}
+		for id, movie in self.movielist.items():
+			if movie['type'] == 'template':
+				res['templates'].append(
+					{
+						'id': id,
+						'icon': 'mdi-magnify',
+								'iconClass': 'red lighten-1 white--text',
+								'movie_info': movie['movie_info']
+					}
+				)
+			if movie['type'] == 'record':
+				res['records'].append(
+					{
+						'id': id,
+						'icon': 'mdi-play-pause',
+								'iconClass': 'blue white--text',
+								'movie_info': movie['movie_info']
+					}
+				)
+			if movie['type'] == 'stream':
+				res['streams'].append(
+					{
+						'id': id,
+						'icon': 'mdi-radio-tower',
+								'iconClass': 'green lighten-1 white--text',
+								'movie_info': movie['movie_info']
+					}
+				)
+			if movie['type'] == 'timer':
+				res['timers'].append(
+					{
+						'id': id,
+						'icon': 'mdi-clock',
+								'iconClass': 'amber white--text',
+								'movie_info': movie['movie_info']
+					}
+				)
+		return res
 
 	def event_listener(self, queue_event):
 		''' try to send simulated answers
@@ -64,113 +167,14 @@ class Simulator(SplThread):
 		if queue_event.type == '_join':
 			if queue_event:
 				# we fill the schnipsl list
-				data = {
-					'templates': [
-						{
-							'id': '1',
-							'icon': 'mdi-magnify',
-							'iconClass': 'red lighten-1 white--text',
-							'movie_info': {
-									'title': 'Titel-S',
-									'category': 'Typ',
-								'source': 'Quelle',
-								'date': 'Datum',
-										'duration': 'Dauer',
-										'viewed': 'geschaut'
-							}
-						},
-						{
-							'id': '2',
-							'icon': 'mdi-magnify',
-							'iconClass': 'red lighten-1 white--text',
-							'movie_info': {
-									'title': 'Titel-2-S',
-									'category': 'Typ',
-								'source': 'Quelle',
-								'date': 'Datum',
-										'duration': 'Dauer',
-										'viewed': 'geschaut'
-							}
-						}
-					],
-					'records': [
-						{
-							'id': '1',
-							'icon': 'mdi-play-pause',
-							'iconClass': 'blue white--text',
-							'movie_info': {
-									'title': 'Titel-Stream-S',
-									'category': 'Typ',
-									'source': 'Quelle',
-								'date': 'Datum',
-										'duration': 'Dauer',
-										'viewed': 'geschaut'
-							}
-						}
-					],
-					'streams': [
-						{
-							'id': '1',
-							'icon': 'mdi-radio-tower',
-							'iconClass': 'green lighten-1 white--text',
-							'movie_info': {
-									'title': 'Titel-Stream-S',
-									'category': 'Typ',
-									'source': 'Quelle',
-								'date': 'Datum',
-										'duration': 'Dauer',
-										'viewed': 'geschaut'
-							}
-						}
-					],
-					'timers': [
-						{
-							'id': '1',
-							'icon': 'mdi-clock',
-							'iconClass': 'amber white--text',
-							'movie_info': {
-									'title': 'Titel-Timer-S',
-									'category': 'Typ',
-									'source': 'Quelle',
-								'date': 'Datum',
-										'duration': 'Dauer',
-										'viewed': 'geschaut'
-							}
-						}
-					]
-
-				}
-
 				new_event = copy.copy(queue_event)
 				new_event.type = defaults.MSG_SOCKET_MSG
-				new_event.data = {'type': 'home_movie_info_list', 'config': data}
+				new_event.data = {
+					'type': 'home_movie_info_list', 'config': self.prepare_movie_list()}
+				print("new_event", new_event.data['config'])
 				self.modref.message_handler.queue_event_obj(new_event)
 
-				# we set the player info
-				data = {
-					'title': 'Titel-aaa',
-					'category': 'Typ',
-					'source': 'Quelle',
-					'date': 'Datum',
-					'duration': 'Dauer',
-					'viewed': 'geschaut'
-				}
 
-				new_event = copy.copy(queue_event)
-				new_event.type = defaults.MSG_SOCKET_MSG
-				new_event.data = {'type': 'app_movie_info', 'config': data}
-				self.modref.message_handler.queue_event_obj(new_event)
-
-				# we set the device info
-				data = {
-					'actual_device': '',
-					'devices': ['TV Wohnzimmer-S', 'TV Küche-s', 'Chromecast Büro'],
-				},
-
-				new_event = copy.copy(queue_event)
-				new_event.type = defaults.MSG_SOCKET_MSG
-				new_event.data = {'type': 'app_device_info', 'config': data}
-				self.modref.message_handler.queue_event_obj(new_event)
 
 		if queue_event.type == 'player_key':
 			if queue_event.data['keyid'] == 'prev':
@@ -192,6 +196,9 @@ class Simulator(SplThread):
 		if queue_event.type == 'player_time':
 			self.play_time = queue_event.data['timer_pos'] * \
 				self.play_total_secs//100
+		if queue_event.type == 'home_play_request':
+			self.send_player_devices(['TV Wohnzimmer-S', 'TV Küche-s', 'Chromecast Büro'])
+			self.play_request(queue_event.data['itemId'])
 
 	def send_player_status(self):
 		self.player_info['position'] = self.play_time * \
@@ -202,6 +209,19 @@ class Simulator(SplThread):
 			(self.play_total_secs-self.play_time)//60, (self.play_total_secs-self.play_time) % 60)
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
 			'type': 'app_player_pos', 'config': self.player_info})
+
+	def send_player_devices(self,devices):
+		# we set the device info
+		data = {
+			'actual_device': '',
+			'devices': devices,
+		}
+		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
+			'type': 'app_device_info', 'config': data})
+
+	def play_request(self, id):
+		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
+			'type': 'app_movie_info', 'config': self.movielist[id]['movie_info']})
 
 	def _run(self):
 		''' starts the server

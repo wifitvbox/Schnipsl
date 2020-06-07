@@ -8,10 +8,6 @@
 			<v-spacer></v-spacer>
 
 			<v-btn icon>
-				<v-icon>mdi-magnify</v-icon>
-			</v-btn>
-
-			<v-btn icon>
 				<v-icon>mdi-plus-circle</v-icon>
 			</v-btn>
 		</v-toolbar>
@@ -142,7 +138,7 @@ export default {
 				],
 				records: [
 					{
-						id: "1",
+						id: "3",
 						icon: "mdi-play-pause",
 						iconClass: "blue white--text",
 						movie_info: {
@@ -157,7 +153,7 @@ export default {
 				],
 				streams: [
 					{
-						id: "1",
+						id: "4",
 						icon: "mdi-radio-tower",
 						iconClass: "green lighten-1 white--text",
 						movie_info: {
@@ -172,7 +168,7 @@ export default {
 				],
 				timers: [
 					{
-						id: "1",
+						id: "5",
 						icon: "mdi-clock",
 						iconClass: "amber white--text",
 						movie_info: {
@@ -200,8 +196,10 @@ export default {
 			console.log("click for edit", item);
 			router.push({ name: "Edit", params: { id: item } });
 		},
-		nav2Play(item) {
-			console.log("click for Play", item);
+		nav2Play(itemId) {
+			console.log("click for Play", itemId);
+			messenger.emit("home_play_request", { itemId: itemId });
+
 		},
 		messenger_onMessage(type, data) {
 			console.log("incoming message to home", type, data);
