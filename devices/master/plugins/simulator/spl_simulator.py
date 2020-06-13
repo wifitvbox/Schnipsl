@@ -18,10 +18,6 @@ from pprint import pprint
 
 # Non standard modules (install with pip)
 
-from socketserver import ThreadingMixIn
-from http.server import HTTPServer
-
-
 ScriptPath = os.path.realpath(os.path.join(
 	os.path.dirname(__file__), "../common"))
 
@@ -203,6 +199,16 @@ class SplPlugin(SplThread):
 			feasible_devices= self.modref.message_handler.query(Query(queue_event.user,defaults.QUERY_FEASIBLE_DEVICES,queue_event.data['itemId']))
 			self.send_player_devices(feasible_devices)
 			self.play_request(queue_event.data['itemId'])
+		if queue_event.type == 'edit_query_available_sources':
+			available_sources= self.modref.message_handler.query(Query(queue_event.user,defaults.QUERY_AVAILABLE_SOURCES,None))
+			# we set the device info
+			data = {
+				'select_source_items': available_sources,
+				'select_source_values': self.filter_select_values(available_sources,queue_event.data['select_source_values'])
+			}
+			self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
+				'type': 'edit_query_available_sources_answer', 'config': data})
+
 
 	def query_handler(self, queue_event, max_result_count):
 		''' try to send simulated answers
@@ -212,6 +218,14 @@ class SplPlugin(SplThread):
 			return ['TV Wohnzimmer-S', 'TV Küche-s', 'Chromecast Büro']
 		return[]
 
+	def filter_select_values(self, value_list, actual_values):
+		'''returns list of the values of actual_values, which are included in value list
+		'''
+		res=[]
+		for value in actual_values:
+			if value in value_list:
+				res.append(value)
+		return res
 
 	def update_single_movie_clip(self, id):
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {

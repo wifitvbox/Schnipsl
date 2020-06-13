@@ -91,6 +91,9 @@
 				<v-btn icon @click="nav2Edit(item.id)">
 					<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 				</v-btn>
+				<v-btn icon @click="share(item.id)">
+					<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
+				</v-btn>
 			</v-list-item-action>
 		</v-list-item>
 	</v-card>
@@ -199,7 +202,9 @@ export default {
 		nav2Play(itemId) {
 			console.log("click for Play", itemId);
 			messenger.emit("home_play_request", { itemId: itemId });
-
+		},
+		share(itemId) {
+			console.log("click for share", itemId);
 		},
 		messenger_onMessage(type, data) {
 			console.log("incoming message to home", type, data);

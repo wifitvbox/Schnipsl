@@ -12,6 +12,7 @@ MSG_SOCKET_MSG = 'wsmsg'
 
 # all the different query types
 QUERY_FEASIBLE_DEVICES = 'feasibledevices'
-
+QUERY_AVAILABLE_SOURCES = 'availablesources'
 # limits the number of search results when do a query
 MAX_QUERY_SIZE = 40
+

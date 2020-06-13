@@ -11,22 +11,7 @@
 				</v-btn>
 
 				<v-divider vertical></v-divider>
-			</v-toolbar-items>
 			<v-spacer></v-spacer>
-			<v-toolbar-items class="hidden-sm-and-down">
-				<v-divider vertical></v-divider>
-
-				<v-btn icon>
-					<v-icon>mdi-transfer</v-icon>
-				</v-btn>
-
-				<v-divider vertical></v-divider>
-
-				<v-btn icon>
-					<v-icon>mdi-share-variant</v-icon>
-				</v-btn>
-
-				<v-divider vertical></v-divider>
 			</v-toolbar-items>
 		</v-toolbar>
 		{{$t('edit_select_header')}}
@@ -41,6 +26,7 @@
 					small-chips
 					:label="$t('edit_select_source')"
 					multiple
+					@input="edit_query_available_sources()"
 				></v-autocomplete>
 				<v-autocomplete
 					v-model="select_provider_values"
@@ -103,6 +89,7 @@
 
 <script>
 import router from "../router";
+import messenger from "../messenger";
 export default {
 	name: "Edit",
 	data: () => ({
@@ -139,6 +126,7 @@ export default {
 		}
 	},
 	created() {
+		messenger.register("edit", this.messenger_onMessage, null, null);
 		this.id = this.$route.params.id;
 		// first we fill a lookup to see which users are actual already selected
 		try {
@@ -150,7 +138,21 @@ export default {
 	methods: {
 		nav2Main() {
 			router.push({ name: "Home" }); // always goes 'back enough' to Main
-		}
+		},
+		nav2Play() {
+			console.log("nav2Play")
+		},
+		messenger_onMessage(type, data) {
+			console.log("incoming message to edit", type, data);
+			if (type == "edit_query_available_sources_answer") {
+				this.select_source_items = data.select_source_items
+				this.select_source_values = data.select_source_values
+			}
+		},
+		edit_query_available_sources() {
+			console.log("edit_query_available_sources");
+			messenger.emit("edit_query_available_sources", { select_source_values: this.select_source_values });
+		},
 	}
 };
 </script>
