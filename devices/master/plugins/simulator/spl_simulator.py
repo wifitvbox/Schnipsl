@@ -3,6 +3,10 @@
 
 
 # Standard module
+from messagehandler import Query
+from classes import MovieInfo
+import defaults
+from splthread import SplThread
 import sys
 import os
 import threading
@@ -26,13 +30,6 @@ ScriptPath = os.path.realpath(os.path.join(
 sys.path.append(os.path.abspath(ScriptPath))
 # own local modules
 
-from splthread import SplThread
-import defaults
-from classes import MovieInfo
-from messagehandler import Query
-
-
-
 
 class SplPlugin(SplThread):
 
@@ -42,8 +39,10 @@ class SplPlugin(SplThread):
 		self.modref = modref
 
 		super().__init__(modref.message_handler, self)
-		modref.message_handler.add_event_handler('simulator', 0, self.event_listener)
-		modref.message_handler.add_query_handler('simulator', 0, self.query_handler)
+		modref.message_handler.add_event_handler(
+			'simulator', 0, self.event_listener)
+		modref.message_handler.add_query_handler(
+			'simulator', 0, self.query_handler)
 		self.runFlag = True
 		self.play_time = 0
 		self.play_total_secs = 90*60
@@ -58,9 +57,10 @@ class SplPlugin(SplThread):
 			'1': {
 				'type': 'template',
 				'movie_info': MovieInfo(
-						'Titel-S',
-						'Typ',
-						'Quelle',
+					'1',
+					'Titel-S',
+					'Typ',
+					'Quelle',
 					'Datum',
 					'Dauer',
 					'geschaut',
@@ -70,9 +70,10 @@ class SplPlugin(SplThread):
 			'2': {
 				'type': 'template',
 				'movie_info': MovieInfo(
-						'Titel-2-S',
-						'Typ',
-						'Quelle',
+					'2',
+					'Titel-2-S',
+					'Typ',
+					'Quelle',
 					'Datum',
 					'Dauer',
 					'geschaut',
@@ -82,9 +83,10 @@ class SplPlugin(SplThread):
 			'3': {
 				'type': 'record',
 				'movie_info': MovieInfo(
-						'Titel-Record-S',
-						'Typ',
-						'Quelle',
+					'3',
+					'Titel-Record-S',
+					'Typ',
+					'Quelle',
 					'Datum',
 					'Dauer',
 					'geschaut',
@@ -94,9 +96,10 @@ class SplPlugin(SplThread):
 			'4': {
 				'type': 'streams',
 				'movie_info': MovieInfo(
+						'4',
 						'Titel-Stream-S',
 						'Typ',
-						'Quelle',
+					'Quelle',
 					'Datum',
 					'Dauer',
 					'geschaut',
@@ -106,9 +109,10 @@ class SplPlugin(SplThread):
 			'5': {
 				'type': 'timer',
 				'movie_info': MovieInfo(
-						'Titel-Timer-S',
-						'Typ',
-						'Quelle',
+					'5',
+					'Titel-Timer-S',
+					'Typ',
+					'Quelle',
 					'Datum',
 					'Dauer',
 					'geschaut',
@@ -168,13 +172,12 @@ class SplPlugin(SplThread):
 				new_event = copy.copy(queue_event)
 				new_event.type = defaults.MSG_SOCKET_MSG
 				new_event.data = {
-					'type': 'home_movie_info_list', 'config': self.prepare_movie_list()}
+					'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_LIST, 'config': self.prepare_movie_list()}
 				print("new_event", new_event.data['config'])
 				self.modref.message_handler.queue_event_obj(new_event)
 				self.update_single_movie_clip('1')
 
-
-		if queue_event.type == 'player_key':
+		if queue_event.type == defaults.MSG_SOCKET_PLAYER_KEY:
 			if queue_event.data['keyid'] == 'prev':
 				self.play_time = 0
 			if queue_event.data['keyid'] == 'minus10':
@@ -191,29 +194,59 @@ class SplPlugin(SplThread):
 				self.play_time = self.play_total_secs
 				self.player_info['play'] = False
 			self.send_player_status()
-		if queue_event.type == 'player_time':
+		if queue_event.type == defaults.MSG_SOCKET_PLAYER_TIME:
 			self.play_time = queue_event.data['timer_pos'] * \
 				self.play_total_secs//100
-		if queue_event.type == 'home_play_request':
+		if queue_event.type == defaults.MSG_SOCKET_HOME_PLAY_REQUEST:
 			#self.send_player_devices(['TV Wohnzimmer-S', 'TV Küche-s', 'Chromecast Büro'])
-			feasible_devices= self.modref.message_handler.query(Query(queue_event.user,defaults.QUERY_FEASIBLE_DEVICES,queue_event.data['itemId']))
+			feasible_devices = self.modref.message_handler.query(Query(
+				queue_event.user, defaults.QUERY_FEASIBLE_DEVICES, queue_event.data['itemId']))
 			self.send_player_devices(feasible_devices)
 			self.play_request(queue_event.data['itemId'])
-		if queue_event.type == 'edit_query_available_sources':
-			available_sources= self.modref.message_handler.query(Query(queue_event.user,defaults.QUERY_AVAILABLE_SOURCES,None))
+		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_SOURCES:
+			available_items = self.modref.message_handler.query(
+				Query(queue_event.user, defaults.QUERY_AVAILABLE_SOURCES, None))
 			# we set the device info
 			data = {
-				'select_source_items': available_sources,
-				'select_source_values': self.filter_select_values(available_sources,queue_event.data['select_source_values'])
+				'select_items': available_items,
+				'select_values': self.filter_select_values(available_items, queue_event.data['select_source_values'])
 			}
 			self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
-				'type': 'edit_query_available_sources_answer', 'config': data})
+				'type': defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_SOURCES_ANSWER, 'config': data})
 
+		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_PROVIDERS:
+			available_items = self.modref.message_handler.query(
+				Query(queue_event.user, defaults.QUERY_AVAILABLE_PROVIDERS, queue_event.data))
+			# we set the device info
+			data = {
+				'select_items': available_items,
+				'select_values': self.filter_select_values(available_items, queue_event.data['select_provider_values'])
+			}
+			self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
+				'type': defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_PROVIDERS_ANSWER, 'config': data})
+
+		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_CATEGORIES:
+			available_items = self.modref.message_handler.query(
+				Query(queue_event.user, defaults.QUERY_AVAILABLE_CATEGORIES, queue_event.data))
+			# we set the device info
+			data = {
+				'select_items': available_items,
+				'select_values': self.filter_select_values(available_items, queue_event.data['select_category_values'])
+			}
+			self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
+				'type': defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_CATEGORIES_ANSWER, 'config': data})
+
+		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_MOVIES:
+			movie_list = self.modref.message_handler.query(
+				Query(queue_event.user, defaults.QUERY_AVAILABLE_MOVIES, queue_event.data))
+			self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
+				'type': defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_MOVIES_ANSWER, 'config': movie_list})
 
 	def query_handler(self, queue_event, max_result_count):
 		''' try to send simulated answers
 		'''
-		print("simulator query handler", queue_event.type, queue_event.user,max_result_count)
+		print("simulator query handler", queue_event.type,
+			  queue_event.user, max_result_count)
 		if queue_event.type == defaults.QUERY_FEASIBLE_DEVICES:
 			return ['TV Wohnzimmer-S', 'TV Küche-s', 'Chromecast Büro']
 		return[]
@@ -221,7 +254,7 @@ class SplPlugin(SplThread):
 	def filter_select_values(self, value_list, actual_values):
 		'''returns list of the values of actual_values, which are included in value list
 		'''
-		res=[]
+		res = []
 		for value in actual_values:
 			if value in value_list:
 				res.append(value)
@@ -229,7 +262,7 @@ class SplPlugin(SplThread):
 
 	def update_single_movie_clip(self, id):
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
-			'type': 'home_movie_info_update', 'config': {'id':id, 'movie_info':self.movielist[id]}})
+			'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_UPDATE, 'config': {'id': id, 'movie_info': self.movielist[id]}})
 
 	def send_player_status(self):
 		self.player_info['position'] = self.play_time * \
@@ -241,18 +274,18 @@ class SplPlugin(SplThread):
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
 			'type': 'app_player_pos', 'config': self.player_info})
 
-	def send_player_devices(self,devices):
+	def send_player_devices(self, devices):
 		# we set the device info
 		data = {
 			'actual_device': '',
 			'devices': devices,
 		}
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
-			'type': 'app_device_info', 'config': data})
+			'type': defaults.MSG_SOCKET_QUERY_FEASIBLE_DEVICES_ANSWER, 'config': data})
 
 	def play_request(self, id):
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
-			'type': 'app_movie_info', 'config': self.movielist[id]['movie_info']})
+			'type': defaults.MSG_SOCKET_APP_MOVIE_INFO, 'config': self.movielist[id]['movie_info']})
 
 	def _run(self):
 		''' starts the server

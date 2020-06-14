@@ -1,6 +1,4 @@
 <template>
-
-
 	<!-- Grid card layout für die gefundenen Einträge? Kuckst Du hier https://codepen.io/munieru_jp/pen/jpdJNV-->
 
 	<v-card max-width="600" class="mx-auto">
@@ -11,7 +9,7 @@
 				</v-btn>
 
 				<v-divider vertical></v-divider>
-			<v-spacer></v-spacer>
+				<v-spacer></v-spacer>
 			</v-toolbar-items>
 		</v-toolbar>
 		{{$t('edit_select_header')}}
@@ -36,31 +34,33 @@
 					small-chips
 					:label="$t('edit_select_provider')"
 					multiple
+					@input="edit_query_available_providers()"
 				></v-autocomplete>
 				<v-autocomplete
-					v-model="select_categorie_values"
-					:items="select_categorie_items"
+					v-model="select_category_values"
+					:items="select_category_items"
 					outlined
 					chips
 					small-chips
-					:label="$t('edit_select_categorie')"
+					:label="$t('edit_select_category')"
 					multiple
+					@input="edit_query_available_categories()"
 				></v-autocomplete>
 				<v-text-field v-model="select_title" :label="$t('edit_select_title')"></v-text-field>
-				<v-text-field v-model="select_content" :label="$t('edit_select_content')"></v-text-field>
+				<v-text-field v-model="select_description" :label="$t('edit_select_description')"></v-text-field>
 			</v-form>
-			<v-btn icon>
+			<v-btn icon @click="edit_query_available_movies()">
 				<v-icon>mdi-magnify</v-icon>
 			</v-btn>
 		</v-col>
 		<v-divider></v-divider>
 		<v-list>
-			<v-list-item v-for="item in items" :key="item.title" @click="nav2Play(item.title)">
+			<v-list-item v-for="movie_info in movie_info_list" :key="movie_info.id" @click="nav2Play(movie_info.id)">
+				<!--v-card class="mx-auto" max-width="344"-->
 				<v-card class="mx-auto" max-width="344">
+					<v-card-title>{{movie_info.title +' • '+ movie_info.category}}</v-card-title>
 
-					<v-card-title>{{"item.title"}}</v-card-title>
-
-					<v-card-subtitle>1,000 miles of wonder</v-card-subtitle>
+					<v-card-subtitle>{{movie_info.source +' • '+ movie_info.date +' • '+ movie_info.duration +' • '+ movie_info.viewed}}</v-card-subtitle>
 
 					<v-card-actions>
 						<v-btn icon class="mx-4">
@@ -69,16 +69,16 @@
 
 						<v-spacer></v-spacer>
 
-						<v-btn icon @click="show = !show">
+						<v-btn icon @click="movie_info.description_show = !movie_info.description_show">
 							<v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
 						</v-btn>
 					</v-card-actions>
 
 					<v-expand-transition>
-						<div v-show="show">
+						<div v-show="movie_info.description_show">
 							<v-divider></v-divider>
 
-							<v-card-text>I'm a thing. But, like most politicians, he promised more than he could deliver. You won't have time for sleeping, soldier, not with all the bed making you'll be doing. Then we'll go with that data file! Hey, you add a one and two zeros to that or we walk! You're going to do his laundry? I've got to find a way to escape.</v-card-text>
+							<v-card-text>{{movie_info.description}}</v-card-text>
 						</div>
 					</v-expand-transition>
 				</v-card>
@@ -99,24 +99,31 @@ export default {
 		select_source_values: ["Mediathek", "TV"],
 		select_provider_items: ["ARD", "ZDF", "ARTE", "3SAT"],
 		select_provider_values: ["ARD", "3SAT"],
-		select_categorie_items: ["Krimi", "Fantasie", "Action", "Doku"],
-		select_categorie_values: ["Doku"],
+		select_category_items: ["Krimi", "Fantasie", "Action", "Doku"],
+		select_category_values: ["Doku"],
 		value: null,
-		select_title: "The wall",
-		select_content: "Koralle",
+		select_title: "37",
+		select_description: "",
 		show: false,
-		items: [
+		movie_info_list: [
 			{
-				icon: "mdi-magnify",
-				iconClass: "grey lighten-1 white--text",
-				title: "Photos1",
-				subtitle: "Jan 9, 2014"
+				id: "1",
+				title: "Titel-A",
+				category: "Typ",
+				source: "Quelle",
+				date: "Datum",
+				duration: "Dauer",
+				viewed: "geschaut"
 			},
 			{
-				icon: "mdi-magnify",
-				iconClass: "grey lighten-1 white--text",
-				title: "Photos2",
-				subtitle: "Jan 9, 2014"
+				id: "2",
+
+				title: "Titel-2",
+				category: "Typ",
+				source: "Quelle",
+				date: "Datum",
+				duration: "Dauer",
+				viewed: "geschaut"
 			}
 		]
 	}),
@@ -140,19 +147,57 @@ export default {
 			router.push({ name: "Home" }); // always goes 'back enough' to Main
 		},
 		nav2Play() {
-			console.log("nav2Play")
+			console.log("nav2Play");
 		},
 		messenger_onMessage(type, data) {
 			console.log("incoming message to edit", type, data);
 			if (type == "edit_query_available_sources_answer") {
-				this.select_source_items = data.select_source_items
-				this.select_source_values = data.select_source_values
+				this.select_source_items = data.select_items;
+				this.select_source_values = data.select_values;
+			}
+			if (type == "edit_query_available_providers_answer") {
+				this.select_provider_items = data.select_items;
+				this.select_provider_values = data.select_values;
+			}
+			if (type == "edit_query_available_categories_answer") {
+				this.select_category_items = data.select_items;
+				this.select_category_values = data.select_values;
+			}
+			if (type == "edit_query_available_movies_answer") {
+				this.movie_info_list = data;
 			}
 		},
 		edit_query_available_sources() {
 			console.log("edit_query_available_sources");
-			messenger.emit("edit_query_available_sources", { select_source_values: this.select_source_values });
+			messenger.emit("edit_query_available_sources", {
+				select_source_values: this.select_source_values
+			});
 		},
+		edit_query_available_providers() {
+			console.log("edit_query_available_providers");
+			messenger.emit("edit_query_available_providers", {
+				select_source_values: this.select_source_values,
+				select_provider_values: this.select_provider_values
+			});
+		},
+		edit_query_available_categories() {
+			console.log("edit_query_available_categories");
+			messenger.emit("edit_query_available_categories", {
+				select_source_values: this.select_source_values,
+				select_provider_values: this.select_provider_values,
+				select_category_values: this.select_category_values
+			});
+		},
+		edit_query_available_movies() {
+			console.log("edit_query_available_movies");
+			messenger.emit("edit_query_available_movies", {
+				select_source_values: this.select_source_values,
+				select_provider_values: this.select_provider_values,
+				select_category_values: this.select_category_values,
+				select_title: this.select_title,
+				select_description: this.select_description
+			});
+		}
 	}
 };
 </script>

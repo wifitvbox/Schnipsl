@@ -3,10 +3,6 @@
 
 
 # Standard module
-from messagehandler import Query
-from classes import MovieInfo
-import defaults
-from splthread import SplThread
 import sys
 import os
 import threading
@@ -35,11 +31,16 @@ ScriptPath = os.path.realpath(os.path.join(
 sys.path.append(os.path.abspath(ScriptPath))
 # own local modules
 
-from classes import Source
+from messagehandler import Query
+from classes import MovieInfo
+from classes import Movie
+import defaults
+from splthread import SplThread
 
 
 class SplPlugin(SplThread):
 	plugin_id='mediathek_ard'
+	plugin_names=['Öffi Mediathek','LiveTV']
 
 	def __init__(self, modref):
 		''' creates the simulator
@@ -55,7 +56,7 @@ class SplPlugin(SplThread):
 
 		##### plugin specific stuff
 		self.providers=set()
-		self.sources={}
+		self.movies={}
 
 	def event_listener(self, queue_event):
 		''' react on events
@@ -68,7 +69,53 @@ class SplPlugin(SplThread):
 		print("mediathek_ard query handler", queue_event.type,
 		      queue_event.user, max_result_count)
 		if queue_event.type == defaults.QUERY_AVAILABLE_SOURCES:
-			return ['Öffi Mediathek']
+			return self.plugin_names
+		if queue_event.type == defaults.QUERY_AVAILABLE_PROVIDERS:
+			res=[]
+			for plugin_name in self.plugin_names:
+				if plugin_name  in queue_event.params['select_source_values']: # this plugin is one of the wanted
+					for provider in self.providers:
+						if max_result_count>0:
+							res.append(provider)
+							max_result_count-=1
+						else:
+							return res # maximal number of results reached
+			return res
+		if queue_event.type == defaults.QUERY_AVAILABLE_CATEGORIES:
+			# just do nothing, the mediathek does not have categories
+			pass
+		if queue_event.type == defaults.QUERY_AVAILABLE_MOVIES:
+			res=[]
+			titles=queue_event.params['select_title'].split()
+			descriptions=queue_event.params['select_description'].split()
+			for plugin_name in self.plugin_names:
+				if plugin_name in queue_event.params['select_source_values']: # this plugin is one of the wanted
+					for movie in self.movies[plugin_name].values():
+						if movie.provider in queue_event.params['select_provider_values']:
+							if titles:
+								found=False
+								for title in titles:
+									if title.lower() in movie.title.lower():
+										found=True
+									if title.lower() in movie.category.lower():
+										found=True
+								if not found:
+									continue
+							if descriptions:
+								found=False
+								for description in descriptions:
+									if description.lower() in movie.description.lower():
+										found=True
+								if not found:
+									continue
+								
+
+							if max_result_count>0:
+								res.append(MovieInfo.movie_to_movie_info(movie,'','0%'))
+								max_result_count-=1
+							else:
+								return res # maximal number of results reached
+			return res
 		return[]
 
 	def _run(self):
@@ -83,14 +130,10 @@ class SplPlugin(SplThread):
 		self.runFlag = False
 
 	def load_filmlist(self, file_name):
-		loader_remember_data={'provider':'','channel':''}
+		loader_remember_data={'provider':'','category':''}
 		with open('/home/steffen//Desktop/workcopies/schnipsl/Filmliste-akt') as data:
 			for liste in JsonSlicer(data, ('X'), path_mode='map_keys'):
-				self.add_film(liste[1],loader_remember_data)
-
-		print("filmlist loaded")
-
-	def add_film(self, data_array,loader_remember_data):
+				data_array=liste[1]
 				# "Sender"	0,
 				# "Thema" 	1,
 				# "Titel"	2,
@@ -111,27 +154,33 @@ class SplPlugin(SplThread):
 				# "Url History"		17,
 				# "Geo"				18,
 				# "neu"				19
-		provider=data_array[0]
-		channel=data_array[1]
-		if provider:
-			loader_remember_data['provider']=provider
-		else:
-			provider=loader_remember_data['provider']
-		if channel:
-			loader_remember_data['channel']=channel
-		else:
-			channel=loader_remember_data['channel']
+				provider=data_array[0]
+				category=data_array[1]
+				if provider:
+					loader_remember_data['provider']=provider
+				else:
+					provider=loader_remember_data['provider']
+				if category:
+					loader_remember_data['category']=category
+				else:
+					category=loader_remember_data['category']
 
-		self.providers.add(provider)
-		new_source = Source(
-			source=self.plugin_id,
-			provider=provider,
-			channel=channel,
-			title=data_array[2],
-			timestamp=data_array[16],
-			duration=data_array[5],
-			description=data_array[7],
-			url=data_array[8]
-		)
-		new_source.add_stream('mp4','',data_array[8])
-		self.sources[new_source.uri()]=new_source
+				self.providers.add(provider)
+				new_movie = Movie(
+					source=self.plugin_id,
+					provider=provider,
+					category=category,
+					title=data_array[2],
+					timestamp=data_array[16],
+					duration=data_array[5],
+					description=data_array[7],
+					url=data_array[8]
+				)
+				new_movie.add_stream('mp4','',data_array[8])
+				plugin_name=self.plugin_names[0]
+				if not plugin_name in self.movies:
+					self.movies[plugin_name]={}
+				self.movies[plugin_name][new_movie.uri()]=new_movie
+
+
+		print("filmlist loaded")

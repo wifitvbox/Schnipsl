@@ -6,7 +6,21 @@ class MovieInfo(dict):
 	'''helper class to store the movie clips information to sent to the client
 	'''
 
-	def __init__(self, title, category, source, date, duration, viewed, description):
+	@classmethod
+	def movie_to_movie_info(cls,movie,movie_type,played):
+		return MovieInfo(
+					movie.uri(),
+					movie.title,
+					movie_type,
+					movie.source,
+					movie.timestamp,
+					movie.duration,
+					played,
+					movie.description
+				)
+
+	def __init__(self, id, title, category, source, date, duration, viewed, description):
+		self['id'] = id
 		self['title'] = title
 		self['category'] = category
 		self['source'] = source
@@ -14,15 +28,16 @@ class MovieInfo(dict):
 		self['duration'] = duration
 		self['viewed'] = viewed
 		self['description'] = description
+		self['description_show'] = False
 
-class Source:
+class Movie:
 	'''object holds all information about a movie clip source
 	'''
 	def __init__(
 		self,
 		source='',
 		provider='',
-		channel='',
+		category='',
 		title='',
 		timestamp='',
 		duration='',
@@ -31,7 +46,7 @@ class Source:
 		):
 		self.source=source
 		self.provider=provider
-		self.channel=channel
+		self.category=category
 		self.title=title
 		self.timestamp=timestamp
 		self.duration=duration

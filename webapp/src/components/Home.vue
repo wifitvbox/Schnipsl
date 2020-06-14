@@ -73,29 +73,29 @@
 					</v-btn>
 				</v-list-item-action>
 			</v-list-item>
+			<v-subheader inset>{{ $t('main_timers') }}</v-subheader>
+			<v-list-item v-for="item in movie_info_list.timers" :key="item.id" @click="nav2Play(item.id)">
+				<v-list-item-avatar>
+					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
+				</v-list-item-avatar>
+
+				<v-list-item-content>
+					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
+					<v-list-item-subtitle
+						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
+					></v-list-item-subtitle>
+				</v-list-item-content>
+
+				<v-list-item-action>
+					<v-btn icon @click="nav2Edit(item.id)">
+						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
+					</v-btn>
+					<v-btn icon @click="share(item.id)">
+						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
+					</v-btn>
+				</v-list-item-action>
+			</v-list-item>
 		</v-list>
-		<v-subheader inset>{{ $t('main_timers') }}</v-subheader>
-		<v-list-item v-for="item in movie_info_list.timers" :key="item.id" @click="nav2Play(item.id)">
-			<v-list-item-avatar>
-				<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
-			</v-list-item-avatar>
-
-			<v-list-item-content>
-				<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
-				<v-list-item-subtitle
-					v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
-				></v-list-item-subtitle>
-			</v-list-item-content>
-
-			<v-list-item-action>
-				<v-btn icon @click="nav2Edit(item.id)">
-					<v-icon color="grey lighten-1">mdi-pencil</v-icon>
-				</v-btn>
-				<v-btn icon @click="share(item.id)">
-					<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
-				</v-btn>
-			</v-list-item-action>
-		</v-list-item>
 	</v-card>
 </template>
 
@@ -212,36 +212,36 @@ export default {
 				this.movie_info_list = data;
 			}
 			if (type == "home_movie_info_update") {
-				var id=data.id
+				var id = data.id;
 				this.movie_info_list.records.forEach(function(movie_info) {
-					if (movie_info.id==id){
+					if (movie_info.id == id) {
 						//replace movie_info
-						console.log('home_movie_info_update records')
-						movie_info.movie_info=data.movie_info.movie_info
+						console.log("home_movie_info_update records");
+						movie_info.movie_info = data.movie_info.movie_info;
 					}
 				});
 				this.movie_info_list.streams.forEach(function(movie_info) {
-					if (movie_info.id==id){
+					if (movie_info.id == id) {
 						//replace movie_info
-						console.log('home_movie_info_update streams')
-						movie_info.movie_info=data.movie_info.movie_info
+						console.log("home_movie_info_update streams");
+						movie_info.movie_info = data.movie_info.movie_info;
 					}
 				});
 				this.movie_info_list.templates.forEach(function(movie_info) {
-					if (movie_info.id==id){
+					if (movie_info.id == id) {
 						//replace movie_info
-						console.log('home_movie_info_update templates')
-						movie_info.movie_info=data.movie_info.movie_info
+						console.log("home_movie_info_update templates");
+						movie_info.movie_info = data.movie_info.movie_info;
 					}
 				});
 				this.movie_info_list.timers.forEach(function(movie_info) {
-					if (movie_info.id==id){
+					if (movie_info.id == id) {
 						//replace movie_info
-						console.log('home_movie_info_update timers')
-						movie_info.movie_info=data.movie_info.movie_info
+						console.log("home_movie_info_update timers");
+						movie_info.movie_info = data.movie_info.movie_info;
 					}
 				});
- 
+
 				this.movie_info_list[data.id] = data;
 			}
 		},
