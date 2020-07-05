@@ -7,7 +7,7 @@
 
 			<v-spacer></v-spacer>
 
-			<v-btn icon>
+			<v-btn icon @click="nav2Edit(0)">
 				<v-icon>mdi-plus-circle</v-icon>
 			</v-btn>
 		</v-toolbar>
@@ -31,6 +31,9 @@
 					<v-btn icon @click="nav2Edit(item.id)">
 						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
+					<v-btn icon @click="share(item.id)">
+						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
+					</v-btn>
 				</v-list-item-action>
 			</v-list-item>
 
@@ -51,6 +54,9 @@
 					<v-btn icon @click="nav2Edit(item.id)">
 						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
+					<v-btn icon @click="share(item.id)">
+						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
+					</v-btn>
 				</v-list-item-action>
 			</v-list-item>
 
@@ -70,6 +76,9 @@
 				<v-list-item-action>
 					<v-btn icon @click="nav2Edit(item.id)">
 						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
+					</v-btn>
+					<v-btn icon @click="share(item.id)">
+						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
 					</v-btn>
 				</v-list-item-action>
 			</v-list-item>

@@ -8,6 +8,7 @@ WEB_ROOT_DIR = '../../webapp/dist'
 # all the different message types
 MSG_SOCKET_CONNECT = 'wsconnect'
 MSG_SOCKET_CLOSE = 'wsclose'
+MSG_SOCKET_EDIT_PLAY_REQUEST = 'edit_play_request'
 MSG_SOCKET_MSG = 'wsmsg'
 MSG_SOCKET_HOME_MOVIE_INFO_LIST = 'home_movie_info_list'
 MSG_SOCKET_HOME_MOVIE_INFO_UPDATE = 'home_movie_info_update'
@@ -32,6 +33,7 @@ QUERY_AVAILABLE_SOURCES = 'availablesources'
 QUERY_AVAILABLE_PROVIDERS = 'availableproviders'
 QUERY_AVAILABLE_CATEGORIES = 'availablecategories'
 QUERY_AVAILABLE_MOVIES = 'availablemovies'
+QUERY_MOVIE_ID = 'movieid'
 
 # limits the number of search results when do a query
 MAX_QUERY_SIZE = 40

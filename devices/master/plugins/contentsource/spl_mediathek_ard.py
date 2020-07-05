@@ -84,6 +84,12 @@ class SplPlugin(SplThread):
 		if queue_event.type == defaults.QUERY_AVAILABLE_CATEGORIES:
 			# just do nothing, the mediathek does not have categories
 			pass
+		if queue_event.type == defaults.QUERY_MOVIE_ID:
+			elements=queue_event.params.split(':')
+			try:
+				return [self.movies[elements[0]][queue_event.params]]
+			except:
+				return []
 		if queue_event.type == defaults.QUERY_AVAILABLE_MOVIES:
 			res=[]
 			titles=queue_event.params['select_title'].split()
@@ -167,7 +173,7 @@ class SplPlugin(SplThread):
 
 				self.providers.add(provider)
 				new_movie = Movie(
-					source=self.plugin_id,
+					source=self.plugin_names[0],
 					provider=provider,
 					category=category,
 					title=data_array[2],

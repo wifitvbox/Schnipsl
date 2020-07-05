@@ -56,6 +56,7 @@ class SplPlugin(SplThread):
 		self.movielist = {
 			'1': {
 				'type': 'template',
+				'clients':{'uschi':{},'steffen':{}},
 				'movie_info': MovieInfo(
 					'1',
 					'Titel-S',
@@ -69,6 +70,7 @@ class SplPlugin(SplThread):
 			},
 			'2': {
 				'type': 'template',
+				'clients':{'uschi':{}},
 				'movie_info': MovieInfo(
 					'2',
 					'Titel-2-S',
@@ -82,6 +84,7 @@ class SplPlugin(SplThread):
 			},
 			'3': {
 				'type': 'record',
+				'clients':{'uschi':{},'steffen':{}},
 				'movie_info': MovieInfo(
 					'3',
 					'Titel-Record-S',
@@ -95,6 +98,7 @@ class SplPlugin(SplThread):
 			},
 			'4': {
 				'type': 'streams',
+				'clients':{'uschi':{},'steffen':{}},
 				'movie_info': MovieInfo(
 						'4',
 						'Titel-Stream-S',
@@ -108,6 +112,7 @@ class SplPlugin(SplThread):
 			},
 			'5': {
 				'type': 'timer',
+				'clients':{'uschi':{},'steffen':{}},
 				'movie_info': MovieInfo(
 					'5',
 					'Titel-Timer-S',
@@ -121,9 +126,13 @@ class SplPlugin(SplThread):
 			}
 		}
 
-	def prepare_movie_list(self):
+	def prepare_movie_list(self,user):
+		''' prepares the list of the user movies to display on the client in the main window
+		'''
 		res = {'templates': [], 'records': [], 'streams': [], 'timers': []}
 		for id, movie in self.movielist.items():
+			if not user.name in movie['clients']:
+				continue
 			if movie['type'] == 'template':
 				res['templates'].append(
 					{
@@ -172,7 +181,7 @@ class SplPlugin(SplThread):
 				new_event = copy.copy(queue_event)
 				new_event.type = defaults.MSG_SOCKET_MSG
 				new_event.data = {
-					'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_LIST, 'config': self.prepare_movie_list()}
+					'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_LIST, 'config': self.prepare_movie_list(queue_event.user)}
 				print("new_event", new_event.data['config'])
 				self.modref.message_handler.queue_event_obj(new_event)
 				self.update_single_movie_clip('1')
@@ -203,6 +212,13 @@ class SplPlugin(SplThread):
 				queue_event.user, defaults.QUERY_FEASIBLE_DEVICES, queue_event.data['itemId']))
 			self.send_player_devices(feasible_devices)
 			self.play_request(queue_event.data['itemId'])
+		if queue_event.type == defaults.MSG_SOCKET_EDIT_PLAY_REQUEST:
+			itemId= self.update_movie_list(queue_event)
+			if itemId:
+				feasible_devices = self.modref.message_handler.query(Query(
+					queue_event.user, defaults.QUERY_FEASIBLE_DEVICES,itemId))
+				self.send_player_devices(feasible_devices)
+				self.play_request(itemId)
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_SOURCES:
 			available_items = self.modref.message_handler.query(
 				Query(queue_event.user, defaults.QUERY_AVAILABLE_SOURCES, None))
@@ -250,6 +266,39 @@ class SplPlugin(SplThread):
 		if queue_event.type == defaults.QUERY_FEASIBLE_DEVICES:
 			return ['TV Wohnzimmer-S', 'TV Küche-s', 'Chromecast Büro']
 		return[]
+
+	def update_movie_list(self, queue_event):
+		movie_list = self.modref.message_handler.query(
+			Query(queue_event.user, defaults.QUERY_MOVIE_ID, queue_event.data['movie_info_id']))
+		if movie_list:
+			## TODO
+			# ist es ein Live- Movie? Dann wird es als Live- Schnipsl angehängt
+			# ist es ein benamter Quick-Search? Gibt es ihn schon oder ist er neu?
+			# ist ein normaler Stream?
+			# ist es ein Record- Eintrag?
+			if queue_event.data['movie_info_id'] in self.movielist: # an existing entry was edited
+				pass
+			new_entry={
+				'type': 'stream',
+				'edit_params': {},
+				'clients':{},
+
+				'movie_info': MovieInfo(
+					queue_event.data['movie_info_id'], #id
+					movie_list[0].title, #title
+					movie_list[0].category, #type
+					movie_list[0].provider, #source
+					movie_list[0].timestamp, #date
+					movie_list[0].duration, #duration
+					'0%', #viewed
+					movie_list[0].description #description
+				)
+			}
+			new_entry['clients'][queue_event.user.name]={}
+			self.movielist[queue_event.data['movie_info_id']]=new_entry
+			return queue_event.data['movie_info_id']
+		else:
+			return None
 
 	def filter_select_values(self, value_list, actual_values):
 		'''returns list of the values of actual_values, which are included in value list

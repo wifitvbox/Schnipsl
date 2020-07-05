@@ -55,7 +55,7 @@
 		</v-col>
 		<v-divider></v-divider>
 		<v-list>
-			<v-list-item v-for="movie_info in movie_info_list" :key="movie_info.id" @click="nav2Play(movie_info.id)">
+			<v-list-item v-for="movie_info in movie_info_list" :key="movie_info.id" @click="requestPlay(movie_info.id)">
 				<!--v-card class="mx-auto" max-width="344"-->
 				<v-card class="mx-auto" max-width="344">
 					<v-card-title>{{movie_info.title +' • '+ movie_info.category}}</v-card-title>
@@ -146,8 +146,19 @@ export default {
 		nav2Main() {
 			router.push({ name: "Home" }); // always goes 'back enough' to Main
 		},
-		nav2Play() {
-			console.log("nav2Play");
+		requestPlay(movie_info_id) {
+			console.log("requestPlay",movie_info_id)
+			messenger.emit("edit_play_request", {
+				edit_id: this.id,
+				select_name: this.select_name,
+				select_source_values: this.select_source_values,
+				select_provider_values: this.select_provider_values,
+				select_category_values: this.select_category_values,
+				select_title: this.select_title,
+				select_description: this.select_description,
+				movie_info_id: movie_info_id
+			})
+			this.nav2Main();
 		},
 		messenger_onMessage(type, data) {
 			console.log("incoming message to edit", type, data);
