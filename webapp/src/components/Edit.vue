@@ -15,10 +15,10 @@
 		{{$t('edit_select_header')}}
 		<v-col cols="12">
 			<v-form ref="edit_select">
-				<v-text-field v-model="select_name" :label="$t('edit_select_name')"></v-text-field>
+				<v-text-field v-model="query.name" :label="$t('edit_select_name')"></v-text-field>
 				<v-autocomplete
-					v-model="select_source_values"
-					:items="select_source_items"
+					v-model="query.source_values"
+					:items="query.source_items"
 					outlined
 					chips
 					small-chips
@@ -27,8 +27,8 @@
 					@input="edit_query_available_sources()"
 				></v-autocomplete>
 				<v-autocomplete
-					v-model="select_provider_values"
-					:items="select_provider_items"
+					v-model="query.provider_values"
+					:items="query.provider_items"
 					outlined
 					chips
 					small-chips
@@ -37,8 +37,8 @@
 					@input="edit_query_available_providers()"
 				></v-autocomplete>
 				<v-autocomplete
-					v-model="select_category_values"
-					:items="select_category_items"
+					v-model="query.category_values"
+					:items="query.category_items"
 					outlined
 					chips
 					small-chips
@@ -46,8 +46,8 @@
 					multiple
 					@input="edit_query_available_categories()"
 				></v-autocomplete>
-				<v-text-field v-model="select_title" :label="$t('edit_select_title')"></v-text-field>
-				<v-text-field v-model="select_description" :label="$t('edit_select_description')"></v-text-field>
+				<v-text-field v-model="query.title" :label="$t('edit_select_title')"></v-text-field>
+				<v-text-field v-model="query.description" :label="$t('edit_select_description')"></v-text-field>
 			</v-form>
 			<v-btn icon @click="edit_query_available_movies()">
 				<v-icon>mdi-magnify</v-icon>
@@ -94,16 +94,17 @@ export default {
 	name: "Edit",
 	data: () => ({
 		id: 0,
-		select_name: "Dokumentationen",
-		select_source_items: ["TV", "Mediathek", "Podcasts", "YouTube"],
-		select_source_values: ["Mediathek", "TV"],
-		select_provider_items: ["ARD", "ZDF", "ARTE", "3SAT"],
-		select_provider_values: ["ARD", "3SAT"],
-		select_category_items: ["Krimi", "Fantasie", "Action", "Doku"],
-		select_category_values: ["Doku"],
-		value: null,
-		select_title: "37",
-		select_description: "",
+		query : {
+		name: "Dokumentationen",
+		source_items: ["TV", "Mediathek", "Podcasts", "YouTube"],
+		source_values: ["Mediathek", "TV"],
+		provider_items: ["ARD", "ZDF", "ARTE", "3SAT"],
+		provider_values: ["ARD", "3SAT"],
+		category_items: ["Krimi", "Fantasie", "Action", "Doku"],
+		category_values: ["Doku"],
+		title: "37",
+		description: ""
+		},
 		show: false,
 		movie_info_list: [
 			{
@@ -135,7 +136,25 @@ export default {
 	created() {
 		messenger.register("edit", this.messenger_onMessage, null, null);
 		this.id = this.$route.params.id;
-		// first we fill a lookup to see which users are actual already selected
+		if (this.$route.params.query){
+			this.query=this.$route.params.query
+		}else{
+			this.query={
+				name: "",
+				source_items: [],
+				source_values: [],
+				provider_items: [],
+				provider_values: [],
+				category_items: [],
+				category_values: [],
+				title: "",
+				description: ""
+			}
+		}
+		this.edit_query_available_sources()
+		this.edit_query_available_providers()
+		this.edit_query_available_categories()
+		
 		try {
 			console.log("Edit loaded");
 		} catch (error) {
@@ -150,12 +169,7 @@ export default {
 			console.log("requestPlay",movie_info_id)
 			messenger.emit("edit_play_request", {
 				edit_id: this.id,
-				select_name: this.select_name,
-				select_source_values: this.select_source_values,
-				select_provider_values: this.select_provider_values,
-				select_category_values: this.select_category_values,
-				select_title: this.select_title,
-				select_description: this.select_description,
+				query: this.query,
 				movie_info_id: movie_info_id
 			})
 			this.nav2Main();
@@ -163,16 +177,19 @@ export default {
 		messenger_onMessage(type, data) {
 			console.log("incoming message to edit", type, data);
 			if (type == "edit_query_available_sources_answer") {
-				this.select_source_items = data.select_items;
-				this.select_source_values = data.select_values;
+				this.query.source_items = data.select_items;
+				this.query.source_values = data.select_values;
+				this.edit_query_available_providers()
+				this.edit_query_available_categories()
 			}
 			if (type == "edit_query_available_providers_answer") {
-				this.select_provider_items = data.select_items;
-				this.select_provider_values = data.select_values;
+				this.query.provider_items = data.select_items;
+				this.query.provider_values = data.select_values;
+				this.edit_query_available_categories()
 			}
 			if (type == "edit_query_available_categories_answer") {
-				this.select_category_items = data.select_items;
-				this.select_category_values = data.select_values;
+				this.query.category_items = data.select_items;
+				this.query.category_values = data.select_values;
 			}
 			if (type == "edit_query_available_movies_answer") {
 				this.movie_info_list = data;
@@ -181,32 +198,32 @@ export default {
 		edit_query_available_sources() {
 			console.log("edit_query_available_sources");
 			messenger.emit("edit_query_available_sources", {
-				select_source_values: this.select_source_values
+				select_source_values: this.query.source_values
 			});
 		},
 		edit_query_available_providers() {
 			console.log("edit_query_available_providers");
 			messenger.emit("edit_query_available_providers", {
-				select_source_values: this.select_source_values,
-				select_provider_values: this.select_provider_values
+				select_source_values: this.query.source_values,
+				select_provider_values: this.query.provider_values
 			});
 		},
 		edit_query_available_categories() {
 			console.log("edit_query_available_categories");
 			messenger.emit("edit_query_available_categories", {
-				select_source_values: this.select_source_values,
-				select_provider_values: this.select_provider_values,
-				select_category_values: this.select_category_values
+				select_source_values: this.query.source_values,
+				select_provider_values: this.query.provider_values,
+				select_category_values: this.query.category_values
 			});
 		},
 		edit_query_available_movies() {
 			console.log("edit_query_available_movies");
 			messenger.emit("edit_query_available_movies", {
-				select_source_values: this.select_source_values,
-				select_provider_values: this.select_provider_values,
-				select_category_values: this.select_category_values,
-				select_title: this.select_title,
-				select_description: this.select_description
+				select_source_values: this.query.source_values,
+				select_provider_values: this.query.provider_values,
+				select_category_values: this.query.category_values,
+				select_title: this.query.title,
+				select_description: this.query.description
 			});
 		}
 	}

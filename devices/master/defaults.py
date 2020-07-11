@@ -37,3 +37,8 @@ QUERY_MOVIE_ID = 'movieid'
 
 # limits the number of search results when do a query
 MAX_QUERY_SIZE = 40
+
+# movie types
+MOVIE_TYPE_STREAM='stream'
+MOVIE_TYPE_RECORD='record'
+MOVIE_TYPE_TIMER='timer'

@@ -18,6 +18,7 @@ import time
 import copy
 from io import StringIO
 import threading
+import uuid
 from pprint import pprint
 
 # Non standard modules (install with pip)
@@ -57,6 +58,7 @@ class SplPlugin(SplThread):
 			'1': {
 				'type': 'template',
 				'clients':{'uschi':{},'steffen':{}},
+				'query':None,
 				'movie_info': MovieInfo(
 					'1',
 					'Titel-S',
@@ -71,6 +73,7 @@ class SplPlugin(SplThread):
 			'2': {
 				'type': 'template',
 				'clients':{'uschi':{}},
+				'query':None,
 				'movie_info': MovieInfo(
 					'2',
 					'Titel-2-S',
@@ -85,6 +88,7 @@ class SplPlugin(SplThread):
 			'3': {
 				'type': 'record',
 				'clients':{'uschi':{},'steffen':{}},
+				'query':None,
 				'movie_info': MovieInfo(
 					'3',
 					'Titel-Record-S',
@@ -99,6 +103,7 @@ class SplPlugin(SplThread):
 			'4': {
 				'type': 'streams',
 				'clients':{'uschi':{},'steffen':{}},
+				'query':None,
 				'movie_info': MovieInfo(
 						'4',
 						'Titel-Stream-S',
@@ -113,6 +118,7 @@ class SplPlugin(SplThread):
 			'5': {
 				'type': 'timer',
 				'clients':{'uschi':{},'steffen':{}},
+				'query':None,
 				'movie_info': MovieInfo(
 					'5',
 					'Titel-Timer-S',
@@ -138,8 +144,9 @@ class SplPlugin(SplThread):
 					{
 						'id': id,
 						'icon': 'mdi-magnify',
-								'iconClass': 'red lighten-1 white--text',
-								'movie_info': movie['movie_info']
+						'iconClass': 'red lighten-1 white--text',
+						'query': movie['query'],
+						'movie_info': movie['movie_info']
 					}
 				)
 			if movie['type'] == 'record':
@@ -147,8 +154,9 @@ class SplPlugin(SplThread):
 					{
 						'id': id,
 						'icon': 'mdi-play-pause',
-								'iconClass': 'blue white--text',
-								'movie_info': movie['movie_info']
+						'iconClass': 'blue white--text',
+						'query': movie['query'],
+						'movie_info': movie['movie_info']
 					}
 				)
 			if movie['type'] == 'stream':
@@ -156,8 +164,9 @@ class SplPlugin(SplThread):
 					{
 						'id': id,
 						'icon': 'mdi-radio-tower',
-								'iconClass': 'green lighten-1 white--text',
-								'movie_info': movie['movie_info']
+						'iconClass': 'green lighten-1 white--text',
+						'query': movie['query'],
+						'movie_info': movie['movie_info']
 					}
 				)
 			if movie['type'] == 'timer':
@@ -165,8 +174,9 @@ class SplPlugin(SplThread):
 					{
 						'id': id,
 						'icon': 'mdi-clock',
-								'iconClass': 'amber white--text',
-								'movie_info': movie['movie_info']
+						'iconClass': 'amber white--text',
+						'query': movie['query'],
+						'movie_info': movie['movie_info']
 					}
 				)
 		return res
@@ -213,12 +223,12 @@ class SplPlugin(SplThread):
 			self.send_player_devices(feasible_devices)
 			self.play_request(queue_event.data['itemId'])
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_PLAY_REQUEST:
-			itemId= self.update_movie_list(queue_event)
-			if itemId:
+			movie_list_id, movie_id= self.update_movie_list(queue_event)
+			if movie_list_id:
 				feasible_devices = self.modref.message_handler.query(Query(
-					queue_event.user, defaults.QUERY_FEASIBLE_DEVICES,itemId))
+					queue_event.user, defaults.QUERY_FEASIBLE_DEVICES,movie_id))
 				self.send_player_devices(feasible_devices)
-				self.play_request(itemId)
+				self.play_request(movie_list_id)
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_SOURCES:
 			available_items = self.modref.message_handler.query(
 				Query(queue_event.user, defaults.QUERY_AVAILABLE_SOURCES, None))
@@ -276,11 +286,12 @@ class SplPlugin(SplThread):
 			# ist es ein benamter Quick-Search? Gibt es ihn schon oder ist er neu?
 			# ist ein normaler Stream?
 			# ist es ein Record- Eintrag?
-			if queue_event.data['movie_info_id'] in self.movielist: # an existing entry was edited
+			edit_id=queue_event.data['edit_id']
+			if edit_id in self.movielist: # an existing entry was edited
 				pass
 			new_entry={
-				'type': 'stream',
-				'edit_params': {},
+				'type': movie_list[0].source_type,
+				'query': queue_event.data['query'],
 				'clients':{},
 
 				'movie_info': MovieInfo(
@@ -295,8 +306,9 @@ class SplPlugin(SplThread):
 				)
 			}
 			new_entry['clients'][queue_event.user.name]={}
-			self.movielist[queue_event.data['movie_info_id']]=new_entry
-			return queue_event.data['movie_info_id']
+			unique_id=str(uuid.uuid4())
+			self.movielist[unique_id]=new_entry
+			return unique_id, queue_event.data['movie_info_id']
 		else:
 			return None
 

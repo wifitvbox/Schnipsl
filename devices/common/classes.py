@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import defaults
 
 class MovieInfo(dict):
 	'''helper class to store the movie clips information to sent to the client
@@ -19,8 +20,9 @@ class MovieInfo(dict):
 					movie.description
 				)
 
-	def __init__(self, id, title, category, source, date, duration, viewed, description):
+	def __init__(self, id, title, category, source, date, duration, viewed, description,query=None):
 		self['id'] = id
+		self['query'] = query
 		self['title'] = title
 		self['category'] = category
 		self['source'] = source
@@ -36,6 +38,7 @@ class Movie:
 	def __init__(
 		self,
 		source='',
+		source_type=defaults.MOVIE_TYPE_RECORD,
 		provider='',
 		category='',
 		title='',
@@ -45,6 +48,7 @@ class Movie:
 		url=''
 		):
 		self.source=source
+		self.source_type=source_type
 		self.provider=provider
 		self.category=category
 		self.title=title

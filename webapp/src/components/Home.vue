@@ -7,7 +7,7 @@
 
 			<v-spacer></v-spacer>
 
-			<v-btn icon @click="nav2Edit(0)">
+			<v-btn icon @click="nav2Edit(0,null)">
 				<v-icon>mdi-plus-circle</v-icon>
 			</v-btn>
 		</v-toolbar>
@@ -28,7 +28,7 @@
 				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon @click="nav2Edit(item.id)">
+					<v-btn icon @click="nav2Edit(item.id,item.query)">
 						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
 					<v-btn icon @click="share(item.id)">
@@ -51,7 +51,7 @@
 				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon @click="nav2Edit(item.id)">
+					<v-btn icon @click="nav2Edit(item.id,item.query,item)">
 						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
 					<v-btn icon @click="share(item.id)">
@@ -74,7 +74,7 @@
 				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon @click="nav2Edit(item.id)">
+					<v-btn icon @click="nav2Edit(item.id,item.query)">
 						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
 					<v-btn icon @click="share(item.id)">
@@ -96,7 +96,7 @@
 				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon @click="nav2Edit(item.id)">
+					<v-btn icon @click="nav2Edit(item.id,item.query)">
 						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
 					<v-btn icon @click="share(item.id)">
@@ -204,9 +204,9 @@ export default {
 		nav2Set() {
 			router.push({ name: "Settings" });
 		},
-		nav2Edit(item) {
-			console.log("click for edit", item);
-			router.push({ name: "Edit", params: { id: item } });
+		nav2Edit(item_id,query,item) {
+			console.log("click for edit", item, query);
+			router.push({ name: "Edit", params: { id: item_id, query: query } });
 		},
 		nav2Play(itemId) {
 			console.log("click for Play", itemId);

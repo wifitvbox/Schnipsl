@@ -96,31 +96,32 @@ class SplPlugin(SplThread):
 			descriptions=queue_event.params['select_description'].split()
 			for plugin_name in self.plugin_names:
 				if plugin_name in queue_event.params['select_source_values']: # this plugin is one of the wanted
-					for movie in self.movies[plugin_name].values():
-						if movie.provider in queue_event.params['select_provider_values']:
-							if titles:
-								found=False
-								for title in titles:
-									if title.lower() in movie.title.lower():
-										found=True
-									if title.lower() in movie.category.lower():
-										found=True
-								if not found:
-									continue
-							if descriptions:
-								found=False
-								for description in descriptions:
-									if description.lower() in movie.description.lower():
-										found=True
-								if not found:
-									continue
-								
+					if plugin_name in self.movies: # are there any movies stored for this plugin?
+						for movie in self.movies[plugin_name].values():
+							if movie.provider in queue_event.params['select_provider_values']:
+								if titles:
+									found=False
+									for title in titles:
+										if title.lower() in movie.title.lower():
+											found=True
+										if title.lower() in movie.category.lower():
+											found=True
+									if not found:
+										continue
+								if descriptions:
+									found=False
+									for description in descriptions:
+										if description.lower() in movie.description.lower():
+											found=True
+									if not found:
+										continue
+									
 
-							if max_result_count>0:
-								res.append(MovieInfo.movie_to_movie_info(movie,'','0%'))
-								max_result_count-=1
-							else:
-								return res # maximal number of results reached
+								if max_result_count>0:
+									res.append(MovieInfo.movie_to_movie_info(movie,'','0%'))
+									max_result_count-=1
+								else:
+									return res # maximal number of results reached
 			return res
 		return[]
 
@@ -170,10 +171,18 @@ class SplPlugin(SplThread):
 					loader_remember_data['category']=category
 				else:
 					category=loader_remember_data['category']
-
+				if category=='Livestream':
+					source_type=defaults.MOVIE_TYPE_STREAM
+					plugin_name=self.plugin_names[1]
+					provider=provider.replace('Livestream','').strip()
+					print("Livestream")
+				else:
+					plugin_name=self.plugin_names[0]
+					source_type=defaults.MOVIE_TYPE_RECORD
 				self.providers.add(provider)
 				new_movie = Movie(
-					source=self.plugin_names[0],
+					source=plugin_name,
+					source_type=source_type,
 					provider=provider,
 					category=category,
 					title=data_array[2],
@@ -183,7 +192,6 @@ class SplPlugin(SplThread):
 					url=data_array[8]
 				)
 				new_movie.add_stream('mp4','',data_array[8])
-				plugin_name=self.plugin_names[0]
 				if not plugin_name in self.movies:
 					self.movies[plugin_name]={}
 				self.movies[plugin_name][new_movie.uri()]=new_movie
