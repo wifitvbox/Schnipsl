@@ -15,39 +15,59 @@
 		<v-list two-line subheader>
 			<v-subheader inset>{{ $t('main_templates') }}</v-subheader>
 
-			<v-list-item v-for="item in movie_info_list.templates" :key="item.id" @click="nav2Play(item.id)">
+			<v-list-item v-for="item in movie_info_list.templates" :key="item.id">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
 
-				<v-list-item-content>
-					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
+				<v-list-item-content @click="nav2Edit(item.id,item.query)">
+					<v-list-item-title v-text="item.movie_info.title"></v-list-item-title>
+<!-- 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
 						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
 					></v-list-item-subtitle>
-				</v-list-item-content>
+					<v-expand-transition>
+						<div v-show="item.movie_info.description_show">
+							<v-divider></v-divider>
+
+							<v-card-text>{{item.movie_info.description}}</v-card-text>
+						</div>
+					</v-expand-transition>
+ -->				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon @click="nav2Edit(item.id,item.query)">
+<!--					<v-btn icon @click="nav2Edit(item.id,item.query)">
 						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
+-->
 					<v-btn icon @click="share(item.id)">
 						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
 					</v-btn>
+<!--					<v-btn icon @click="item.movie_info.description_show = !item.movie_info.description_show">
+						<v-icon>{{ item.movie_info.description_show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+					</v-btn>
+ -->
 				</v-list-item-action>
 			</v-list-item>
 
 			<v-subheader inset>{{ $t('main_streams') }}</v-subheader>
-			<v-list-item v-for="item in movie_info_list.streams" :key="item.id" @click="nav2Play(item.id)">
+			<v-list-item v-for="item in movie_info_list.streams" :key="item.id">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
 
-				<v-list-item-content>
+				<v-list-item-content @click="nav2Play(item.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
 						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
 					></v-list-item-subtitle>
+					<v-expand-transition>
+						<div v-show="item.movie_info.description_show">
+							<v-divider></v-divider>
+
+							<v-card-text>{{item.movie_info.description}}</v-card-text>
+						</div>
+					</v-expand-transition>
 				</v-list-item-content>
 
 				<v-list-item-action>
@@ -57,20 +77,30 @@
 					<v-btn icon @click="share(item.id)">
 						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
 					</v-btn>
+					<v-btn icon @click="item.movie_info.description_show = !item.movie_info.description_show">
+						<v-icon>{{ item.movie_info.description_show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+					</v-btn>
 				</v-list-item-action>
 			</v-list-item>
 
 			<v-subheader inset>{{ $t('main_records') }}</v-subheader>
-			<v-list-item v-for="item in movie_info_list.records" :key="item.id" @click="nav2Play(item.id)">
+			<v-list-item v-for="item in movie_info_list.records" :key="item.id">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
 
-				<v-list-item-content>
+				<v-list-item-content @click="nav2Play(item.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
 						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
 					></v-list-item-subtitle>
+					<v-expand-transition>
+						<div v-show="item.movie_info.description_show">
+							<v-divider></v-divider>
+
+							<v-card-text>{{item.movie_info.description}}</v-card-text>
+						</div>
+					</v-expand-transition>
 				</v-list-item-content>
 
 				<v-list-item-action>
@@ -79,20 +109,30 @@
 					</v-btn>
 					<v-btn icon @click="share(item.id)">
 						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
+					</v-btn>
+					<v-btn icon @click="item.movie_info.description_show = !item.movie_info.description_show">
+						<v-icon>{{ item.movie_info.description_show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
 					</v-btn>
 				</v-list-item-action>
 			</v-list-item>
 			<v-subheader inset>{{ $t('main_timers') }}</v-subheader>
-			<v-list-item v-for="item in movie_info_list.timers" :key="item.id" @click="nav2Play(item.id)">
+			<v-list-item v-for="item in movie_info_list.timers" :key="item.id">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
 
-				<v-list-item-content>
+				<v-list-item-content @click="nav2Play(item.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
 						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
 					></v-list-item-subtitle>
+					<v-expand-transition>
+						<div v-show="item.movie_info.description_show">
+							<v-divider></v-divider>
+
+							<v-card-text>{{item.movie_info.description}}</v-card-text>
+						</div>
+					</v-expand-transition>
 				</v-list-item-content>
 
 				<v-list-item-action>
@@ -101,6 +141,9 @@
 					</v-btn>
 					<v-btn icon @click="share(item.id)">
 						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
+					</v-btn>
+					<v-btn icon @click="item.movie_info.description_show = !item.movie_info.description_show">
+						<v-icon>{{ item.movie_info.description_show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
 					</v-btn>
 				</v-list-item-action>
 			</v-list-item>

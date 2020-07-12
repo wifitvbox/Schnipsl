@@ -57,126 +57,126 @@ class SplPlugin(SplThread):
 		self.movielist = {
 			'1': {
 				'type': 'template',
-				'clients':{'uschi':{},'steffen':{}},
-				'query':None,
-				'movie_info': MovieInfo(
-					'1',
-					'Titel-S',
-					'Typ',
-					'Quelle',
-					'Datum',
-					'Dauer',
-					'geschaut',
-					'Lorem ipsum..'
-				)
+						'clients': {'uschi': {}, 'steffen': {}},
+						'query': None,
+						'movie_info': MovieInfo(
+							'1',
+							'Titel-S',
+							'Typ',
+							'Quelle',
+							'Datum',
+							'Dauer',
+							'geschaut',
+							'Lorem ipsum..'
+						)
 			},
 			'2': {
 				'type': 'template',
-				'clients':{'uschi':{}},
-				'query':None,
-				'movie_info': MovieInfo(
-					'2',
-					'Titel-2-S',
-					'Typ',
-					'Quelle',
-					'Datum',
-					'Dauer',
-					'geschaut',
-					'Lorem ipsum..'
-				)
+						'clients': {'uschi': {}},
+						'query': None,
+						'movie_info': MovieInfo(
+							'2',
+							'Titel-2-S',
+							'Typ',
+							'Quelle',
+							'Datum',
+							'Dauer',
+							'geschaut',
+							'Lorem ipsum..'
+						)
 			},
 			'3': {
 				'type': 'record',
-				'clients':{'uschi':{},'steffen':{}},
-				'query':None,
-				'movie_info': MovieInfo(
-					'3',
-					'Titel-Record-S',
-					'Typ',
-					'Quelle',
-					'Datum',
-					'Dauer',
-					'geschaut',
-					'Lorem ipsum..'
-				)
+						'clients': {'uschi': {}, 'steffen': {}},
+						'query': None,
+						'movie_info': MovieInfo(
+							'3',
+							'Titel-Record-S',
+							'Typ',
+							'Quelle',
+							'Datum',
+							'Dauer',
+							'geschaut',
+							'Lorem ipsum..'
+						)
 			},
 			'4': {
-				'type': 'streams',
-				'clients':{'uschi':{},'steffen':{}},
-				'query':None,
-				'movie_info': MovieInfo(
-						'4',
-						'Titel-Stream-S',
-						'Typ',
-					'Quelle',
-					'Datum',
-					'Dauer',
-					'geschaut',
-					'Lorem ipsum..'
-				)
+				'type': 'stream',
+						'clients': {'uschi': {}, 'steffen': {}},
+						'query': None,
+						'movie_info': MovieInfo(
+							'4',
+							'Titel-Stream-S',
+							'Typ',
+							'Quelle',
+							'Datum',
+							'Dauer',
+							'geschaut',
+							'Lorem ipsum..'
+						)
 			},
 			'5': {
 				'type': 'timer',
-				'clients':{'uschi':{},'steffen':{}},
-				'query':None,
-				'movie_info': MovieInfo(
-					'5',
-					'Titel-Timer-S',
-					'Typ',
-					'Quelle',
-					'Datum',
-					'Dauer',
-					'geschaut',
-					'Lorem ipsum..'
-				)
+						'clients': {'uschi': {}, 'steffen': {}},
+						'query': None,
+						'movie_info': MovieInfo(
+							'5',
+							'Titel-Timer-S',
+							'Typ',
+							'Quelle',
+							'Datum',
+							'Dauer',
+							'geschaut',
+							'Lorem ipsum..'
+						)
 			}
 		}
 
-	def prepare_movie_list(self,user):
+	def prepare_movie_list(self, user):
 		''' prepares the list of the user movies to display on the client in the main window
 		'''
 		res = {'templates': [], 'records': [], 'streams': [], 'timers': []}
 		for id, movie in self.movielist.items():
 			if not user.name in movie['clients']:
 				continue
-			if movie['type'] == 'template':
+			if movie['type'] == defaults.MOVIE_TYPE_TEMPLATE:
 				res['templates'].append(
 					{
 						'id': id,
 						'icon': 'mdi-magnify',
-						'iconClass': 'red lighten-1 white--text',
-						'query': movie['query'],
-						'movie_info': movie['movie_info']
+								'iconClass': 'red lighten-1 white--text',
+								'query': movie['query'],
+								'movie_info': movie['movie_info']
 					}
 				)
-			if movie['type'] == 'record':
+			if movie['type'] == defaults.MOVIE_TYPE_RECORD:
 				res['records'].append(
 					{
 						'id': id,
 						'icon': 'mdi-play-pause',
-						'iconClass': 'blue white--text',
-						'query': movie['query'],
-						'movie_info': movie['movie_info']
+								'iconClass': 'blue white--text',
+								'query': movie['query'],
+								'movie_info': movie['movie_info']
 					}
 				)
-			if movie['type'] == 'stream':
+			if movie['type'] == defaults.MOVIE_TYPE_STREAM:
 				res['streams'].append(
 					{
 						'id': id,
 						'icon': 'mdi-radio-tower',
-						'iconClass': 'green lighten-1 white--text',
-						'query': movie['query'],
-						'movie_info': movie['movie_info']
+								'iconClass': 'green lighten-1 white--text',
+								'query': movie['query'],
+								'movie_info': movie['movie_info']
 					}
 				)
-			if movie['type'] == 'timer':
+			if movie['type'] == defaults.MOVIE_TYPE_TIMER:
 				res['timers'].append(
 					{
 						'id': id,
 						'icon': 'mdi-clock',
-						'iconClass': 'amber white--text',
-						'query': movie['query'],
-						'movie_info': movie['movie_info']
+								'iconClass': 'amber white--text',
+								'query': movie['query'],
+								'movie_info': movie['movie_info']
 					}
 				)
 		return res
@@ -184,7 +184,7 @@ class SplPlugin(SplThread):
 	def event_listener(self, queue_event):
 		''' try to send simulated answers
 		'''
-		print("simulator event handler", queue_event.type, queue_event.user)
+		#print("simulator event handler", queue_event.type, queue_event.user)
 		if queue_event.type == '_join':
 			if queue_event:
 				# we fill the schnipsl list
@@ -192,7 +192,7 @@ class SplPlugin(SplThread):
 				new_event.type = defaults.MSG_SOCKET_MSG
 				new_event.data = {
 					'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_LIST, 'config': self.prepare_movie_list(queue_event.user)}
-				print("new_event", new_event.data['config'])
+				#print("new_event", new_event.data['config'])
 				self.modref.message_handler.queue_event_obj(new_event)
 				self.update_single_movie_clip('1')
 
@@ -223,10 +223,10 @@ class SplPlugin(SplThread):
 			self.send_player_devices(feasible_devices)
 			self.play_request(queue_event.data['itemId'])
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_PLAY_REQUEST:
-			movie_list_id, movie_id= self.update_movie_list(queue_event)
+			movie_list_id, movie_id = self.update_movie_list(queue_event)
 			if movie_list_id:
 				feasible_devices = self.modref.message_handler.query(Query(
-					queue_event.user, defaults.QUERY_FEASIBLE_DEVICES,movie_id))
+					queue_event.user, defaults.QUERY_FEASIBLE_DEVICES, movie_id))
 				self.send_player_devices(feasible_devices)
 				self.play_request(movie_list_id)
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_SOURCES:
@@ -278,37 +278,75 @@ class SplPlugin(SplThread):
 		return[]
 
 	def update_movie_list(self, queue_event):
+		'''
+		'''
+				
+		# is it a quick search? Then update the quicksearch data first
+		quick_search_name=queue_event.data['query']['name']
+		if quick_search_name:
+			quick_search_entry=None
+			for movie_list_entry in self.movielist.values():
+				if movie_list_entry['query'] and movie_list_entry['query']['name'].lower()==quick_search_name.lower():
+					quick_search_entry=movie_list_entry
+					break
+			if not quick_search_entry:
+				quick_search_entry = {
+					'clients': {},
+				}
+				quick_search_entry['clients'][queue_event.user.name] = {}
+				# new entry, so it gets its own identifier
+				quick_search_entry_id = str(uuid.uuid4())
+				self.movielist[quick_search_entry_id] = quick_search_entry
+			quick_search_entry['type'] = defaults.MOVIE_TYPE_TEMPLATE
+			quick_search_entry['query'] = queue_event.data['query']
+			quick_search_entry['movie_info']= MovieInfo(
+				'0',  # id
+				quick_search_name,  # title
+				'',  # type
+				'',  # source
+				'',  # date
+				'',  # duration
+				'',  # viewed
+				''  # description
+			)
+
+
 		movie_list = self.modref.message_handler.query(
 			Query(queue_event.user, defaults.QUERY_MOVIE_ID, queue_event.data['movie_info_id']))
 		if movie_list:
-			## TODO
+			# TODO
 			# ist es ein Live- Movie? Dann wird es als Live- Schnipsl angehängt
 			# ist es ein benamter Quick-Search? Gibt es ihn schon oder ist er neu?
 			# ist ein normaler Stream?
 			# ist es ein Record- Eintrag?
-			edit_id=queue_event.data['edit_id']
-			if edit_id in self.movielist: # an existing entry was edited
-				pass
-			new_entry={
-				'type': movie_list[0].source_type,
-				'query': queue_event.data['query'],
-				'clients':{},
+			movie_list_id = queue_event.data['edit_id']
+			if movie_list_id in self.movielist:  # an existing entry was edited
+				print("Molist Eintrag existiert schon")
+				movie_list_entry = self.movielist[movie_list_id]
+			else:
+				movie_list_entry = {
 
-				'movie_info': MovieInfo(
-					queue_event.data['movie_info_id'], #id
-					movie_list[0].title, #title
-					movie_list[0].category, #type
-					movie_list[0].provider, #source
-					movie_list[0].timestamp, #date
-					movie_list[0].duration, #duration
-					'0%', #viewed
-					movie_list[0].description #description
-				)
-			}
-			new_entry['clients'][queue_event.user.name]={}
-			unique_id=str(uuid.uuid4())
-			self.movielist[unique_id]=new_entry
-			return unique_id, queue_event.data['movie_info_id']
+					'clients': {},
+
+				}
+				movie_list_entry['clients'][queue_event.user.name] = {}
+				# new entry, so it gets its own identifier
+				movie_list_id = str(uuid.uuid4())
+				self.movielist[movie_list_id] = movie_list_entry
+			movie_list_entry['type'] = movie_list[0].source_type
+			movie_list_entry['query'] = queue_event.data['query']
+			movie_list_entry['movie_info']= MovieInfo(
+				queue_event.data['movie_info_id'],  # id
+				movie_list[0].title,  # title
+				movie_list[0].category,  # type
+				movie_list[0].provider,  # source
+				movie_list[0].timestamp,  # date
+				movie_list[0].duration,  # duration
+				'0%',  # viewed
+				movie_list[0].description  # description
+			)
+
+			return movie_list_id, queue_event.data['edit_id']
 		else:
 			return None
 

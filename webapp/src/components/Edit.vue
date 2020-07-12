@@ -4,7 +4,7 @@
 	<v-card max-width="600" class="mx-auto">
 		<v-toolbar color="yellow">
 			<v-toolbar-items class="hidden-sm-and-down">
-				<v-btn icon>
+				<v-btn icon @click="edit_delete_dialog_show = true">
 					<v-icon>mdi-delete</v-icon>
 				</v-btn>
 
@@ -55,10 +55,10 @@
 		</v-col>
 		<v-divider></v-divider>
 		<v-list>
-			<v-list-item v-for="movie_info in movie_info_list" :key="movie_info.id" @click="requestPlay(movie_info.id)">
+			<v-list-item v-for="movie_info in movie_info_list" :key="movie_info.id">
 				<!--v-card class="mx-auto" max-width="344"-->
 				<v-card class="mx-auto" max-width="344">
-					<v-card-title>{{movie_info.title +' • '+ movie_info.category}}</v-card-title>
+					<v-card-title @click="requestPlay(movie_info.id)">{{movie_info.title +' • '+ movie_info.category}}</v-card-title>
 
 					<v-card-subtitle>{{movie_info.source +' • '+ movie_info.date +' • '+ movie_info.duration +' • '+ movie_info.viewed}}</v-card-subtitle>
 
@@ -70,7 +70,7 @@
 						<v-spacer></v-spacer>
 
 						<v-btn icon @click="movie_info.description_show = !movie_info.description_show">
-							<v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+							<v-icon>{{ movie_info.description_show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
 						</v-btn>
 					</v-card-actions>
 
@@ -84,6 +84,22 @@
 				</v-card>
 			</v-list-item>
 		</v-list>
+			<v-row justify="center">
+				<v-dialog v-model="edit_delete_dialog_show" scrollable max-width="300px">
+					<v-card>
+						<v-card-title>{{ $t('edit_delete_dialog_header') }}</v-card-title>
+						<v-divider></v-divider>
+						<v-card-text style="height: 300px;">
+
+						</v-card-text>
+						<v-divider></v-divider>
+						<v-card-actions>
+							<v-btn color="blue darken-1" text @click="edit_delete_dialog_show = false">{{ $t('edit_delete_dialog_cancel') }}</v-btn>
+							<v-btn color="blue darken-1" text @click="edit_delete()">{{ $t('edit_delete_dialog_select') }}</v-btn>
+						</v-card-actions>
+					</v-card>
+				</v-dialog>
+			</v-row>
 	</v-card>
 </template>
 
@@ -93,8 +109,10 @@ import messenger from "../messenger";
 export default {
 	name: "Edit",
 	data: () => ({
+		edit_delete_dialog_show : false,
 		id: 0,
 		query : {
+		/*
 		name: "Dokumentationen",
 		source_items: ["TV", "Mediathek", "Podcasts", "YouTube"],
 		source_values: ["Mediathek", "TV"],
@@ -104,9 +122,10 @@ export default {
 		category_values: ["Doku"],
 		title: "37",
 		description: ""
+		*/
 		},
-		show: false,
 		movie_info_list: [
+			/*
 			{
 				id: "1",
 				title: "Titel-A",
@@ -115,17 +134,8 @@ export default {
 				date: "Datum",
 				duration: "Dauer",
 				viewed: "geschaut"
-			},
-			{
-				id: "2",
-
-				title: "Titel-2",
-				category: "Typ",
-				source: "Quelle",
-				date: "Datum",
-				duration: "Dauer",
-				viewed: "geschaut"
 			}
+			*/
 		]
 	}),
 	computed: {
@@ -171,6 +181,14 @@ export default {
 				edit_id: this.id,
 				query: this.query,
 				movie_info_id: movie_info_id
+			})
+			this.nav2Main();
+		},
+		edit_delete() {
+			console.log("requestDelete", this.id)
+			this.edit_delete_dialog_show=false
+			messenger.emit("edit_delete_request", {
+				edit_id: this.id,
 			})
 			this.nav2Main();
 		},

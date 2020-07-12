@@ -2,7 +2,24 @@
 	<v-app toolbar footer>
 		<div id="app">
 			<router-view />
-			<v-footer padless fixed>
+			<v-row justify="center">
+				<v-dialog v-model="device_dialog_show" scrollable max-width="300px">
+					<v-card>
+						<v-card-title>{{ $t('player_select_device_dialog_header') }}</v-card-title>
+						<v-divider></v-divider>
+						<v-card-text style="height: 300px;">
+							<v-radio-group v-model="device_info.actual_device" column>
+								<v-radio v-for="item in device_info.devices" :value="item" :label="item" :key="item" :checked="item=device_info.actual_device"></v-radio>
+							</v-radio-group>
+						</v-card-text>
+						<v-divider></v-divider>
+						<v-card-actions>
+							<v-btn color="blue darken-1" text @click="device_dialog_show = false">{{ $t('player_select_device_dialog_cancel') }}</v-btn>
+							<v-btn color="blue darken-1" text @click="player_select_device()">{{ $t('player_select_device_dialog_select') }}</v-btn>
+						</v-card-actions>
+					</v-card>
+				</v-dialog>
+			</v-row>			<v-footer padless fixed>
 				<!--v-card class="flex" flat tile-->
 				<v-card class="mx-auto" max-width="600">
 					<v-card-title>{{movie_info.title}} • {{movie_info.category}}</v-card-title>
@@ -44,24 +61,6 @@
 					</v-expand-transition>
 				</v-card>
 			</v-footer>
-			<v-row justify="center">
-				<v-dialog v-model="device_dialog_show" scrollable max-width="300px">
-					<v-card>
-						<v-card-title>{{ $t('player_select_device_dialog_header') }}</v-card-title>
-						<v-divider></v-divider>
-						<v-card-text style="height: 300px;">
-							<v-radio-group v-model="device_info.actual_device" column>
-								<v-radio v-for="item in device_info.devices" :value="item" :label="item" :key="item" :checked="item=device_info.actual_device"></v-radio>
-							</v-radio-group>
-						</v-card-text>
-						<v-divider></v-divider>
-						<v-card-actions>
-							<v-btn color="blue darken-1" text @click="device_dialog_show = false">{{ $t('player_select_device_dialog_cancel') }}</v-btn>
-							<v-btn color="blue darken-1" text @click="player_select_device()">{{ $t('player_select_device_dialog_select') }}</v-btn>
-						</v-card-actions>
-					</v-card>
-				</v-dialog>
-			</v-row>
 		</div>
 	</v-app>
 </template>

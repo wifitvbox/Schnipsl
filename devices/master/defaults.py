@@ -8,6 +8,7 @@ WEB_ROOT_DIR = '../../webapp/dist'
 # all the different message types
 MSG_SOCKET_CONNECT = 'wsconnect'
 MSG_SOCKET_CLOSE = 'wsclose'
+MSG_SOCKET_EDIT_DELETE_REQUEST = 'edit_delete_request'
 MSG_SOCKET_EDIT_PLAY_REQUEST = 'edit_play_request'
 MSG_SOCKET_MSG = 'wsmsg'
 MSG_SOCKET_HOME_MOVIE_INFO_LIST = 'home_movie_info_list'
@@ -42,3 +43,4 @@ MAX_QUERY_SIZE = 40
 MOVIE_TYPE_STREAM='stream'
 MOVIE_TYPE_RECORD='record'
 MOVIE_TYPE_TIMER='timer'
+MOVIE_TYPE_TEMPLATE='template'

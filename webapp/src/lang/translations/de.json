@@ -16,7 +16,10 @@
 	"edit_select_description": "Inhalt",
 	"player_select_device_dialog_header": "Wähle Dein Ausgabegerät",
 	"player_select_device_dialog_cancel":"Abbruch",
-	"player_select_device_dialog_select":"Auswahl"
+	"player_select_device_dialog_select":"Auswahl",
+	"edit_delete_dialog_header":"Schnipsl löschen?",
+	"edit_delete_dialog_cancel":"Abbruch",
+	"edit_delete_dialog_select":"Löschen"
 }
 
 
