@@ -16,6 +16,7 @@ MSG_SOCKET_HOME_MOVIE_INFO_UPDATE = 'home_movie_info_update'
 MSG_SOCKET_HOME_PLAY_REQUEST = 'home_play_request'
 MSG_SOCKET_PLAYER_TIME = 'player_time'
 MSG_SOCKET_PLAYER_KEY = 'player_key'
+MSG_SOCKET_SELECT_PLAYER_DEVICE = 'select_player_device'
 MSG_SOCKET_APP_MOVIE_INFO = 'app_movie_info'
 
 MSG_SOCKET_QUERY_FEASIBLE_DEVICES_ANSWER = 'app_device_info'

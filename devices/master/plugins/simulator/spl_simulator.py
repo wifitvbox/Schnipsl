@@ -195,6 +195,9 @@ class SplPlugin(SplThread):
 				#print("new_event", new_event.data['config'])
 				self.modref.message_handler.queue_event_obj(new_event)
 				self.update_single_movie_clip('1')
+		if queue_event.type == defaults.MSG_SOCKET_SELECT_PLAYER_DEVICE:
+				# request to play a movie on a device
+				self.play_request(queue_event)
 
 		if queue_event.type == defaults.MSG_SOCKET_PLAYER_KEY:
 			if queue_event.data['keyid'] == 'prev':
@@ -217,18 +220,16 @@ class SplPlugin(SplThread):
 			self.play_time = queue_event.data['timer_pos'] * \
 				self.play_total_secs//100
 		if queue_event.type == defaults.MSG_SOCKET_HOME_PLAY_REQUEST:
-			#self.send_player_devices(['TV Wohnzimmer-S', 'TV Küche-s', 'Chromecast Büro'])
+			movie_id=queue_event.data['itemId']
 			feasible_devices = self.modref.message_handler.query(Query(
-				queue_event.user, defaults.QUERY_FEASIBLE_DEVICES, queue_event.data['itemId']))
-			self.send_player_devices(feasible_devices)
-			self.play_request(queue_event.data['itemId'])
+				queue_event.user, defaults.QUERY_FEASIBLE_DEVICES, movie_id))
+			self.send_player_devices(feasible_devices,movie_id)
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_PLAY_REQUEST:
 			movie_list_id, movie_id = self.update_movie_list(queue_event)
 			if movie_list_id:
 				feasible_devices = self.modref.message_handler.query(Query(
 					queue_event.user, defaults.QUERY_FEASIBLE_DEVICES, movie_id))
-				self.send_player_devices(feasible_devices)
-				self.play_request(movie_list_id)
+				self.send_player_devices(feasible_devices, movie_id)
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_SOURCES:
 			available_items = self.modref.message_handler.query(
 				Query(queue_event.user, defaults.QUERY_AVAILABLE_SOURCES, None))
@@ -346,7 +347,7 @@ class SplPlugin(SplThread):
 				movie_list[0].description  # description
 			)
 
-			return movie_list_id, queue_event.data['edit_id']
+			return movie_list_id, movie_list[0].uri()
 		else:
 			return None
 
@@ -373,18 +374,23 @@ class SplPlugin(SplThread):
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
 			'type': 'app_player_pos', 'config': self.player_info})
 
-	def send_player_devices(self, devices):
+	def send_player_devices(self, devices,movie_id):
 		# we set the device info
 		data = {
 			'actual_device': '',
 			'devices': devices,
+			'movie_id':movie_id
 		}
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
 			'type': defaults.MSG_SOCKET_QUERY_FEASIBLE_DEVICES_ANSWER, 'config': data})
 
-	def play_request(self, id):
+	def play_request(self, queue_event):
+		# starts to play movie on device
+		print("plays schnipsl {0} on device ".format(queue_event.data['movie_id']))
+
+	def send_movie_info(self, movie_list_id):
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
-			'type': defaults.MSG_SOCKET_APP_MOVIE_INFO, 'config': self.movielist[id]['movie_info']})
+			'type': defaults.MSG_SOCKET_APP_MOVIE_INFO, 'config': self.movielist[movie_list_id]['movie_info']})
 
 	def _run(self):
 		''' starts the server

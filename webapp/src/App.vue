@@ -86,6 +86,7 @@ export default {
 				viewed: "geschaut",
 				description: "Beschreibung"
 			},
+			movie_id: null,
 			device_info :{
 				actual_device : "",
 				devices: ["TV Wohnzimmer", "TV Küche", "Chromecast Büro"],
@@ -107,7 +108,11 @@ export default {
 				this.movie_info = data;
 			}
 			if (type == "app_device_info") {
-				this.device_info = data;
+				this.movie_id=data.movie_id
+				this.device_info.devices = data.devices;
+				// force the dialog for now
+				// better would be: If actual device is not in devices...
+				this.device_info.actual_device=null
 				if (!this.device_info.actual_device){
 					this.device_dialog_show=true
 				}
@@ -129,7 +134,7 @@ export default {
 			console.log("Send device");
 			this.device_dialog_show = false
 			if (this.device_info.actual_device!=''){
-				messenger.emit("select_player_device", { timer_dev: this.device_info.actual_device });
+				messenger.emit("select_player_device", { timer_dev: this.device_info.actual_device, movie_id: this.movie_id });
 			}
 		}
 	}
