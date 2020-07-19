@@ -338,7 +338,9 @@ class SplPlugin(SplThread):
 				movie_list_id = str(uuid.uuid4())
 				self.movielist[movie_list_id] = movie_list_entry
 			movie_list_entry['type'] = movie_list[0].source_type
-			movie_list_entry['query'] = queue_event.data['query']
+			# we need to make a copy here, because in case of a new created quicksearch item the quicksearch query data and this normal item both points to the same query object,
+			# which causes an error (name="") in the quicksearch item when we remove the name here...
+			movie_list_entry['query'] = copy.copy(queue_event.data['query'])
 			#as this is not a quicksearch entry anymore, we must make sure that it does not contain a 
 			# quicksearch name anymore
 			movie_list_entry['query']['name']=''
