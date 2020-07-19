@@ -186,15 +186,18 @@ class SplPlugin(SplThread):
 		'''
 		#print("simulator event handler", queue_event.type, queue_event.user)
 		if queue_event.type == '_join':
-			if queue_event:
-				# we fill the schnipsl list
-				new_event = copy.copy(queue_event)
-				new_event.type = defaults.MSG_SOCKET_MSG
-				new_event.data = {
-					'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_LIST, 'config': self.prepare_movie_list(queue_event.user)}
-				#print("new_event", new_event.data['config'])
-				self.modref.message_handler.queue_event_obj(new_event)
-				self.update_single_movie_clip('1')
+			# send the movie list
+			self.send_home_movie_list(queue_event)
+			self.update_single_movie_clip('1')
+		if queue_event.type == defaults.MSG_SOCKET_EDIT_DELETE_REQUEST:
+			movie_list_id=queue_event.data['edit_id']
+			if movie_list_id in self.movielist: # does the entry id exist
+				movie_list_entry=self.movielist[movie_list_id]
+				if queue_event.user.name in movie_list_entry['clients']: # is the user client of this entry?
+					del(movie_list_entry['clients'][queue_event.user.name])
+				if not movie_list_entry['clients']: # are there no more clients left?
+					del (self.movielist[movie_list_id]) # remove the whole entry
+				self.send_home_movie_list(queue_event)
 		if queue_event.type == defaults.MSG_SOCKET_SELECT_PLAYER_DEVICE:
 				# request to play a movie on a device
 				self.play_request(queue_event)
@@ -287,7 +290,7 @@ class SplPlugin(SplThread):
 		if quick_search_name:
 			quick_search_entry=None
 			for movie_list_entry in self.movielist.values():
-				if movie_list_entry['query'] and movie_list_entry['query']['name'].lower()==quick_search_name.lower():
+				if movie_list_entry['query'] and movie_list_entry['query']['name'].lower()==quick_search_name.lower() and queue_event.user.name in movie_list_entry['clients']:
 					quick_search_entry=movie_list_entry
 					break
 			if not quick_search_entry:
@@ -321,7 +324,7 @@ class SplPlugin(SplThread):
 			# ist ein normaler Stream?
 			# ist es ein Record- Eintrag?
 			movie_list_id = queue_event.data['edit_id']
-			if movie_list_id in self.movielist:  # an existing entry was edited
+			if movie_list_id in self.movielist and not quick_search_name:  # an existing entry was edited, and it was not a quicksearch
 				print("Molist Eintrag existiert schon")
 				movie_list_entry = self.movielist[movie_list_id]
 			else:
@@ -336,6 +339,9 @@ class SplPlugin(SplThread):
 				self.movielist[movie_list_id] = movie_list_entry
 			movie_list_entry['type'] = movie_list[0].source_type
 			movie_list_entry['query'] = queue_event.data['query']
+			#as this is not a quicksearch entry anymore, we must make sure that it does not contain a 
+			# quicksearch name anymore
+			movie_list_entry['query']['name']=''
 			movie_list_entry['movie_info']= MovieInfo(
 				queue_event.data['movie_info_id'],  # id
 				movie_list[0].title,  # title
@@ -373,6 +379,15 @@ class SplPlugin(SplThread):
 			(self.play_total_secs-self.play_time)//60, (self.play_total_secs-self.play_time) % 60)
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
 			'type': 'app_player_pos', 'config': self.player_info})
+
+	def send_home_movie_list(self, original_queue_event):
+		new_event = copy.copy(original_queue_event)
+		new_event.type = defaults.MSG_SOCKET_MSG
+		new_event.data = {
+			'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_LIST, 'config': self.prepare_movie_list(original_queue_event.user)}
+		#print("new_event", new_event.data['config'])
+		self.modref.message_handler.queue_event_obj(new_event)
+
 
 	def send_player_devices(self, devices,movie_id):
 		# we set the device info
