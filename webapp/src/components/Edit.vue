@@ -144,30 +144,33 @@ export default {
 		}
 	},
 	created() {
-		messenger.register("edit", this.messenger_onMessage, null, null);
-		this.id = this.$route.params.id;
-		if (this.$route.params.query){
-			this.query=this.$route.params.query
-		}else{
-			this.query={
-				name: "",
-				source_items: [],
-				source_values: [],
-				provider_items: [],
-				provider_values: [],
-				category_items: [],
-				category_values: [],
-				title: "",
-				description: ""
-			}
-		}
-		this.edit_query_available_sources()
-		this.edit_query_available_providers()
-		this.edit_query_available_categories()
-		
 		try {
+			messenger.register("edit", this.messenger_onMessage, null, null);
+			this.id = this.$route.params.id;
+			if (this.$route.params.query){
+				this.query=this.$route.params.query
+				if (this.query.name!==""){
+				this.edit_query_available_movies()
+				}
+			}else{
+				this.query={
+					name: "",
+					source_items: [],
+					source_values: [],
+					provider_items: [],
+					provider_values: [],
+					category_items: [],
+					category_values: [],
+					title: "",
+					description: ""
+				}
+			}
+			this.edit_query_available_sources()
+			// if we edit a quick search, identified by a name given, we instandly do a search
+
 			console.log("Edit loaded");
 		} catch (error) {
+			console.log("Edit exception",error);
 			this.nav2Main();
 		}
 	},
