@@ -56,7 +56,7 @@
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
 
-				<v-list-item-content @click="nav2Play(item.id)">
+				<v-list-item-content @click="nav2Play(item.movie_info.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
 						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
@@ -89,7 +89,7 @@
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
 
-				<v-list-item-content @click="nav2Play(item.id)">
+				<v-list-item-content @click="nav2Play(item.movie_info.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
 						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
@@ -121,7 +121,7 @@
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
 
-				<v-list-item-content @click="nav2Play(item.id)">
+				<v-list-item-content @click="nav2Play(item.movie_info.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
 						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
