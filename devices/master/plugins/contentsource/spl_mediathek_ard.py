@@ -15,6 +15,11 @@ import copy
 from io import StringIO
 import threading
 from pprint import pprint
+import lzma
+import time
+import urllib
+from urllib.request import urlopen,urlretrieve
+from xml.etree.ElementTree import parse
 
 # Non standard modules (install with pip)
 
@@ -128,7 +133,7 @@ class SplPlugin(SplThread):
 	def _run(self):
 		''' starts the server
 		'''
-		self.load_filmlist('')
+		self.load_filmlist(os.path.abspath('online_filmlist')) # BUG: we need to give a absolute path as the webserver will change the path suddenly later...
 		tick = 0
 		while self.runFlag:
 			time.sleep(1)
@@ -137,8 +142,52 @@ class SplPlugin(SplThread):
 		self.runFlag = False
 
 	def load_filmlist(self, file_name):
+		print(os.path.abspath(file_name))
+		try: # does the file exist at all already?
+			filmlist_time_stamp= os.path.getmtime(file_name)
+		except:
+			filmlist_time_stamp=0
+		print("timestamp",filmlist_time_stamp,time.time())
+		if filmlist_time_stamp<time.time() - 60*60*48: # file is older as 48 hours
+			print("Retrieve film list")
+			try:
+				var_url = urlopen('https://res.mediathekview.de/akt.xml')
+				server_list = parse(var_url)
+				print(server_list)
+				url=None
+				prio=999 # dummy start value
+				for item in server_list.iterfind('Server'):
+					this_prio = int(item.findtext('Prio'))
+					if this_prio< prio: # filter for the server with the lowest prio
+						prio=this_prio
+						url = item.findtext('URL')
+						print(url)
+						print(prio)
+						print()
+				if url:
+					try:
+						urlretrieve(url,file_name+'.pack')
+					except  Exception as e:
+						print('failed filmlist download',str(e))
+					try:
+						with open(file_name,'wb') as unpack_file_handle:
+							unpack_file_handle.write(lzma.open(file_name+'.pack').read())
+					except  Exception as e:
+						print('failed filmlist unpack',str(e))
+				
+			except  Exception as e:
+				print('failed filmlist server list download')
 		loader_remember_data={'provider':'','category':''}
-		with open('/home/steffen//Desktop/workcopies/schnipsl/Filmliste-akt') as data:
+
+
+		'''
+		Bootstrap to read the filmlist:
+		1. read the list of actual filmlist URLs from https://res.mediathekview.de/akt.xml
+		'''
+
+
+		#with open('/home/steffen//Desktop/workcopies/schnipsl/Filmliste-akt') as data:
+		with open(file_name) as data:
 			for liste in JsonSlicer(data, ('X'), path_mode='map_keys'):
 				data_array=liste[1]
 				# "Sender"	0,
@@ -175,7 +224,7 @@ class SplPlugin(SplThread):
 					source_type=defaults.MOVIE_TYPE_STREAM
 					plugin_name=self.plugin_names[1]
 					provider=provider.replace('Livestream','').strip()
-					print("Livestream")
+					#print("Livestream")
 				else:
 					plugin_name=self.plugin_names[0]
 					source_type=defaults.MOVIE_TYPE_RECORD
