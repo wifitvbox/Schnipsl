@@ -24,7 +24,7 @@
 					small-chips
 					:label="$t('edit_select_source')"
 					multiple
-					@input="edit_query_available_sources()"
+					@input="edit_query_available_providers()"
 				></v-autocomplete>
 				<v-autocomplete
 					v-model="query.provider_values"
@@ -34,7 +34,7 @@
 					small-chips
 					:label="$t('edit_select_provider')"
 					multiple
-					@input="edit_query_available_providers()"
+					@input="edit_query_available_categories()"
 				></v-autocomplete>
 				<v-autocomplete
 					v-model="query.category_values"
@@ -44,7 +44,6 @@
 					small-chips
 					:label="$t('edit_select_category')"
 					multiple
-					@input="edit_query_available_categories()"
 				></v-autocomplete>
 				<v-text-field v-model="query.title" :label="$t('edit_select_title')"></v-text-field>
 				<v-text-field v-model="query.description" :label="$t('edit_select_description')"></v-text-field>
@@ -56,7 +55,7 @@
 		<v-divider></v-divider>
 		<v-list>
 			<v-list-item v-for="movie_info in movie_info_list" :key="movie_info.id">
-				<!--v-card class="mx-auto" max-width="344"-->
+<!-- 			
 				<v-card class="mx-auto" max-width="344">
 					<v-card-title @click="requestPlay(movie_info.id)">{{movie_info.title +' • '+ movie_info.category}}</v-card-title>
 
@@ -82,6 +81,38 @@
 						</div>
 					</v-expand-transition>
 				</v-card>
+ -->
+
+<!-- 				<v-list-item-avatar>
+					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
+				</v-list-item-avatar>
+ -->
+				<v-list-item-content @click="requestPlay(movie_info.id)">
+					<v-list-item-title v-text="movie_info.title +' • '+ movie_info.category"></v-list-item-title>
+					<v-list-item-subtitle
+						v-text="movie_info.source +' • '+ movie_info.date +' • '+ movie_info.duration +' • '+ movie_info.viewed"
+					></v-list-item-subtitle>
+					<v-expand-transition>
+						<div v-show="movie_info.description_show">
+							<v-divider></v-divider>
+
+							<v-card-text>{{movie_info.description}}</v-card-text>
+						</div>
+					</v-expand-transition>
+				</v-list-item-content>
+
+				<v-list-item-action>
+					<v-btn icon class="mx-4">
+						<v-icon size="24px">mdi-record</v-icon>
+					</v-btn>
+					<v-btn icon @click="movie_info.description_show = !movie_info.description_show">
+						<v-icon>{{ movie_info.description_show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+					</v-btn>
+				</v-list-item-action>
+
+
+
+
 			</v-list-item>
 		</v-list>
 			<v-row justify="center">
@@ -112,30 +143,8 @@ export default {
 		edit_delete_dialog_show : false,
 		id: 0,
 		query : {
-		/*
-		name: "Dokumentationen",
-		source_items: ["TV", "Mediathek", "Podcasts", "YouTube"],
-		source_values: ["Mediathek", "TV"],
-		provider_items: ["ARD", "ZDF", "ARTE", "3SAT"],
-		provider_values: ["ARD", "3SAT"],
-		category_items: ["Krimi", "Fantasie", "Action", "Doku"],
-		category_values: ["Doku"],
-		title: "37",
-		description: ""
-		*/
 		},
 		movie_info_list: [
-			/*
-			{
-				id: "1",
-				title: "Titel-A",
-				category: "Typ",
-				source: "Quelle",
-				date: "Datum",
-				duration: "Dauer",
-				viewed: "geschaut"
-			}
-			*/
 		]
 	}),
 	computed: {
