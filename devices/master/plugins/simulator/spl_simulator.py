@@ -159,7 +159,7 @@ class SplPlugin(SplThread):
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_SOURCES:
 			available_items = self.modref.message_handler.query(
 				Query(queue_event.user, defaults.QUERY_AVAILABLE_SOURCES, None))
-			# we set the device info
+			available_items.sort()
 			data = {
 				'select_items': available_items,
 				'select_values': self.filter_select_values(available_items, queue_event.data['select_source_values'])
@@ -170,7 +170,7 @@ class SplPlugin(SplThread):
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_PROVIDERS:
 			available_items = self.modref.message_handler.query(
 				Query(queue_event.user, defaults.QUERY_AVAILABLE_PROVIDERS, queue_event.data))
-			# we set the device info
+			available_items.sort()
 			data = {
 				'select_items': available_items,
 				'select_values': self.filter_select_values(available_items, queue_event.data['select_provider_values'])
@@ -181,7 +181,7 @@ class SplPlugin(SplThread):
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_CATEGORIES:
 			available_items = self.modref.message_handler.query(
 				Query(queue_event.user, defaults.QUERY_AVAILABLE_CATEGORIES, queue_event.data))
-			# we set the device info
+			available_items.sort()
 			data = {
 				'select_items': available_items,
 				'select_values': self.filter_select_values(available_items, queue_event.data['select_category_values'])
