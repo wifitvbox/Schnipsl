@@ -54,83 +54,7 @@ class SplPlugin(SplThread):
 			'playTime': '00:00',
 			'remainingTime': '00:00'
 		}
-		self.movielist = {
-			'1': {
-				'type': 'template',
-						'clients': {'uschi': {}, 'steffen': {}},
-						'query': None,
-						'movie_info': MovieInfo(
-							'1',
-							'Titel-S',
-							'Typ',
-							'Quelle',
-							'Datum',
-							'Dauer',
-							'geschaut',
-							'Lorem ipsum..'
-						)
-			},
-			'2': {
-				'type': 'template',
-						'clients': {'uschi': {}},
-						'query': None,
-						'movie_info': MovieInfo(
-							'2',
-							'Titel-2-S',
-							'Typ',
-							'Quelle',
-							'Datum',
-							'Dauer',
-							'geschaut',
-							'Lorem ipsum..'
-						)
-			},
-			'3': {
-				'type': 'record',
-						'clients': {'uschi': {}, 'steffen': {}},
-						'query': None,
-						'movie_info': MovieInfo(
-							'3',
-							'Titel-Record-S',
-							'Typ',
-							'Quelle',
-							'Datum',
-							'Dauer',
-							'geschaut',
-							'Lorem ipsum..'
-						)
-			},
-			'4': {
-				'type': 'stream',
-						'clients': {'uschi': {}, 'steffen': {}},
-						'query': None,
-						'movie_info': MovieInfo(
-							'4',
-							'Titel-Stream-S',
-							'Typ',
-							'Quelle',
-							'Datum',
-							'Dauer',
-							'geschaut',
-							'Lorem ipsum..'
-						)
-			},
-			'5': {
-				'type': 'timer',
-						'clients': {'uschi': {}, 'steffen': {}},
-						'query': None,
-						'movie_info': MovieInfo(
-							'5',
-							'Titel-Timer-S',
-							'Typ',
-							'Quelle',
-							'Datum',
-							'Dauer',
-							'geschaut',
-							'Lorem ipsum..'
-						)
-			}
-		}
+		self.movielist = self.modref.store.read_users_value('movielist', {})
 
 	def prepare_movie_list(self, user):
 		''' prepares the list of the user movies to display on the client in the main window
@@ -188,7 +112,6 @@ class SplPlugin(SplThread):
 		if queue_event.type == '_join':
 			# send the movie list
 			self.send_home_movie_list(queue_event)
-			self.update_single_movie_clip('1')
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_DELETE_REQUEST:
 			movie_list_id=queue_event.data['edit_id']
 			if movie_list_id in self.movielist: # does the entry id exist
@@ -355,8 +278,10 @@ class SplPlugin(SplThread):
 				movie_list[0].description  # description
 			)
 
+			self.modref.store.write_users_value('movielist', self.movielist)
 			return movie_list_id, movie_list[0].uri()
 		else:
+			self.modref.store.write_users_value('movielist', self.movielist)
 			return None
 
 	def filter_select_values(self, value_list, actual_values):
