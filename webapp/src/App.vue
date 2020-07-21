@@ -1,7 +1,10 @@
 <template>
 	<v-app toolbar footer>
-		<div id="app">
+		<v-main>
+		<!-- Provides the application the proper gutter -->
+		<v-container fluid>
 			<router-view />
+		</v-container>
 			<v-row justify="center">
 				<v-dialog v-model="device_dialog_show" scrollable max-width="300px">
 					<v-card>
@@ -19,7 +22,9 @@
 						</v-card-actions>
 					</v-card>
 				</v-dialog>
-			</v-row>			<v-footer padless fixed>
+			</v-row>
+			</v-main>
+			<v-footer padless  >
 				<!--v-card class="flex" flat tile-->
 				<v-card class="mx-auto" max-width="600">
 					<v-card-title>{{movie_info.title}} • {{movie_info.category}}</v-card-title>
@@ -61,7 +66,6 @@
 					</v-expand-transition>
 				</v-card>
 			</v-footer>
-		</div>
 	</v-app>
 </template>
 
