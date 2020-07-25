@@ -1,3 +1,0 @@
-when running Schnipsl as a docker container, to store the settings  
-docker needs to have these data in a subdirectory, not in root, so we generate
-this folder by put this text into it...

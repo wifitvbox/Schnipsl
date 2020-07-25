@@ -33,6 +33,8 @@ sys.path.append(os.path.abspath(ScriptPath))
 
 
 class SplPlugin(SplThread):
+	plugin_id='simulator'
+	plugin_names=['Plugin Simulator']
 
 	def __init__(self, modref):
 		''' creates the simulator
@@ -41,10 +43,12 @@ class SplPlugin(SplThread):
 
 		super().__init__(modref.message_handler, self)
 		modref.message_handler.add_event_handler(
-			'simulator', 0, self.event_listener)
+		self.plugin_id, 0, self.event_listener)
 		modref.message_handler.add_query_handler(
-			'simulator', 0, self.query_handler)
+		self.plugin_id, 0, self.query_handler)
 		self.runFlag = True
+
+		##### plugin specific stuff
 		self.play_time = 0
 		self.play_total_secs = 90*60
 		self.player_info = {
@@ -61,7 +65,7 @@ class SplPlugin(SplThread):
 		'''
 		res = {'templates': [], 'records': [], 'streams': [], 'timers': []}
 		for id, movie in self.movielist.items():
-			if not user.name in movie['clients']:
+			if not user in movie['clients']:
 				continue
 			if movie['type'] == defaults.MOVIE_TYPE_TEMPLATE:
 				res['templates'].append(
@@ -124,6 +128,18 @@ class SplPlugin(SplThread):
 		if queue_event.type == defaults.MSG_SOCKET_SELECT_PLAYER_DEVICE:
 				# request to play a movie on a device
 				self.play_request(queue_event)
+				# starts to play movie on device
+				print("plays schnipsl {0} on device ".format(queue_event.data['movie_id']))
+				movie_list = self.modref.message_handler.query(
+				Query(queue_event.user, defaults.QUERY_MOVIE_ID, queue_event.data['movie_id']))
+				if movie_list:
+					self.modref.message_handler.queue_event(None, defaults.PLAYER_PLAY_REQUEST, {
+			'user': queue_event.user , 'movie': movie_list[0], 'movie_id': queue_event.data['movie_id'], 'device':queue_event.data['timer_dev']})
+
+
+		'''
+		MSG_SOCKET_SELECT_PLAYER_DEVICE in PLAYER_PLAY_REQUEST umarbeiten
+		und die untrige Player- Steuerung in den Player rübermoven 
 
 		if queue_event.type == defaults.MSG_SOCKET_PLAYER_KEY:
 			if queue_event.data['keyid'] == 'prev':
@@ -142,6 +158,7 @@ class SplPlugin(SplThread):
 				self.play_time = self.play_total_secs
 				self.player_info['play'] = False
 			self.send_player_status()
+		'''
 		if queue_event.type == defaults.MSG_SOCKET_PLAYER_TIME:
 			self.play_time = queue_event.data['timer_pos'] * \
 				self.play_total_secs//100
@@ -350,7 +367,7 @@ class SplPlugin(SplThread):
 					if self.play_time > 90*60:
 						self.play_time = 0
 						self.player_info['play'] = False
-					self.send_player_status()
+					#self.send_player_status()
 
 	def _stop(self):
 		self.runFlag = False

@@ -37,6 +37,13 @@ QUERY_AVAILABLE_CATEGORIES = 'availablecategories'
 QUERY_AVAILABLE_MOVIES = 'availablemovies'
 QUERY_MOVIE_ID = 'movieid'
 
+# player messages
+PLAYER_PLAY_REQUEST = 'playerplayrequest'
+
+# device messages
+DEVICE_PLAY_REQUEST = 'deviceplayrequest'
+DEVICE_PLAY_STOP = 'deviceplaystop'
+
 # limits the number of search results when do a query
 MAX_QUERY_SIZE = 40
 

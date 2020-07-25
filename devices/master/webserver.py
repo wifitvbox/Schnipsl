@@ -82,17 +82,17 @@ class WSZuulHandler(HTTPWebSocketsHandler):
 			self.user.name= data['config']['name']
 
 		global modref
-		modref.message_handler.queue_event(self.user,data['type'],data['config'])
+		modref.message_handler.queue_event(self.user.name,data['type'],data['config'])
 
 	def on_ws_connected(self):
 		''' thows a connect event about that new connection
 		'''
 		#self.log_message('%s', 'websocket connected')
-		self.user = WebsocketUser("", self)
+		self.user = WebsocketUser(None, self)
 		global ws_clients
 		ws_clients.append(self.user)
 		global modref
-		modref.message_handler.queue_event(self.user,defaults.MSG_SOCKET_CONNECT,None)
+		modref.message_handler.queue_event(self.user.name,defaults.MSG_SOCKET_CONNECT,None)
 
 	def on_ws_closed(self):
 		''' thows a close event about the closed connection
@@ -127,7 +127,7 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 		#print("webserver event handler",queue_event.type,queue_event.user)
 		if queue_event.type==defaults.MSG_SOCKET_MSG:
 			for user in ws_clients:
-				if queue_event.user == None or queue_event.user==user:
+				if queue_event.user == None or queue_event.user==user.name:
 					 user.ws.emit(queue_event.data['type'], queue_event.data['config'])
 			return None # no futher handling of this event
 		return queue_event
