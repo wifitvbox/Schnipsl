@@ -63,11 +63,11 @@ class SplPlugin(SplThread):
 		print("playerhandler event handler",
 			  queue_event.type, queue_event.user)
 		if queue_event.type == defaults.PLAYER_PLAY_REQUEST:
-			device = queue_event.data['device']
+			device_friedly_name = queue_event.data['device']
 			movie = queue_event.data['movie']
 			movie_id = queue_event.data['movie_id']
-			self.stop_play(device)
-			self.start_play(queue_event.user, device, movie, movie_id)
+			self.stop_play(device_friedly_name,queue_event.user)
+			self.start_play(queue_event.user, device_friedly_name, movie, movie_id)
 		if queue_event.type == defaults.MSG_SOCKET_PLAYER_KEY:
 			handle_keys(queue_event)
 		return queue_event
@@ -79,8 +79,8 @@ class SplPlugin(SplThread):
 			  queue_event.user, max_result_count)
 		return[]
 
-	def start_play(self, user, device, movie, movie_id):
-		self.players[user] = {'movie': movie, 'device': device, 'player_info':{
+	def start_play(self, user, device_friendly_name, movie, movie_id):
+		self.players[user] = {'movie': movie, 'device': device_friendly_name, 'player_info':{
 				'play': True,
 				'position': 0,
 				'volume': 3,
@@ -91,31 +91,41 @@ class SplPlugin(SplThread):
 			}
 		}
 		self.modref.message_handler.queue_event(None, defaults.DEVICE_PLAY_REQUEST, {
-			'user': user, 'movie': movie, 'movie_id': movie_id, 'device': device})
+			 'movie_url': movie.url,'movie_mime_type': 'video/mp4', 'device_friendly_name': device_friendly_name})
 		print('Start play for {0} {1} {2} {3}'.format(
-			user, device, movie_id, movie.url))
+			user, device_friendly_name, movie_id, movie.url))
 
-	def stop_play(self, device):
+	def pause_play(self, user, device_friendly_name):
+		self.modref.message_handler.queue_event(None, defaults.DEVICE_PLAY_PAUSE, {
+			 'device_friendly_name': device_friendly_name})
+		print('Pause play for {0}'.format(device_friendly_name))
+	
+	def resume_play(self, user, device_friendly_name):
+		self.modref.message_handler.queue_event(None, defaults.DEVICE_PLAY_RESUME, {
+			'user': user, 'device_friendly_name': device_friendly_name})
+		print('Resume play for {0}'.format(device_friendly_name))
+	
+	def stop_play(self, user, device_friendly_name):
 		self.modref.message_handler.queue_event(None, defaults.DEVICE_PLAY_STOP, {
-			'device': device})
-		print('Stop play for {0}'.format(device))
+			'user': user, 'device_friendly_name': device_friendly_name})
+		print('Stop play for {0}'.format(device_friendly_name))
 	
 	def handle_keys(self, user, data):
 		if self.players[user]:
 			user_player=self.players[user]
-		if queue_event.data['keyid'] == 'prev':
+		if data['keyid'] == 'prev':
 			user_player.play_time = 0
-		if queue_event.data['keyid'] == 'minus10':
+		if data['keyid'] == 'minus10':
 			user_player.play_time -= 10*60
 			if user_player.play_time < 0:
 				user_player.play_time = 0
-		if queue_event.data['keyid'] == 'play':
+		if data['keyid'] == 'play':
 			user_player.player_info['play'] = not user_player.player_info['play']
-		if queue_event.data['keyid'] == 'plus10':
+		if data['keyid'] == 'plus10':
 			user_player.play_time += 10*60
 			if user_player.play_time > user_player.play_total_secs:
 				user_player.play_time = user_player.play_total_secs
-		if queue_event.data['keyid'] == 'next':
+		if data['keyid'] == 'next':
 			user_player.play_time = user_player.play_total_secs
 			user_player.player_info['play'] = False
 		self.send_player_status(user,user_player)

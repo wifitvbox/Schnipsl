@@ -42,6 +42,8 @@ PLAYER_PLAY_REQUEST = 'playerplayrequest'
 
 # device messages
 DEVICE_PLAY_REQUEST = 'deviceplayrequest'
+DEVICE_PLAY_PAUSE = 'deviceplaypause'
+DEVICE_PLAY_RESUME = 'deviceplayresume'
 DEVICE_PLAY_STOP = 'deviceplaystop'
 
 # limits the number of search results when do a query
