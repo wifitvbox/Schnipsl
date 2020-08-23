@@ -63,12 +63,13 @@ class SplPlugin(SplThread):
 		print("playerhandler event handler",
 			  queue_event.type, queue_event.user)
 		if queue_event.type == defaults.PLAYER_PLAY_REQUEST:
-			user = queue_event.data['user']
 			device = queue_event.data['device']
 			movie = queue_event.data['movie']
 			movie_id = queue_event.data['movie_id']
 			self.stop_play(device)
-			self.start_play(user, device, movie, movie_id)
+			self.start_play(queue_event.user, device, movie, movie_id)
+		if queue_event.type == defaults.MSG_SOCKET_PLAYER_KEY:
+			handle_keys(queue_event)
 		return queue_event
 
 	def query_handler(self, queue_event, max_result_count):
@@ -98,6 +99,27 @@ class SplPlugin(SplThread):
 		self.modref.message_handler.queue_event(None, defaults.DEVICE_PLAY_STOP, {
 			'device': device})
 		print('Stop play for {0}'.format(device))
+	
+	def handle_keys(self, user, data):
+		if self.players[user]:
+			user_player=self.players[user]
+		if queue_event.data['keyid'] == 'prev':
+			user_player.play_time = 0
+		if queue_event.data['keyid'] == 'minus10':
+			user_player.play_time -= 10*60
+			if user_player.play_time < 0:
+				user_player.play_time = 0
+		if queue_event.data['keyid'] == 'play':
+			user_player.player_info['play'] = not user_player.player_info['play']
+		if queue_event.data['keyid'] == 'plus10':
+			user_player.play_time += 10*60
+			if user_player.play_time > user_player.play_total_secs:
+				user_player.play_time = user_player.play_total_secs
+		if queue_event.data['keyid'] == 'next':
+			user_player.play_time = user_player.play_total_secs
+			user_player.player_info['play'] = False
+		self.send_player_status(user,user_player)
+
 
 	def _run(self):
 		''' starts the server

@@ -60,12 +60,12 @@ class SplPlugin(SplThread):
 		}
 		self.movielist = self.modref.store.read_users_value('movielist', {})
 
-	def prepare_movie_list(self, user):
-		''' prepares the list of the user movies to display on the client in the main window
+	def prepare_movie_list(self, user_name):
+		''' prepares the list of the user_name movies to display on the client in the main window
 		'''
 		res = {'templates': [], 'records': [], 'streams': [], 'timers': []}
 		for id, movie in self.movielist.items():
-			if not user in movie['clients']:
+			if not user_name in movie['clients']:
 				continue
 			if movie['type'] == defaults.MOVIE_TYPE_TEMPLATE:
 				res['templates'].append(
@@ -120,14 +120,12 @@ class SplPlugin(SplThread):
 			movie_list_id=queue_event.data['edit_id']
 			if movie_list_id in self.movielist: # does the entry id exist
 				movie_list_entry=self.movielist[movie_list_id]
-				if queue_event.user.name in movie_list_entry['clients']: # is the user client of this entry?
-					del(movie_list_entry['clients'][queue_event.user.name])
+				if queue_event.user in movie_list_entry['clients']: # is the user client of this entry?
+					del(movie_list_entry['clients'][queue_event.user])
 				if not movie_list_entry['clients']: # are there no more clients left?
 					del (self.movielist[movie_list_id]) # remove the whole entry
 				self.send_home_movie_list(queue_event)
 		if queue_event.type == defaults.MSG_SOCKET_SELECT_PLAYER_DEVICE:
-				# request to play a movie on a device
-				self.play_request(queue_event)
 				# starts to play movie on device
 				print("plays schnipsl {0} on device ".format(queue_event.data['movie_id']))
 				movie_list = self.modref.message_handler.query(
@@ -135,30 +133,6 @@ class SplPlugin(SplThread):
 				if movie_list:
 					self.modref.message_handler.queue_event(None, defaults.PLAYER_PLAY_REQUEST, {
 			'user': queue_event.user , 'movie': movie_list[0], 'movie_id': queue_event.data['movie_id'], 'device':queue_event.data['timer_dev']})
-
-
-		'''
-		MSG_SOCKET_SELECT_PLAYER_DEVICE in PLAYER_PLAY_REQUEST umarbeiten
-		und die untrige Player- Steuerung in den Player rübermoven 
-
-		if queue_event.type == defaults.MSG_SOCKET_PLAYER_KEY:
-			if queue_event.data['keyid'] == 'prev':
-				self.play_time = 0
-			if queue_event.data['keyid'] == 'minus10':
-				self.play_time -= 10*60
-				if self.play_time < 0:
-					self.play_time = 0
-			if queue_event.data['keyid'] == 'play':
-				self.player_info['play'] = not self.player_info['play']
-			if queue_event.data['keyid'] == 'plus10':
-				self.play_time += 10*60
-				if self.play_time > self.play_total_secs:
-					self.play_time = self.play_total_secs
-			if queue_event.data['keyid'] == 'next':
-				self.play_time = self.play_total_secs
-				self.player_info['play'] = False
-			self.send_player_status()
-		'''
 		if queue_event.type == defaults.MSG_SOCKET_PLAYER_TIME:
 			self.play_time = queue_event.data['timer_pos'] * \
 				self.play_total_secs//100
@@ -212,13 +186,15 @@ class SplPlugin(SplThread):
 			self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
 				'type': defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_MOVIES_ANSWER, 'config': movie_list})
 
+		# for further pocessing, do not forget to return the queue event
+		return queue_event
+
+
 	def query_handler(self, queue_event, max_result_count):
 		''' try to send simulated answers
 		'''
 		print("simulator query handler", queue_event.type,
 			  queue_event.user, max_result_count)
-		if queue_event.type == defaults.QUERY_FEASIBLE_DEVICES:
-			return ['TV Wohnzimmer-S', 'TV Küche-s', 'Chromecast Büro']
 		return[]
 
 	def update_movie_list(self, queue_event):
@@ -230,14 +206,14 @@ class SplPlugin(SplThread):
 		if quick_search_name:
 			quick_search_entry=None
 			for movie_list_entry in self.movielist.values():
-				if movie_list_entry['query'] and movie_list_entry['query']['name'].lower()==quick_search_name.lower() and queue_event.user.name in movie_list_entry['clients']:
+				if movie_list_entry['query'] and movie_list_entry['query']['name'].lower()==quick_search_name.lower() and queue_event.user in movie_list_entry['clients']:
 					quick_search_entry=movie_list_entry
 					break
 			if not quick_search_entry:
 				quick_search_entry = {
 					'clients': {},
 				}
-				quick_search_entry['clients'][queue_event.user.name] = {}
+				quick_search_entry['clients'][queue_event.user] = {}
 				# new entry, so it gets its own identifier
 				quick_search_entry_id = str(uuid.uuid4())
 				self.movielist[quick_search_entry_id] = quick_search_entry
@@ -273,7 +249,7 @@ class SplPlugin(SplThread):
 					'clients': {},
 
 				}
-				movie_list_entry['clients'][queue_event.user.name] = {}
+				movie_list_entry['clients'][queue_event.user] = {}
 				# new entry, so it gets its own identifier
 				movie_list_id = str(uuid.uuid4())
 				self.movielist[movie_list_id] = movie_list_entry
@@ -314,16 +290,6 @@ class SplPlugin(SplThread):
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
 			'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_UPDATE, 'config': {'id': id, 'movie_info': self.movielist[id]}})
 
-	def send_player_status(self):
-		self.player_info['position'] = self.play_time * \
-			100 // self.play_total_secs
-		self.player_info['playTime'] = '{:02d}:{:02d}'.format(
-			self.play_time//60, self.play_time % 60)
-		self.player_info['remainingTime'] = '{:02d}:{:02d}'.format(
-			(self.play_total_secs-self.play_time)//60, (self.play_total_secs-self.play_time) % 60)
-		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
-			'type': 'app_player_pos', 'config': self.player_info})
-
 	def send_home_movie_list(self, original_queue_event):
 		new_event = copy.copy(original_queue_event)
 		new_event.type = defaults.MSG_SOCKET_MSG
@@ -343,10 +309,6 @@ class SplPlugin(SplThread):
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
 			'type': defaults.MSG_SOCKET_QUERY_FEASIBLE_DEVICES_ANSWER, 'config': data})
 
-	def play_request(self, queue_event):
-		# starts to play movie on device
-		print("plays schnipsl {0} on device ".format(queue_event.data['movie_id']))
-
 	def send_movie_info(self, movie_list_id):
 		self.modref.message_handler.queue_event(None, defaults.MSG_SOCKET_MSG, {
 			'type': defaults.MSG_SOCKET_APP_MOVIE_INFO, 'config': self.movielist[movie_list_id]['movie_info']})
@@ -354,20 +316,8 @@ class SplPlugin(SplThread):
 	def _run(self):
 		''' starts the server
 		'''
-		tick = 0
 		while self.runFlag:
 			time.sleep(1)
-			tick += 1
-			if tick > 4:
-				tick = 0
-				if self.player_info['play']:
-					self.play_time += 5
-					if self.play_time < 0:
-						self.play_time = 0
-					if self.play_time > 90*60:
-						self.play_time = 0
-						self.player_info['play'] = False
-					#self.send_player_status()
 
 	def _stop(self):
 		self.runFlag = False
