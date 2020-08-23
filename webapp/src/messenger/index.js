@@ -74,7 +74,6 @@ class WebService {
 
     this.signaling_socket.onerror = function (err) {
       console.log("Got error", err)
-      window.showLogin()
     }
 
 

@@ -242,6 +242,11 @@ export default {
 	created() {
 		messenger.register("home", this.messenger_onMessage, null, null);
 		messenger.init("steffen", "bla", "register");
+			if (localStorage.userName) {
+				// username = localStorage.user
+			} else {
+				this.nav2Set();
+			}
 	},
 	methods: {
 		nav2Set() {
@@ -296,33 +301,6 @@ export default {
 
 				this.movie_info_list[data.id] = data;
 			}
-		},
-		sendToServer() {
-			// eslint-disable-next-line
-			if (false) {
-				// demo mode
-				// delete local stored data
-				// window.klobsdata = []
-				window.klobsdata["sessiondata"]["trainings"] = [];
-				localStorage.removeItem("sessiondata");
-				this.sessiondata = { trainings: [] };
-			} else {
-				this.syncData(self, this.serializeSessiondata(this.sessiondata));
-			}
-		},
-		// eslint-disable-next-line
-		syncData: function(self, sessionData) {
-			// das mit dem Passwort steht hier: https://stackoverflow.com/questions/43842793/basic-authentication-with-fetch
-			// var username = ''
-			if (localStorage.user) {
-				// username = localStorage.user
-			} else {
-				this.nav2Set();
-			}
-		},
-		updateOnlineStatus(e) {
-			const { type } = e;
-			this.onLine = type === "online";
 		}
 	}
 };
