@@ -19,7 +19,8 @@
 	"player_select_device_dialog_select":"Auswahl",
 	"edit_delete_dialog_header":"Schnipsl löschen?",
 	"edit_delete_dialog_cancel":"Abbruch",
-	"edit_delete_dialog_select":"Löschen"
+	"edit_delete_dialog_select":"Löschen",
+	"locale_date_format":"DD.MM.YYYY"
 }
 
 

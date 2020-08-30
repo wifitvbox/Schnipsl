@@ -24,7 +24,7 @@
 					<v-list-item-title v-text="item.movie_info.title"></v-list-item-title>
 <!-- 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
+						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -59,7 +59,7 @@
 				<v-list-item-content @click="nav2Play(item.movie_info.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
+						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -92,7 +92,7 @@
 				<v-list-item-content @click="nav2Play(item.movie_info.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
+						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format'))  +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -124,7 +124,7 @@
 				<v-list-item-content @click="nav2Play(item.movie_info.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.source +' • '+ item.movie_info.date +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
+						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -155,6 +155,7 @@
 <script>
 import router from "../router";
 import messenger from "../messenger";
+import moment from 'moment';
 export default {
 	name: "Schnipsl",
 	title() {
@@ -301,6 +302,9 @@ export default {
 
 				this.movie_info_list[data.id] = data;
 			}
+		},
+		localDate(timestamp, locale){
+			return moment.unix(timestamp).local().format(locale)
 		}
 	}
 };

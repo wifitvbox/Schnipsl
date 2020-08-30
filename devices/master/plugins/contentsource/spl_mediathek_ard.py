@@ -188,7 +188,9 @@ class SplPlugin(SplThread):
 
 		#with open('/home/steffen//Desktop/workcopies/schnipsl/Filmliste-akt') as data:
 		with open(file_name) as data:
+			count=0
 			for liste in JsonSlicer(data, ('X'), path_mode='map_keys'):
+				count+=1
 				data_array=liste[1]
 				# "Sender"	0,
 				# "Thema" 	1,
@@ -246,4 +248,4 @@ class SplPlugin(SplThread):
 				self.movies[plugin_name][new_movie.uri()]=new_movie
 
 
-		print("filmlist loaded")
+		print("filmlist loaded, {0} entries",count)

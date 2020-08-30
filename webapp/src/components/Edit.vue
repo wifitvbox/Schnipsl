@@ -3,13 +3,13 @@
 
 	<v-card max-width="600" class="mx-auto">
 		<v-toolbar color="yellow">
-			<v-toolbar-items class="hidden-sm-and-down">
+			<v-toolbar-items>
 				<v-btn icon @click="edit_delete_dialog_show = true">
 					<v-icon>mdi-delete</v-icon>
 				</v-btn>
-
 				<v-divider vertical></v-divider>
 				<v-spacer></v-spacer>
+
 			</v-toolbar-items>
 		</v-toolbar>
 		{{$t('edit_select_header')}}

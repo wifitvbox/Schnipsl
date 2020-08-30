@@ -7,7 +7,6 @@ import router from './router'
 import VueI18n from 'vue-i18n'
 import messages from './lang'
 
-
 Vue.config.productionTip = false
 
 Vue.use(VueI18n)

@@ -16,6 +16,7 @@ MSG_SOCKET_HOME_MOVIE_INFO_UPDATE = 'home_movie_info_update'
 MSG_SOCKET_HOME_PLAY_REQUEST = 'home_play_request'
 MSG_SOCKET_PLAYER_TIME = 'player_time'
 MSG_SOCKET_PLAYER_KEY = 'player_key'
+MSG_SOCKET_PLAYER_VOLUME = 'player_volume'
 MSG_SOCKET_SELECT_PLAYER_DEVICE = 'select_player_device'
 MSG_SOCKET_APP_MOVIE_INFO = 'app_movie_info'
 
@@ -45,6 +46,9 @@ DEVICE_PLAY_REQUEST = 'deviceplayrequest'
 DEVICE_PLAY_PAUSE = 'deviceplaypause'
 DEVICE_PLAY_RESUME = 'deviceplayresume'
 DEVICE_PLAY_STOP = 'deviceplaystop'
+DEVICE_PLAY_SETPOS = 'deviceplaysetpos'
+DEVICE_PLAY_SETVOLUME = 'deviceplaysetvolume'
+DEVICE_PLAY_STATUS = 'deviceplaystatus'
 
 # limits the number of search results when do a query
 MAX_QUERY_SIZE = 40

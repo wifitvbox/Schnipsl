@@ -43,8 +43,8 @@
 			<v-card class="mx-auto" max-width="600">
 				<v-card-title>{{movie_info.title}} • {{movie_info.category}}</v-card-title>
 
-				<v-card-subtitle>{{movie_info.source}} • {{movie_info.date}} • {{movie_info.duration}} • {{movie_info.viewed}}</v-card-subtitle>
-				<v-slider prepend-icon="mdi-volume-low" append-icon="mdi-volume-high" @click="player_volume()"></v-slider>
+				<v-card-subtitle>{{movie_info.source}} • {{localDate(movie_info.date,$t('locale_date_format'))}} • {{movie_info.duration}} • {{movie_info.viewed}}</v-card-subtitle>
+				<v-slider  v-model="app_player_pos.volume" prepend-icon="mdi-volume-low" append-icon="mdi-volume-high" @click="player_volume()"></v-slider>
 				<v-card-actions>
 					<v-btn icon class="mx-4" @click="device_dialog_show = true">
 						<v-icon size="24px">mdi-television-classic</v-icon>
@@ -85,6 +85,7 @@
 
 <script>
 import messenger from "./messenger";
+import moment from 'moment';
 export default {
 	data() {
 		return {
@@ -161,6 +162,9 @@ export default {
 					movie_id: this.movie_id,
 				});
 			}
+		},
+		localDate(timestamp, locale){
+			return moment.unix(timestamp).local().format(locale)
 		},
 	},
 };
