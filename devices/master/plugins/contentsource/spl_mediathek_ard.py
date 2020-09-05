@@ -20,6 +20,7 @@ import time
 import urllib
 from urllib.request import urlopen,urlretrieve
 from xml.etree.ElementTree import parse
+import re
 
 # Non standard modules (install with pip)
 
@@ -98,7 +99,8 @@ class SplPlugin(SplThread):
 		if queue_event.type == defaults.QUERY_AVAILABLE_MOVIES:
 			res=[]
 			titles=queue_event.params['select_title'].split()
-			descriptions=queue_event.params['select_description'].split()
+			#descriptions=queue_event.params['select_description'].split()
+			description_regexs=[re.compile (r'\b{}\b'.format(description),re.IGNORECASE) for description in queue_event.params['select_description'].split()]
 			for plugin_name in self.plugin_names:
 				if plugin_name in queue_event.params['select_source_values']: # this plugin is one of the wanted
 					if plugin_name in self.movies: # are there any movies stored for this plugin?
@@ -113,17 +115,17 @@ class SplPlugin(SplThread):
 											found=True
 									if not found:
 										continue
-								if descriptions:
+								if description_regexs:
 									found=False
-									for description in descriptions:
-										if description.lower() in movie.description.lower():
+									for description_regex in description_regexs:
+										if re.search(description_regex, movie.description):
 											found=True
 									if not found:
 										continue
 									
 
 								if max_result_count>0:
-									res.append(MovieInfo.movie_to_movie_info(movie,'','0%'))
+									res.append(MovieInfo.movie_to_movie_info(movie,''))
 									max_result_count-=1
 								else:
 									return res # maximal number of results reached

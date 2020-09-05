@@ -8,7 +8,7 @@ class MovieInfo(dict):
 	'''
 
 	@classmethod
-	def movie_to_movie_info(cls,movie,movie_type,played):
+	def movie_to_movie_info(cls,movie,movie_type):
 		return MovieInfo(
 					movie.uri(),
 					movie.title,
@@ -16,11 +16,10 @@ class MovieInfo(dict):
 					movie.source,
 					movie.timestamp,
 					movie.duration,
-					played,
 					movie.description
 				)
 
-	def __init__(self, id, title, category, source, date, duration, viewed, description,query=None):
+	def __init__(self, id, title, category, source, date, duration, description,query=None):
 		self['id'] = id
 		self['query'] = query
 		self['title'] = title
@@ -28,7 +27,6 @@ class MovieInfo(dict):
 		self['source'] = source
 		self['date'] = date
 		self['duration'] = duration
-		self['viewed'] = viewed
 		self['description'] = description
 		self['description_show'] = False
 

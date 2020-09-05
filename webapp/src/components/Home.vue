@@ -24,7 +24,7 @@
 					<v-list-item-title v-text="item.movie_info.title"></v-list-item-title>
 <!-- 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
+						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ item.movie_info.duration +' • '+ item.viewed"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -59,7 +59,7 @@
 				<v-list-item-content @click="nav2Play(item.movie_info.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
+						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ item.movie_info.duration +' • '+ item.viewed"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -92,7 +92,7 @@
 				<v-list-item-content @click="nav2Play(item.movie_info.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format'))  +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
+						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format'))  +' • '+ item.movie_info.duration +' • '+ item.viewed"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -124,7 +124,7 @@
 				<v-list-item-content @click="nav2Play(item.movie_info.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ item.movie_info.duration +' • '+ item.movie_info.viewed"
+						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ item.movie_info.duration +' • '+ item.viewed"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -169,26 +169,26 @@ export default {
 						id: "1",
 						icon: "mdi-magnify",
 						iconClass: "red lighten-1 white--text",
+						viewed: "geschaut",
 						movie_info: {
 							title: "Titel",
 							category: "Typ",
 							source: "Quelle",
 							date: "Datum",
 							duration: "Dauer",
-							viewed: "geschaut"
 						}
 					},
 					{
 						id: "2",
 						icon: "mdi-magnify",
 						iconClass: "red lighten-1 white--text",
+						viewed: "geschaut",
 						movie_info: {
 							title: "Titel-2",
 							category: "Typ",
 							source: "Quelle",
 							date: "Datum",
-							duration: "Dauer",
-							viewed: "geschaut"
+							duration: "Dauer"
 						}
 					}
 				],
@@ -197,13 +197,13 @@ export default {
 						id: "3",
 						icon: "mdi-play-pause",
 						iconClass: "blue white--text",
+						viewed: "geschaut",
 						movie_info: {
 							title: "Titel-Stream",
 							category: "Typ",
 							source: "Quelle",
 							date: "Datum",
-							duration: "Dauer",
-							viewed: "geschaut"
+							duration: "Dauer"
 						}
 					}
 				],
@@ -212,13 +212,13 @@ export default {
 						id: "4",
 						icon: "mdi-radio-tower",
 						iconClass: "green lighten-1 white--text",
+						viewed: "geschaut",
 						movie_info: {
 							title: "Titel-Stream",
 							category: "Typ",
 							source: "Quelle",
 							date: "Datum",
-							duration: "Dauer",
-							viewed: "geschaut"
+							duration: "Dauer"
 						}
 					}
 				],
@@ -227,13 +227,13 @@ export default {
 						id: "5",
 						icon: "mdi-clock",
 						iconClass: "amber white--text",
+						viewed: "geschaut",
 						movie_info: {
 							title: "Titel-Timer",
 							category: "Typ",
 							source: "Quelle",
 							date: "Datum",
-							duration: "Dauer",
-							viewed: "geschaut"
+							duration: "Dauer"
 						}
 					}
 				]
@@ -275,6 +275,7 @@ export default {
 					if (movie_info.id == id) {
 						//replace movie_info
 						console.log("home_movie_info_update records");
+						movie_info.viewed=data.viewed
 						movie_info.movie_info = data.movie_info.movie_info;
 					}
 				});
@@ -282,6 +283,7 @@ export default {
 					if (movie_info.id == id) {
 						//replace movie_info
 						console.log("home_movie_info_update streams");
+						movie_info.viewed=data.viewed
 						movie_info.movie_info = data.movie_info.movie_info;
 					}
 				});
@@ -289,6 +291,7 @@ export default {
 					if (movie_info.id == id) {
 						//replace movie_info
 						console.log("home_movie_info_update templates");
+						movie_info.viewed=data.viewed
 						movie_info.movie_info = data.movie_info.movie_info;
 					}
 				});
@@ -296,6 +299,7 @@ export default {
 					if (movie_info.id == id) {
 						//replace movie_info
 						console.log("home_movie_info_update timers");
+						movie_info.viewed=data.viewed
 						movie_info.movie_info = data.movie_info.movie_info;
 					}
 				});

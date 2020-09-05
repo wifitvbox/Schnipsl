@@ -40,7 +40,8 @@ QUERY_MOVIE_ID = 'movieid'
 
 # player messages
 PLAYER_PLAY_REQUEST = 'playerplayrequest'
-
+PLAYER_PLAY_REQUEST_WITHOUT_DEVICE = 'playerplayrequestwithoutdevice'
+PLAYER_SAVE_STATE_REQUEST = 'playersavestaterequest'
 # device messages
 DEVICE_PLAY_REQUEST = 'deviceplayrequest'
 DEVICE_PLAY_PAUSE = 'deviceplaypause'
