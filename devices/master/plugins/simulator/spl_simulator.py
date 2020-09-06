@@ -170,7 +170,7 @@ class SplPlugin(SplThread):
 
 					viewed=self.movielist[movie_list_id]['clients'][queue_event.user]['viewed']
 					self.modref.message_handler.queue_event(queue_event.user, defaults.PLAYER_PLAY_REQUEST_WITHOUT_DEVICE, {
-					'user': queue_event.user , 'viewed': viewed, 'movie': movie_list[0], 'movie_id': queue_event.data['movie_id']})
+					'user': queue_event.user , 'viewed': viewed, 'movie': movie_list[0], 'movie_id': queue_event.data['movie_info_id']})
 
 
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_SOURCES:

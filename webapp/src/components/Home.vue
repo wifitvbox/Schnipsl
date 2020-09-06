@@ -242,9 +242,10 @@ export default {
 	},
 	created() {
 		messenger.register("home", this.messenger_onMessage, null, null);
-		messenger.init("steffen", "bla", "register");
+		
 			if (localStorage.userName) {
-				// username = localStorage.user
+				var username = localStorage.userName
+				messenger.init(username, "bla", "register");
 			} else {
 				this.nav2Set();
 			}
