@@ -69,10 +69,10 @@ class SplPlugin(SplThread):
 				# CastStatus(is_active_input=True, is_stand_by=False, volume_level=1.0, volume_muted=False, app_id='CC1AD845', display_name='Default Media Receiver', namespaces=['urn:x-cast:com.google.cast.player.message', 'urn:x-cast:com.google.cast.media'], session_id='CCA39713-9A4F-34A6-A8BF-5D97BE7ECA5C', transport_id='web-9', status_text='')
 				mc = cast.media_controller
 				mc.play_media(
-					queue_event.data['movie_url'], queue_event.data['movie_mime_type'],current_time=queue_event.data['start_pos'])
+					queue_event.data['movie_url'], queue_event.data['movie_mime_type'],current_time=queue_event.data['current_time'])
 				mc.block_until_active()
-				#if queue_event.data['start_pos']:
-				#	self.set_seek(cast, queue_event.data['start_pos'])
+				#if queue_event.data['current_time']:
+				#	self.set_seek(cast, queue_event.data['current_time'])
 				print(mc.status)
 				self.chromecasts[queue_event.data['device_friendly_name']] = type('', (object,), {
 					'cast': cast,
@@ -163,7 +163,7 @@ class SplPlugin(SplThread):
 			name, service))
 		device_friendly_name = self.get_device_friendly_name_of_uuid(uuid)
 		if device_friendly_name in self.chromecasts:
-			cast_info = self.chromecasts[device_friendly_name].cast_info
+			cast_info = self.chromecasts[device_friendly_name]
 			cast_info.online = False
 			# sent last known position for later restart
 			chromecast_info = cast_info.chromecast_info
@@ -213,15 +213,17 @@ class SplPlugin(SplThread):
 			chromecast_info = {
 				'device_friendly_name': device_friendly_name,
 				'duration': cast.media_controller.status.duration,
-				'time': cast.media_controller.status.current_time,
+				'current_time': cast.media_controller.status.current_time,
 				'play': cast.media_controller.status.player_state == "PLAYING",
 				'volume': cast.status.volume_level,
 				'state_change': state_change_flag
 			}
+			if not chromecast_info['duration']:
+				chromecast_info['duration'] = -1
 			if cast.media_controller.status.supports_seek:
-				chromecast_info['time'] = cast.media_controller.status.current_time
+				chromecast_info['current_time'] = cast.media_controller.status.current_time
 			else:
-				chromecast_info['time'] = -1
+				chromecast_info['current_time'] = -1
 			cast_info.cast_info = chromecast_info
 			self.modref.message_handler.queue_event(
 				None, defaults.DEVICE_PLAY_STATUS, chromecast_info)

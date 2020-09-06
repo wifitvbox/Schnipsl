@@ -1,50 +1,52 @@
 <template>
 	<v-app toolbar footer>
-		<!--v-main -->
-			<!-- Provides the application the proper gutter -->
-			<v-container fluid>
-				<router-view />
-			</v-container>
-			<v-row justify="center">
-				<v-dialog v-model="device_dialog_show" scrollable max-width="300px">
-					<v-card>
-						<v-card-title>{{ $t('player_select_device_dialog_header') }}</v-card-title>
-						<v-divider></v-divider>
-						<v-card-text style="height: 300px;">
-							<v-radio-group v-model="device_info.actual_device" column>
-								<v-radio
-									v-for="item in device_info.devices"
-									:value="item"
-									:label="item"
-									:key="item"
-									:checked="item=device_info.actual_device"
-								></v-radio>
-							</v-radio-group>
-						</v-card-text>
-						<v-divider></v-divider>
-						<v-card-actions>
-							<v-btn
-								color="blue darken-1"
-								text
-								@click="device_dialog_show = false"
-							>{{ $t('player_select_device_dialog_cancel') }}</v-btn>
-							<v-btn
-								color="blue darken-1"
-								text
-								@click="player_select_device()"
-							>{{ $t('player_select_device_dialog_select') }}</v-btn>
-						</v-card-actions>
-					</v-card>
-				</v-dialog>
-			</v-row>
-		<!--/v-main-->
+		<!-- Provides the application the proper gutter -->
+		<v-container fluid>
+			<router-view />
+		</v-container>
+		<v-row justify="center">
+			<v-dialog v-model="device_dialog_show" scrollable max-width="300px">
+				<v-card>
+					<v-card-title>{{ $t('player_select_device_dialog_header') }}</v-card-title>
+					<v-divider></v-divider>
+					<v-card-text style="height: 300px;">
+						<v-radio-group v-model="device_info.actual_device" column>
+							<v-radio
+								v-for="item in device_info.devices"
+								:value="item"
+								:label="item"
+								:key="item"
+								:checked="item=device_info.actual_device"
+							></v-radio>
+						</v-radio-group>
+					</v-card-text>
+					<v-divider></v-divider>
+					<v-card-actions>
+						<v-btn
+							color="blue darken-1"
+							text
+							@click="device_dialog_show = false"
+						>{{ $t('player_select_device_dialog_cancel') }}</v-btn>
+						<v-btn
+							color="blue darken-1"
+							text
+							@click="player_select_device()"
+						>{{ $t('player_select_device_dialog_select') }}</v-btn>
+					</v-card-actions>
+				</v-card>
+			</v-dialog>
+		</v-row>
 		<v-footer padless>
-			<!--v-card class="flex" flat tile-->
 			<v-card class="mx-auto" max-width="600">
 				<v-card-title>{{movie_info.title}} • {{movie_info.category}}</v-card-title>
 
-				<v-card-subtitle>{{movie_info.source}} • {{localDate(movie_info.date,$t('locale_date_format'))}} • {{movie_info.duration}} • {{movie_info.viewed}}</v-card-subtitle>
-				<v-slider  v-model="app_player_pos.volume" prepend-icon="mdi-volume-low" append-icon="mdi-volume-high" @click="player_volume()"></v-slider>
+				<v-card-subtitle>{{movie_info.provider}} • {{localDate(movie_info.date,$t('locale_date_format'))}} • {{duration(movie_info.duration)}} • {{duration(movie_info.current_time)}}</v-card-subtitle>
+				<v-slider
+					v-model="app_player_pos.volume"
+					prepend-icon="mdi-volume-low"
+					append-icon="mdi-volume-high"
+					@click="player_volume()"
+				></v-slider>
 				<v-card-actions>
 					<v-btn icon class="mx-4" @click="device_dialog_show = true">
 						<v-icon size="24px">mdi-television-classic</v-icon>
@@ -68,9 +70,9 @@
 						<v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
 					</v-btn>
 				</v-card-actions>
-				{{app_player_pos.playTime}}
-				<v-slider v-model="app_player_pos.position" append-icon="mdi-timer" @click="player_time()"></v-slider>
-				{{app_player_pos.remainingTime}}
+				{{duration(app_player_pos.current_time)}}
+				<v-slider v-model="sliderPosition" append-icon="mdi-timer"></v-slider>
+				{{duration(movie_info.duration -app_player_pos.current_time)}}
 				<v-expand-transition>
 					<div v-show="show">
 						<v-divider></v-divider>
@@ -85,24 +87,23 @@
 
 <script>
 import messenger from "./messenger";
-import moment from 'moment';
+import moment from "moment";
 export default {
 	data() {
 		return {
 			app_player_pos: {
 				play: false,
-				position: 55,
+				current_time: 55,
+				duration: 120,
 				volume: 3,
-				playTime: "0:10",
-				remainingTime: "1:05",
 			},
 			movie_info: {
 				title: "Titel",
 				category: "Typ",
-				source: "Quelle",
-				date: "Datum",
-				duration: "Dauer",
-				viewed: "geschaut",
+				provider: "provider",
+				date: 123456,
+				duration: 120,
+				current_time: 65,
 				description: "Beschreibung",
 			},
 			movie_id: null,
@@ -141,12 +142,6 @@ export default {
 			console.log("Send key");
 			messenger.emit("player_key", { keyid: id });
 		},
-		player_time() {
-			console.log("Send timer");
-			messenger.emit("player_time", {
-				timer_pos: this.app_player_pos.position,
-			});
-		},
 		player_volume() {
 			console.log("Send volume");
 			messenger.emit("player_volume", {
@@ -163,8 +158,45 @@ export default {
 				});
 			}
 		},
-		localDate(timestamp, locale){
-			return moment.unix(timestamp).local().format(locale)
+		localDate(timestamp, locale) {
+			return moment.unix(timestamp).local().format(locale);
+		},
+		duration(secondsValue) {
+			var seconds = parseInt(secondsValue, 10);
+			if (!Number.isInteger(seconds || seconds < 0)) {
+				return "";
+			}
+			if (seconds < 3600) {
+				return moment.unix(seconds).format("mm:ss");
+			} else {
+				return moment.unix(seconds).format("HH:mm:ss");
+			}
+		},
+	},
+	computed: {
+		sliderPosition: {
+			// getter
+			get: function () {
+				if (
+					this.app_player_pos.current_time >= 0 &&
+					this.app_player_pos.duration > 0
+				) {
+					return parseInt(
+						(this.app_player_pos.current_time * 100) /
+							this.app_player_pos.duration
+					);
+				} else {
+					return "-";
+				}
+			},
+			// setter
+			set: function (newValue) {
+				console.log("Send timer by setter");
+				this.app_player_pos.current_time = newValue;
+				messenger.emit("player_time", {
+					timer_pos: this.app_player_pos.current_time,
+				});
+			},
 		},
 	},
 };

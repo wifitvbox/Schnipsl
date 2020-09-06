@@ -143,6 +143,16 @@ class SplPlugin(SplThread):
 	def _stop(self):
 		self.runFlag = False
 
+	def time_string_to_secs(self, time_string):
+		elements=time_string.split(':')
+		seconds=0
+		for element in elements:
+			try:
+				seconds=seconds*60 +int(element)
+			except:
+				return -1
+		return seconds
+
 	def load_filmlist(self, file_name):
 		print(os.path.abspath(file_name))
 		try: # does the file exist at all already?
@@ -240,7 +250,7 @@ class SplPlugin(SplThread):
 					category=category,
 					title=data_array[2],
 					timestamp=data_array[16],
-					duration=data_array[5],
+					duration=self.time_string_to_secs(data_array[5]),
 					description=data_array[7],
 					url=data_array[8]
 				)

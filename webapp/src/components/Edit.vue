@@ -59,7 +59,7 @@
 				<v-card class="mx-auto" max-width="344">
 					<v-card-title @click="requestPlay(movie_info.id)">{{movie_info.title +' • '+ movie_info.category}}</v-card-title>
 
-					<v-card-subtitle>{{movie_info.source +' • '+ movie_info.date +' • '+ movie_info.duration +' • '+ movie_info.viewed}}</v-card-subtitle>
+					<v-card-subtitle>{{movie_info.provider +' • '+ movie_info.date +' • '+ movie_info.duration +' • '+ movie_info.current_time}}</v-card-subtitle>
 
 					<v-card-actions>
 						<v-btn icon class="mx-4">
@@ -90,7 +90,7 @@
 				<v-list-item-content @click="requestPlay(movie_info.id)">
 					<v-list-item-title v-text="movie_info.title +' • '+ movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="movie_info.source +' • '+ movie_info.date +' • '+ movie_info.duration +' • '+ movie_info.viewed"
+						v-text="movie_info.provider +' • '+ localDate(movie_info.date,$t('locale_date_format')) +' • '+ duration(movie_info.duration)"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="movie_info.description_show">
@@ -137,6 +137,8 @@
 <script>
 import router from "../router";
 import messenger from "../messenger";
+import moment from 'moment';
+
 export default {
 	name: "Edit",
 	data: () => ({
@@ -187,12 +189,12 @@ export default {
 		nav2Main() {
 			router.push({ name: "Home" }); // always goes 'back enough' to Main
 		},
-		requestPlay(movie_info_id) {
-			console.log("requestPlay",movie_info_id)
+		requestPlay(movie_uri) {
+			console.log("requestPlay",movie_uri)
 			messenger.emit("edit_play_request", {
 				edit_id: this.id,
 				query: this.query,
-				movie_info_id: movie_info_id
+				movie_uri: movie_uri
 			})
 			this.nav2Main();
 		},
@@ -255,7 +257,22 @@ export default {
 				select_title: this.query.title,
 				select_description: this.query.description
 			});
-		}
+		},
+		localDate(timestamp, locale){
+			return moment.unix(timestamp).local().format(locale)
+		},
+		duration(secondsValue){
+			var seconds=parseInt(secondsValue,10) 
+			if (!Number.isInteger(seconds || seconds < 0)){
+				return ''
+			}
+			if (seconds < 3600){
+				return moment.unix(seconds).format("mm:ss")
+			}else{
+				return moment.unix(seconds).format("HH:mm:ss")
+			}
+		},
+
 	}
 };
 </script>

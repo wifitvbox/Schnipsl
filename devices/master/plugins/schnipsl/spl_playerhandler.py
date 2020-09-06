@@ -22,7 +22,6 @@ import threading
 from datetime import datetime
 from pprint import pprint
 
-import time
 import urllib
 from urllib.request import urlopen, urlretrieve
 
@@ -66,7 +65,7 @@ class SplPlugin(SplThread):
 		if queue_event.type == defaults.PLAYER_PLAY_REQUEST or queue_event.type == defaults.PLAYER_PLAY_REQUEST_WITHOUT_DEVICE:
 			movie = queue_event.data['movie']
 			movie_id = queue_event.data['movie_id']
-			viewed = queue_event.data['viewed']
+			current_time = queue_event.data['current_time']
 			device_friendly_name=''
 			if queue_event.type == defaults.PLAYER_PLAY_REQUEST_WITHOUT_DEVICE:  # this is a message is send
 				feasible_devices = self.modref.message_handler.query(Query(
@@ -91,7 +90,7 @@ class SplPlugin(SplThread):
 			self.player_save_state(queue_event.user)
 			self.stop_play( queue_event.user, device_friendly_name)
 			self.start_play(queue_event.user,
-							device_friendly_name, movie, movie_id, viewed)
+							device_friendly_name, movie, movie_id, current_time)
 		if queue_event.type == defaults.MSG_SOCKET_PLAYER_KEY:
 			self.handle_keys(queue_event)
 		if queue_event.type == defaults.MSG_SOCKET_PLAYER_VOLUME:
@@ -109,19 +108,17 @@ class SplPlugin(SplThread):
 			  queue_event.user, max_result_count)
 		return[]
 
-	def start_play(self, user, device_friendly_name, movie, movie_id, viewed):
+	def start_play(self, user, device_friendly_name, movie, movie_id, current_time):
 		self.players[user] = type('', (object,), {'movie': movie, 'device_friendly_name': device_friendly_name, 'player_info': type('', (object,), {
 			'play': True,
 			'position': 0,
 			'volume': 3,
-			'time': viewed,
-			'playTime': '00:00',
-			'remainingTime': '00:00',
-			'duration': 90*60
+			'current_time': current_time,
+			'duration': -1
 		})()
 		})()
 		self.modref.message_handler.queue_event(None, defaults.DEVICE_PLAY_REQUEST, {
-			'movie_url': movie.url, 'start_pos': viewed, 'movie_mime_type': 'video/mp4', 'device_friendly_name': device_friendly_name})
+			'movie_url': movie.url, 'current_time': current_time, 'movie_mime_type': 'video/mp4', 'device_friendly_name': device_friendly_name})
 		self.send_app_movie_info(user, movie)
 		print('Start play for {0} {1} {2} {3}'.format(
 			user, device_friendly_name, movie_id, movie.url))
@@ -130,10 +127,10 @@ class SplPlugin(SplThread):
 		app_movie_info = {
 			'title': movie.title,
 			'category': movie.category,
-			'source': movie.source,
+			'provider': movie.provider,
 			'date': movie.timestamp,
 			'duration': movie.duration,
-			'viewed': "geschaut",
+			'current_time': "geschaut",
 			'description': movie.description
 		}
 
@@ -183,12 +180,12 @@ class SplPlugin(SplThread):
 			user_player = self.players[user]
 			player_info = user_player.player_info
 			if data['keyid'] == 'prev':
-				player_info.time = 0
+				player_info.current_time = 0
 				new_pos = True
 			if data['keyid'] == 'minus10':
-				player_info.time -= 10*60
-				if player_info.time < 0:
-					player_info.time = 0
+				player_info.current_time -= 10*60
+				if player_info.current_time < 0:
+					player_info.current_time = 0
 				new_pos = True
 			if data['keyid'] == 'play':
 				player_info.play = not player_info.play
@@ -197,16 +194,16 @@ class SplPlugin(SplThread):
 				else:
 					self.pause_play(user, user_player.device_friendly_name)
 			if data['keyid'] == 'plus10':
-				if player_info.time + 10*60 < player_info.duration:
-					player_info.time += 10*60
+				if player_info.current_time + 10*60 < player_info.duration:
+					player_info.current_time += 10*60
 					new_pos = True
 			if data['keyid'] == 'next':
-				player_info.time = player_info.duration
+				player_info.current_time = player_info.duration
 				player_info.play = False
 				new_pos = True
 			if new_pos:
 				self.modref.message_handler.queue_event(None, defaults.DEVICE_PLAY_SETPOS, {
-					'device_friendly_name': user_player.device_friendly_name, 'pos': player_info.time})
+					'device_friendly_name': user_player.device_friendly_name, 'pos': player_info.current_time})
 
 	def player_save_state(self, user_name):
 		if user_name in self.players:
@@ -224,7 +221,7 @@ class SplPlugin(SplThread):
 			player_info = user_player.player_info
 			if user_player.device_friendly_name == data['device_friendly_name']:
 				player_info.play = data['play']
-				player_info.time = data['time']
+				player_info.current_time = data['current_time']
 				player_info.duration = data['duration']
 				player_info.volume = data['volume']*100
 				if data['state_change']:
@@ -235,16 +232,6 @@ class SplPlugin(SplThread):
 				self.send_player_status(user_name, player_info)
 
 	def send_player_status(self, user_name, player_info):
-		if player_info.time >= 0 and player_info.duration:
-			player_info.position = player_info.time * 100 // player_info.duration
-			player_info.playTime = '{:02d}:{:02d}'.format(
-				int(player_info.time) // 60, int(player_info.time % 60))
-			player_info.remainingTime = '{:02d}:{:02d}'.format(
-				int(player_info.duration-player_info.time)//60, int(player_info.duration-player_info.time) % 60)
-		else:
-			player_info.position = 0
-			player_info.playTime = '--:--'
-			player_info.remainingTime = '--:--'
 		self.modref.message_handler.queue_event(user_name, defaults.MSG_SOCKET_MSG, {
 			'type': 'app_player_pos', 'config': player_info.__dict__})
 		print(player_info.__dict__)

@@ -22,34 +22,14 @@
 
 				<v-list-item-content @click="nav2Edit(item.id,item.query)">
 					<v-list-item-title v-text="item.movie_info.title"></v-list-item-title>
-<!-- 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
-					<v-list-item-subtitle
-						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ item.movie_info.duration +' • '+ item.viewed"
-					></v-list-item-subtitle>
-					<v-expand-transition>
-						<div v-show="item.movie_info.description_show">
-							<v-divider></v-divider>
-
-							<v-card-text>{{item.movie_info.description}}</v-card-text>
-						</div>
-					</v-expand-transition>
- -->				</v-list-item-content>
+				</v-list-item-content>
 
 				<v-list-item-action>
-<!--					<v-btn icon @click="nav2Edit(item.id,item.query)">
-						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
-					</v-btn>
--->
 					<v-btn icon @click="share(item.id)">
 						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
 					</v-btn>
-<!--					<v-btn icon @click="item.movie_info.description_show = !item.movie_info.description_show">
-						<v-icon>{{ item.movie_info.description_show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-					</v-btn>
- -->
 				</v-list-item-action>
 			</v-list-item>
-
 			<v-subheader inset>{{ $t('main_streams') }}</v-subheader>
 			<v-list-item v-for="item in movie_info_list.streams" :key="item.id">
 				<v-list-item-avatar>
@@ -59,12 +39,11 @@
 				<v-list-item-content @click="nav2Play(item.movie_info.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ item.movie_info.duration +' • '+ item.viewed"
+						v-text="item.movie_info.provider +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
 							<v-divider></v-divider>
-
 							<v-card-text>{{item.movie_info.description}}</v-card-text>
 						</div>
 					</v-expand-transition>
@@ -92,7 +71,7 @@
 				<v-list-item-content @click="nav2Play(item.movie_info.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format'))  +' • '+ item.movie_info.duration +' • '+ item.viewed"
+						v-text="item.movie_info.provider +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • ' + duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -124,7 +103,7 @@
 				<v-list-item-content @click="nav2Play(item.movie_info.id)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.source +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ item.movie_info.duration +' • '+ item.viewed"
+						v-text="item.movie_info.provider +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -169,11 +148,11 @@ export default {
 						id: "1",
 						icon: "mdi-magnify",
 						iconClass: "red lighten-1 white--text",
-						viewed: "geschaut",
+						current_time: 0,
 						movie_info: {
 							title: "Titel",
 							category: "Typ",
-							source: "Quelle",
+							provider: "Quelle",
 							date: "Datum",
 							duration: "Dauer",
 						}
@@ -182,11 +161,11 @@ export default {
 						id: "2",
 						icon: "mdi-magnify",
 						iconClass: "red lighten-1 white--text",
-						viewed: "geschaut",
+						current_time: 10,
 						movie_info: {
 							title: "Titel-2",
 							category: "Typ",
-							source: "Quelle",
+							provider: "Quelle",
 							date: "Datum",
 							duration: "Dauer"
 						}
@@ -197,11 +176,11 @@ export default {
 						id: "3",
 						icon: "mdi-play-pause",
 						iconClass: "blue white--text",
-						viewed: "geschaut",
+						current_time: 20,
 						movie_info: {
 							title: "Titel-Stream",
 							category: "Typ",
-							source: "Quelle",
+							provider: "Quelle",
 							date: "Datum",
 							duration: "Dauer"
 						}
@@ -212,11 +191,11 @@ export default {
 						id: "4",
 						icon: "mdi-radio-tower",
 						iconClass: "green lighten-1 white--text",
-						viewed: "geschaut",
+						current_time: "geschaut",
 						movie_info: {
 							title: "Titel-Stream",
 							category: "Typ",
-							source: "Quelle",
+							provider: "Quelle",
 							date: "Datum",
 							duration: "Dauer"
 						}
@@ -227,11 +206,11 @@ export default {
 						id: "5",
 						icon: "mdi-clock",
 						iconClass: "amber white--text",
-						viewed: "geschaut",
+						current_time: "geschaut",
 						movie_info: {
 							title: "Titel-Timer",
 							category: "Typ",
-							source: "Quelle",
+							provider: "Quelle",
 							date: "Datum",
 							duration: "Dauer"
 						}
@@ -276,7 +255,7 @@ export default {
 					if (movie_info.id == id) {
 						//replace movie_info
 						console.log("home_movie_info_update records");
-						movie_info.viewed=data.viewed
+						movie_info.current_time=data.current_time
 						movie_info.movie_info = data.movie_info.movie_info;
 					}
 				});
@@ -284,7 +263,7 @@ export default {
 					if (movie_info.id == id) {
 						//replace movie_info
 						console.log("home_movie_info_update streams");
-						movie_info.viewed=data.viewed
+						movie_info.current_time=data.current_time
 						movie_info.movie_info = data.movie_info.movie_info;
 					}
 				});
@@ -292,7 +271,7 @@ export default {
 					if (movie_info.id == id) {
 						//replace movie_info
 						console.log("home_movie_info_update templates");
-						movie_info.viewed=data.viewed
+						movie_info.current_time=data.current_time
 						movie_info.movie_info = data.movie_info.movie_info;
 					}
 				});
@@ -300,7 +279,7 @@ export default {
 					if (movie_info.id == id) {
 						//replace movie_info
 						console.log("home_movie_info_update timers");
-						movie_info.viewed=data.viewed
+						movie_info.current_time=data.current_time
 						movie_info.movie_info = data.movie_info.movie_info;
 					}
 				});
@@ -310,7 +289,18 @@ export default {
 		},
 		localDate(timestamp, locale){
 			return moment.unix(timestamp).local().format(locale)
-		}
+		},
+		duration(secondsValue){
+			var seconds=parseInt(secondsValue,10) 
+			if (!Number.isInteger(seconds || seconds < 0)){
+				return ''
+			}
+			if (seconds < 3600){
+				return moment.unix(seconds).format("mm:ss")
+			}else{
+				return moment.unix(seconds).format("HH:mm:ss")
+			}
+		},
 	}
 };
 </script>

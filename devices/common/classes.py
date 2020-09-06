@@ -8,27 +8,27 @@ class MovieInfo(dict):
 	'''
 
 	@classmethod
-	def movie_to_movie_info(cls,movie,movie_type):
+	def movie_to_movie_info(cls,movie,category):
 		return MovieInfo(
 					movie.uri(),
 					movie.title,
-					movie_type,
-					movie.source,
+					category,
+					movie.provider,
 					movie.timestamp,
 					movie.duration,
 					movie.description
 				)
 
-	def __init__(self, id, title, category, source, date, duration, description,query=None):
+	def __init__(self, id, title, category, provider, date, duration, description,query=None):
 		self['id'] = id
 		self['query'] = query
 		self['title'] = title
 		self['category'] = category
-		self['source'] = source
+		self['provider'] = provider
 		self['date'] = date
 		self['duration'] = duration
 		self['description'] = description
-		self['description_show'] = False
+		self['description_show'] = False # helper flag for Vue
 
 class Movie:
 	'''object holds all information about a movie clip source
