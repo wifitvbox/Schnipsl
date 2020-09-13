@@ -64,33 +64,33 @@ class SplPlugin(SplThread):
 			  queue_event.type, queue_event.user)
 		if queue_event.type == defaults.PLAYER_PLAY_REQUEST or queue_event.type == defaults.PLAYER_PLAY_REQUEST_WITHOUT_DEVICE:
 			movie = queue_event.data['movie']
-			movie_id = queue_event.data['movie_id']
+			movie_uri = queue_event.data['movie_uri']
 			current_time = queue_event.data['current_time']
 			device_friendly_name=''
 			if queue_event.type == defaults.PLAYER_PLAY_REQUEST_WITHOUT_DEVICE:  # this is a message is send
 				feasible_devices = self.modref.message_handler.query(Query(
-					queue_event.user, defaults.QUERY_FEASIBLE_DEVICES, movie_id))
+					queue_event.user, defaults.QUERY_FEASIBLE_DEVICES, movie_uri))
 				# is there actual a player playing?
 				if not queue_event.user in self.players:  # no player started yet
 					self.send_player_devices(
-						queue_event.user, feasible_devices, movie_id)
+						queue_event.user, feasible_devices, movie_uri)
 					return queue_event
 				user_player = self.players[queue_event.user]
 				if not user_player.player_info.play: # the player is not playing
 					self.send_player_devices(
-						queue_event.user, feasible_devices, movie_id)
+						queue_event.user, feasible_devices, movie_uri)
 					return queue_event
 				device_friendly_name = user_player.device_friendly_name
 				if not device_friendly_name in feasible_devices:  # the actual player cant play it
 					self.send_player_devices(
-						queue_event.user, feasible_devices, movie_id)
+						queue_event.user, feasible_devices, movie_uri)
 					return queue_event  # no matching device, so device need to be selected first
 			else:
 				device_friendly_name = queue_event.data['device']
 			self.player_save_state(queue_event.user)
 			self.stop_play( queue_event.user, device_friendly_name)
 			self.start_play(queue_event.user,
-							device_friendly_name, movie, movie_id, current_time)
+							device_friendly_name, movie, movie_uri, current_time)
 		if queue_event.type == defaults.MSG_SOCKET_PLAYER_KEY:
 			self.handle_keys(queue_event)
 		if queue_event.type == defaults.MSG_SOCKET_PLAYER_VOLUME:
@@ -108,7 +108,7 @@ class SplPlugin(SplThread):
 			  queue_event.user, max_result_count)
 		return[]
 
-	def start_play(self, user, device_friendly_name, movie, movie_id, current_time):
+	def start_play(self, user, device_friendly_name, movie, movie_uri, current_time):
 		self.players[user] = type('', (object,), {'movie': movie, 'device_friendly_name': device_friendly_name, 'player_info': type('', (object,), {
 			'play': True,
 			'position': 0,
@@ -121,7 +121,7 @@ class SplPlugin(SplThread):
 			'movie_url': movie.url, 'current_time': current_time, 'movie_mime_type': 'video/mp4', 'device_friendly_name': device_friendly_name})
 		self.send_app_movie_info(user, movie)
 		print('Start play for {0} {1} {2} {3}'.format(
-			user, device_friendly_name, movie_id, movie.url))
+			user, device_friendly_name, movie_uri, movie.url))
 
 	def send_app_movie_info(self, user_name, movie):
 		app_movie_info = {
@@ -180,12 +180,12 @@ class SplPlugin(SplThread):
 			user_player = self.players[user]
 			player_info = user_player.player_info
 			if data['keyid'] == 'prev':
-				player_info.current_time = 0
+				player_info.current_time = 1
 				new_pos = True
 			if data['keyid'] == 'minus10':
 				player_info.current_time -= 10*60
 				if player_info.current_time < 0:
-					player_info.current_time = 0
+					player_info.current_time = 1
 				new_pos = True
 			if data['keyid'] == 'play':
 				player_info.play = not player_info.play
@@ -236,12 +236,12 @@ class SplPlugin(SplThread):
 			'type': 'app_player_pos', 'config': player_info.__dict__})
 		print(player_info.__dict__)
 
-	def send_player_devices(self, user, devices, movie_id):
+	def send_player_devices(self, user, devices, movie_uri):
 		# we set the device info
 		data = {
 			'actual_device': '',
 			'devices': devices,
-			'movie_id': movie_id
+			'movie_uri': movie_uri
 		}
 		self.modref.message_handler.queue_event(user, defaults.MSG_SOCKET_MSG, {
 			'type': defaults.MSG_SOCKET_QUERY_FEASIBLE_DEVICES_ANSWER, 'config': data})

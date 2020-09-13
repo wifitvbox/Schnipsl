@@ -134,43 +134,43 @@ class SplPlugin(SplThread):
 				self.modref.store.write_users_value('movielist', self.movielist)
 		if queue_event.type == defaults.MSG_SOCKET_SELECT_PLAYER_DEVICE:
 				# starts to play movie on device
-				print("plays schnipsl {0} on device ".format(queue_event.data['movie_id']))
+				print("plays schnipsl {0} on device ".format(queue_event.data['movie_uri']))
 				movie_list = self.modref.message_handler.query(
-				Query(queue_event.user, defaults.QUERY_MOVIE_ID, queue_event.data['movie_id']))
+				Query(queue_event.user, defaults.QUERY_MOVIE_ID, queue_event.data['movie_uri']))
 				if movie_list:
-					id = self.get_movielist_uuid_by_movie_uri(queue_event.user,queue_event.data['movie_id'])
+					id = self.get_movielist_uuid_by_movie_uri(queue_event.user,queue_event.data['movie_uri'])
 					if id: # movie is in movie_list, so it has a current_time time
 						current_time=self.movielist[id]['clients'][queue_event.user]['current_time']
 						self.modref.message_handler.queue_event(queue_event.user, defaults.PLAYER_PLAY_REQUEST, {
-			'user': queue_event.user , 'current_time': current_time, 'movie': movie_list[0], 'movie_id': queue_event.data['movie_id'], 'device':queue_event.data['timer_dev']})
+			'user': queue_event.user , 'current_time': current_time, 'movie': movie_list[0], 'movie_uri': queue_event.data['movie_uri'], 'device':queue_event.data['timer_dev']})
 		if queue_event.type == defaults.MSG_SOCKET_PLAYER_TIME:
 			self.play_time = queue_event.data['timer_pos'] * \
 				self.play_total_secs//100
 		if queue_event.type == defaults.MSG_SOCKET_HOME_PLAY_REQUEST:
-			movie_id=queue_event.data['itemId']
+			movie_uri=queue_event.data['itemId']
 
 			movie_list = self.modref.message_handler.query(
-			Query(queue_event.user, defaults.QUERY_MOVIE_ID, movie_id))
+			Query(queue_event.user, defaults.QUERY_MOVIE_ID, movie_uri))
 			if movie_list:
-				movie_list_id = self.get_movielist_uuid_by_movie_uri(queue_event.user,movie_id)
+				movie_list_id = self.get_movielist_uuid_by_movie_uri(queue_event.user,movie_uri)
 				if movie_list_id: # movie is in movie_list, so it has a current_time time
 
 
 
 					current_time=self.movielist[movie_list_id]['clients'][queue_event.user]['current_time']
 					self.modref.message_handler.queue_event(queue_event.user, defaults.PLAYER_PLAY_REQUEST_WITHOUT_DEVICE, {
-					'user': queue_event.user , 'current_time': current_time, 'movie': movie_list[0], 'movie_id': movie_id})
+					'user': queue_event.user , 'current_time': current_time, 'movie': movie_list[0], 'movie_uri': movie_uri})
 
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_PLAY_REQUEST:
-			movie_list_id, movie_id = self.update_movie_list(queue_event)
+			movie_list_id, movie_uri = self.update_movie_list(queue_event)
 			if movie_list_id:
 				movie_list = self.modref.message_handler.query(
-				Query(queue_event.user, defaults.QUERY_MOVIE_ID, movie_id))
+				Query(queue_event.user, defaults.QUERY_MOVIE_ID, movie_uri))
 				if movie_list:
 
 					current_time=self.movielist[movie_list_id]['clients'][queue_event.user]['current_time']
 					self.modref.message_handler.queue_event(queue_event.user, defaults.PLAYER_PLAY_REQUEST_WITHOUT_DEVICE, {
-					'user': queue_event.user , 'current_time': current_time, 'movie': movie_list[0], 'movie_id': queue_event.data['movie_uri']})
+					'user': queue_event.user , 'current_time': current_time, 'movie': movie_list[0], 'movie_uri': queue_event.data['movie_uri']})
 
 
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_SOURCES:

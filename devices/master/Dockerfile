@@ -4,7 +4,8 @@ COPY *.py ./
 COPY public ./public
 COPY locale ./locale
 
-RUN mkdir config && pip install qrcode[pil] python-telegram-bot ecdsa
+RUN apt install libyajl-dev
+RUN mkdir config && pip install pychromecast jsonslicer
 
 CMD [ "python", "./zuulac.py" ]
 

@@ -39,7 +39,6 @@
 		<v-footer padless>
 			<v-card class="mx-auto" max-width="600">
 				<v-card-title>{{movie_info.title}} • {{movie_info.category}}</v-card-title>
-
 				<v-card-subtitle>{{movie_info.provider}} • {{localDate(movie_info.date,$t('locale_date_format'))}} • {{duration(movie_info.duration)}} • {{duration(movie_info.current_time)}}</v-card-subtitle>
 				<v-slider
 					v-model="app_player_pos.volume"
@@ -106,7 +105,7 @@ export default {
 				current_time: 65,
 				description: "Beschreibung",
 			},
-			movie_id: null,
+			movie_uri: null,
 			device_info: {
 				actual_device: "",
 				devices: ["TV Wohnzimmer", "TV Küche", "Chromecast Büro"],
@@ -128,7 +127,7 @@ export default {
 				this.movie_info = data;
 			}
 			if (type == "app_device_info") {
-				this.movie_id = data.movie_id;
+				this.movie_uri = data.movie_uri;
 				this.device_info.devices = data.devices;
 				// force the dialog for now
 				// better would be: If actual device is not in devices...
@@ -154,7 +153,7 @@ export default {
 			if (this.device_info.actual_device != "") {
 				messenger.emit("select_player_device", {
 					timer_dev: this.device_info.actual_device,
-					movie_id: this.movie_id,
+					movie_uri: this.movie_uri,
 				});
 			}
 		},
