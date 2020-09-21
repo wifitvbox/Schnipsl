@@ -80,6 +80,7 @@ class SplPlugin(SplThread):
 		''' react on events
 		'''
 		print("xmltvepg event handler", queue_event.type, queue_event.user)
+		return queue_event # dont forget the  event for further pocessing...
 
 	def query_handler(self, queue_event, max_result_count):
 		''' answers with list[] of results
