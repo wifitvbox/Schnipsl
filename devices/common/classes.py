@@ -19,8 +19,8 @@ class MovieInfo(dict):
 					movie.description
 				)
 
-	def __init__(self, id, title, category, provider, date, duration, description,query=None):
-		self['id'] = id
+	def __init__(self, uri, title, category, provider, date, duration, description,query=None):
+		self['uri'] = uri
 		self['query'] = query
 		self['title'] = title
 		self['category'] = category

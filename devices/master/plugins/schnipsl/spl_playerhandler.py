@@ -3,11 +3,7 @@
 
 
 # Standard module
-from splthread import SplThread
-import defaults
-from classes import Movie
-from classes import MovieInfo
-from messagehandler import Query
+
 import sys
 import os
 import threading
@@ -36,7 +32,11 @@ ScriptPath = os.path.realpath(os.path.join(
 # Add the directory containing your module to the Python path (wants absolute paths)
 sys.path.append(os.path.abspath(ScriptPath))
 # own local modules
-
+from splthread import SplThread
+import defaults
+from classes import Movie
+from classes import MovieInfo
+from messagehandler import Query
 
 class SplPlugin(SplThread):
 	plugin_id = 'playerhandler'

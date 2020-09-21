@@ -337,7 +337,7 @@ class SplPlugin(SplThread):
 
 	def get_movielist_uuid_by_movie_uri(self, user,movie_uri):
 		for id, search_movie in self.movielist.items():
-			if not search_movie['movie_info']['id'] == movie_uri:
+			if not search_movie['movie_info']['uri'] == movie_uri:
 				continue
 			if not user in search_movie['clients']:
 				continue
