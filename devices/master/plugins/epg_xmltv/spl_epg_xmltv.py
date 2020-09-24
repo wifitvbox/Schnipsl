@@ -125,38 +125,28 @@ class SplPlugin(SplThread):
 			for plugin_name in self.plugin_names:
 				if plugin_name in queue_event.params['select_source_values']: # this plugin is one of the wanted
 					if plugin_name in self.movies: # are there any movies stored for this plugin?
-						for movie_info in self.movies[plugin_name].values():
-
-							'''
-							 we are handle EPG data here, no real media streams, so our "movie" here is only a movie_info object, but no movie object
-
-							 because of that the variables struture is slighty different to what we use in other plugins which delas with movie objects
-
-							'''
-
-
-
-							if movie_info['provider'] in queue_event.params['select_provider_values']:
+						for movie in self.movies[plugin_name].values():
+							if movie.provider in queue_event.params['select_provider_values']:
 								if titles:
 									found=False
 									for title in titles:
-										if title.lower() in movie_info['title'].lower():
+										if title.lower() in movie.title.lower():
 											found=True
-										if title.lower() in movie_info['category'].lower():
+										if title.lower() in movie.category.lower():
 											found=True
 									if not found:
 										continue
 								if description_regexs:
 									found=False
 									for description_regex in description_regexs:
-										if re.search(description_regex, movie_info['description']):
+										if re.search(description_regex, movie.description):
 											found=True
 									if not found:
 										continue
 									
 
 								if max_result_count>0:
-									res.append(movie_info)
+									res.append(MovieInfo.movie_to_movie_info(movie,''))
 									max_result_count-=1
 								else:
 									return res # maximal number of results reached
@@ -253,7 +243,17 @@ class SplPlugin(SplThread):
 			self.providers.add(provider)
 			for movie_data in days.values():
 				for movie_info in movie_data['epg_data']:
-					self.movies[plugin_name][movie_info['uri']] = movie_info
+					self.movies[plugin_name][movie_info['uri']] =  Movie(
+						source=plugin_name,
+						source_type=defaults.MOVIE_TYPE_STREAM,
+						provider=provider,
+						category=movie_info['category'],
+						title=movie_info['title'],
+						timestamp=movie_info['timestamp'],
+						duration=movie_info['duration'],
+						description=movie_info['description'],
+						url=None
+					)
 					self.categories.add(movie_info['category'])
 
 	def get_attrib(self, xmlelement, identifier,default=None):
