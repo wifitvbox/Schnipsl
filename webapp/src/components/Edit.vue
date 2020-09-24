@@ -54,10 +54,10 @@
 		</v-col>
 		<v-divider></v-divider>
 		<v-list>
-			<v-list-item v-for="movie_info in movie_info_list" :key="movie_info.id">
+			<v-list-item v-for="movie_info in movie_info_list" :key="movie_info.uri">
 <!-- 			
 				<v-card class="mx-auto" max-width="344">
-					<v-card-title @click="requestPlay(movie_info.id)">{{movie_info.title +' • '+ movie_info.category}}</v-card-title>
+					<v-card-title @click="requestPlay(movie_info.uri)">{{movie_info.title +' • '+ movie_info.category}}</v-card-title>
 
 					<v-card-subtitle>{{movie_info.provider +' • '+ movie_info.date +' • '+ movie_info.duration +' • '+ movie_info.current_time}}</v-card-subtitle>
 
@@ -87,7 +87,7 @@
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
  -->
-				<v-list-item-content @click="requestPlay(movie_info.id)">
+				<v-list-item-content @click="requestPlay(movie_info.uri)">
 					<v-list-item-title v-text="movie_info.title +' • '+ movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
 						v-text="movie_info.provider +' • '+ localDate(movie_info.date,$t('locale_date_format')) +' • '+ duration(movie_info.duration)"

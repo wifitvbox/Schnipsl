@@ -19,13 +19,13 @@ class MovieInfo(dict):
 					movie.description
 				)
 
-	def __init__(self, uri, title, category, provider, date, duration, description,query=None):
+	def __init__(self, uri, title, category, provider, timestamp, duration, description,query=None):
 		self['uri'] = uri
 		self['query'] = query
 		self['title'] = title
 		self['category'] = category
 		self['provider'] = provider
-		self['date'] = date
+		self['timestamp'] = timestamp
 		self['duration'] = duration
 		self['description'] = description
 		self['description_show'] = False # helper flag for Vue
