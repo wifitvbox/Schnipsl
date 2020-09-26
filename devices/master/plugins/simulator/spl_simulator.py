@@ -66,6 +66,7 @@ class SplPlugin(SplThread):
 		res = {'templates': [], 'records': [], 'streams': [], 'timers': []}
 		for uuid, movie_list_item in self.movielist.items():
 			if not user_name in movie_list_item['clients']:
+
 				continue
 			if movie_list_item['type'] == defaults.MOVIE_TYPE_TEMPLATE:
 				res['templates'].append(
@@ -322,7 +323,6 @@ class SplPlugin(SplThread):
 		current_time=movie_list_item["clients"][user_name]['current_time']
 		self.modref.message_handler.queue_event(user_name, defaults.MSG_SOCKET_MSG, {
 			'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_UPDATE, 'config': {'uuid': movie_list_uuid, 'current_time':current_time , 'movie_info': movie_list_item['movie_info']}})
-
 	def send_home_movie_list(self, original_queue_event):
 		new_event = copy.copy(original_queue_event)
 		new_event.type = defaults.MSG_SOCKET_MSG
