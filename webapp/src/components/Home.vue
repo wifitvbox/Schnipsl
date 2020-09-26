@@ -15,31 +15,31 @@
 		<v-list two-line subheader>
 			<v-subheader inset>{{ $t('main_templates') }}</v-subheader>
 
-			<v-list-item v-for="item in movie_info_list.templates" :key="item.id">
+			<v-list-item v-for="item in movie_list.templates" :key="item.uuid">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
 
-				<v-list-item-content @click="nav2Edit(item.id,item.query)">
+				<v-list-item-content @click="nav2Edit(item.uuid,item.query)">
 					<v-list-item-title v-text="item.movie_info.title"></v-list-item-title>
 				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon @click="share(item.id)">
+					<v-btn icon @click="share(item.uuid)">
 						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
 					</v-btn>
 				</v-list-item-action>
 			</v-list-item>
 			<v-subheader inset>{{ $t('main_streams') }}</v-subheader>
-			<v-list-item v-for="item in movie_info_list.streams" :key="item.id">
+			<v-list-item v-for="item in movie_list.streams" :key="item.uuid">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
 
-				<v-list-item-content @click="nav2Play(item.movie_info.id)">
+				<v-list-item-content @click="nav2Play(item.movie_info.uri)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.provider +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
+						v-text="item.movie_info.provider +' • '+ localDate(item.movie_info.timestamp,$t('locale_date_format')) +' • '+ duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -50,10 +50,10 @@
 				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon @click="nav2Edit(item.id,item.query,item)">
+					<v-btn icon @click="nav2Edit(item.uuid,item.query,item)">
 						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
-					<v-btn icon @click="share(item.id)">
+					<v-btn icon @click="share(item.uuid)">
 						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
 					</v-btn>
 					<v-btn icon @click="item.movie_info.description_show = !item.movie_info.description_show">
@@ -63,15 +63,15 @@
 			</v-list-item>
 
 			<v-subheader inset>{{ $t('main_records') }}</v-subheader>
-			<v-list-item v-for="item in movie_info_list.records" :key="item.id">
+			<v-list-item v-for="item in movie_list.records" :key="item.uuid">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
 
-				<v-list-item-content @click="nav2Play(item.movie_info.id)">
+				<v-list-item-content @click="nav2Play(item.movie_info.uri)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.provider +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • ' + duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
+						v-text="item.movie_info.provider +' • '+ localDate(item.movie_info.timestamp,$t('locale_date_format')) +' • ' + duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -83,10 +83,10 @@
 				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon @click="nav2Edit(item.id,item.query)">
+					<v-btn icon @click="nav2Edit(item.uuid,item.query)">
 						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
-					<v-btn icon @click="share(item.id)">
+					<v-btn icon @click="share(item.uuid)">
 						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
 					</v-btn>
 					<v-btn icon @click="item.movie_info.description_show = !item.movie_info.description_show">
@@ -95,15 +95,15 @@
 				</v-list-item-action>
 			</v-list-item>
 			<v-subheader inset>{{ $t('main_timers') }}</v-subheader>
-			<v-list-item v-for="item in movie_info_list.timers" :key="item.id">
+			<v-list-item v-for="item in movie_list.timers" :key="item.uuid">
 				<v-list-item-avatar>
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
 
-				<v-list-item-content @click="nav2Play(item.movie_info.id)">
+				<v-list-item-content @click="nav2Play(item.movie_info.uri)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.provider +' • '+ localDate(item.movie_info.date,$t('locale_date_format')) +' • '+ duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
+						v-text="item.movie_info.provider +' • '+ localDate(item.movie_info.timestamp,$t('locale_date_format')) +' • '+ duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -115,10 +115,10 @@
 				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon @click="nav2Edit(item.id,item.query)">
+					<v-btn icon @click="nav2Edit(item.uuid,item.query)">
 						<v-icon color="grey lighten-1">mdi-pencil</v-icon>
 					</v-btn>
-					<v-btn icon @click="share(item.id)">
+					<v-btn icon @click="share(item.uuid)">
 						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
 					</v-btn>
 					<v-btn icon @click="item.movie_info.description_show = !item.movie_info.description_show">
@@ -142,10 +142,10 @@ export default {
 	},
 	data() {
 		return {
-			movie_info_list: {
+			movie_list: {
 				templates: [
 					{
-						id: "1",
+						uuid: "1",
 						icon: "mdi-magnify",
 						iconClass: "red lighten-1 white--text",
 						current_time: 0,
@@ -153,12 +153,12 @@ export default {
 							title: "Titel",
 							category: "Typ",
 							provider: "Quelle",
-							date: "Datum",
+							timestamp: "Datum",
 							duration: "Dauer",
 						}
 					},
 					{
-						id: "2",
+						uuid: "2",
 						icon: "mdi-magnify",
 						iconClass: "red lighten-1 white--text",
 						current_time: 10,
@@ -166,14 +166,14 @@ export default {
 							title: "Titel-2",
 							category: "Typ",
 							provider: "Quelle",
-							date: "Datum",
+							timestamp: "Datum",
 							duration: "Dauer"
 						}
 					}
 				],
 				records: [
 					{
-						id: "3",
+						uuid: "3",
 						icon: "mdi-play-pause",
 						iconClass: "blue white--text",
 						current_time: 20,
@@ -181,14 +181,14 @@ export default {
 							title: "Titel-Stream",
 							category: "Typ",
 							provider: "Quelle",
-							date: "Datum",
+							timestamp: "Datum",
 							duration: "Dauer"
 						}
 					}
 				],
 				streams: [
 					{
-						id: "4",
+						uuid: "4",
 						icon: "mdi-radio-tower",
 						iconClass: "green lighten-1 white--text",
 						current_time: "geschaut",
@@ -196,14 +196,14 @@ export default {
 							title: "Titel-Stream",
 							category: "Typ",
 							provider: "Quelle",
-							date: "Datum",
+							timestamp: "Datum",
 							duration: "Dauer"
 						}
 					}
 				],
 				timers: [
 					{
-						id: "5",
+						uuid: "5",
 						icon: "mdi-clock",
 						iconClass: "amber white--text",
 						current_time: "geschaut",
@@ -211,7 +211,7 @@ export default {
 							title: "Titel-Timer",
 							category: "Typ",
 							provider: "Quelle",
-							date: "Datum",
+							timestamp: "Datum",
 							duration: "Dauer"
 						}
 					}
@@ -233,58 +233,58 @@ export default {
 		nav2Set() {
 			router.push({ name: "Settings" });
 		},
-		nav2Edit(item_id,query,item) {
+		nav2Edit(uuid,query,item) {
 			console.log("click for edit", item, query);
-			router.push({ name: "Edit", params: { id: item_id, query: query } });
+			router.push({ name: "Edit", params: { uuid: uuid, query: query } });
 		},
-		nav2Play(itemId) {
-			console.log("click for Play", itemId);
-			messenger.emit("home_play_request", { itemId: itemId });
+		nav2Play(uri) {
+			console.log("click for Play uri", uri);
+			messenger.emit("home_play_request", { uri: uri });
 		},
-		share(itemId) {
-			console.log("click for share", itemId);
+		share(uuid) {
+			console.log("click for share", uuid);
 		},
 		messenger_onMessage(type, data) {
 			console.log("incoming message to home", type, data);
 			if (type == "home_movie_info_list") {
-				this.movie_info_list = data;
+				this.movie_list = data;
 			}
 			if (type == "home_movie_info_update") {
-				var id = data.id;
-				this.movie_info_list.records.forEach(function(movie_info) {
-					if (movie_info.id == id) {
+				var uuid = data.uuid;
+				this.movie_list.records.forEach(function(movie_list_item) {
+					if (movie_list_item.uuid == uuid) {
 						//replace movie_info
 						console.log("home_movie_info_update records");
-						movie_info.current_time=data.current_time
-						movie_info.movie_info = data.movie_info.movie_info;
+						movie_list_item.current_time=data.current_time
+						movie_list_item.movie_info = data.movie_info;
 					}
 				});
-				this.movie_info_list.streams.forEach(function(movie_info) {
-					if (movie_info.id == id) {
-						//replace movie_info
+				this.movie_list.streams.forEach(function(movie_list_item) {
+					if (movie_list_item.uuid == uuid) {
+						//replace movie_list_item
 						console.log("home_movie_info_update streams");
-						movie_info.current_time=data.current_time
-						movie_info.movie_info = data.movie_info.movie_info;
+						movie_list_item.current_time=data.current_time
+						movie_list_item.movie_info = data.movie_info;
 					}
 				});
-				this.movie_info_list.templates.forEach(function(movie_info) {
-					if (movie_info.id == id) {
-						//replace movie_info
+				this.movie_list.templates.forEach(function(movie_list_item) {
+					if (movie_list_item.uuid == uuid) {
+						//replace movie_list_item
 						console.log("home_movie_info_update templates");
-						movie_info.current_time=data.current_time
-						movie_info.movie_info = data.movie_info.movie_info;
+						movie_list_item.current_time=data.current_time
+						movie_list_item.movie_info = data.movie_info;
 					}
 				});
-				this.movie_info_list.timers.forEach(function(movie_info) {
-					if (movie_info.id == id) {
-						//replace movie_info
+				this.movie_list.timers.forEach(function(movie_list_item) {
+					if (movie_list_item.uuid == uuid) {
+						//replace movie_list_item
 						console.log("home_movie_info_update timers");
-						movie_info.current_time=data.current_time
-						movie_info.movie_info = data.movie_info.movie_info;
+						movie_list_item.current_time=data.current_time
+						movie_list_item.movie_info = data.movie_info;
 					}
 				});
 
-				this.movie_info_list[data.id] = data;
+				this.movie_list[data.uuid] = data;
 			}
 		},
 		localDate(timestamp, locale){

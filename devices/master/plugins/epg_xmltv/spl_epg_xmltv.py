@@ -53,7 +53,7 @@ from jsonstorage import JsonStorage
 
 class SplPlugin(SplThread):
 	plugin_id='xmltvepg'
-	plugin_names=['XMLTV EPG']
+	plugin_names=['XMLTV EPG','SAT Channels']
 
 	def __init__(self, modref):
 		''' creates the object
@@ -72,9 +72,12 @@ class SplPlugin(SplThread):
 		self.config=JsonStorage(os.path.join(self.origin_dir, "data.json"),{})
 		self.channels_info=JsonStorage(os.path.join(self.origin_dir, "channels_info.json"),{})
 
+		self.allChannels=set()
 		self.providers=set()
 		self.categories=set()
 		self.movies={}
+		self.favorite_channels = ['daserste.de', 'einsextra.daserste.de',
+								'einsfestival.daserste.de', 'ndrhd.daserste.de', 'hd.zdf.de']
 
 	def event_listener(self, queue_event):
 		''' react on events
@@ -93,12 +96,20 @@ class SplPlugin(SplThread):
 			res=[]
 			for plugin_name in self.plugin_names:
 				if plugin_name  in queue_event.params['select_source_values']: # this plugin is one of the wanted
-					for provider in self.providers:
-						if max_result_count>0:
-							res.append(provider)
-							max_result_count-=1
-						else:
-							return res # maximal number of results reached
+					if plugin_name==self.plugin_names[0]:
+						for provider in self.providers:
+							if max_result_count>0:
+								res.append(provider)
+								max_result_count-=1
+							else:
+								return res # maximal number of results reached
+					if plugin_name==self.plugin_names[1]:
+						for channel in self.allChannels:
+							if max_result_count>0:
+								res.append(channel)
+								max_result_count-=1
+							else:
+								return res # maximal number of results reached
 			return res
 		if queue_event.type == defaults.QUERY_AVAILABLE_CATEGORIES:
 			res=[]
@@ -189,12 +200,11 @@ class SplPlugin(SplThread):
 		except Exception as e:
 			print('failed xmltv_updates read', str(e))
 		epg_data = self.config.read('epg',{})
-		favorite_channels = ['daserste.de', 'einsextra.daserste.de',
-								'einsfestival.daserste.de', 'ndrhd.daserste.de', 'hd.zdf.de']
 		collect_lastmodified = {}
 		for channel in update_list.iterfind('channel'):
 			channel_id = channel.attrib['id']
-			if channel_id in favorite_channels:
+			self.allChannels.add(channel_id)
+			if channel_id in self.favorite_channels:
 				if not channel_id in collect_lastmodified:
 					collect_lastmodified[channel_id] = {}
 				for datafor in channel.iterfind('datafor'):
