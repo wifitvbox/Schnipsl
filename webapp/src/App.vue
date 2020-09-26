@@ -39,7 +39,7 @@
 		<v-footer padless>
 			<v-card class="mx-auto" max-width="600">
 				<v-card-title>{{movie_info.title}} • {{movie_info.category}}</v-card-title>
-				<v-card-subtitle>{{movie_info.provider}} • {{localDate(movie_info.date,$t('locale_date_format'))}} • {{duration(movie_info.duration)}} • {{duration(movie_info.current_time)}}</v-card-subtitle>
+				<v-card-subtitle>{{movie_info.provider}} • {{localDate(movie_info.timestamp,$t('locale_date_format'))}} • {{duration(movie_info.duration)}} • {{duration(movie_info.current_time)}}</v-card-subtitle>
 				<v-slider
 					v-model="app_player_pos.volume"
 					prepend-icon="mdi-volume-low"
@@ -100,7 +100,7 @@ export default {
 				title: "Titel",
 				category: "Typ",
 				provider: "provider",
-				date: 123456,
+				timestamp: 123456,
 				duration: 120,
 				current_time: 65,
 				description: "Beschreibung",

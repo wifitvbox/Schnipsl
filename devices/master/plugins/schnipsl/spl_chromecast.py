@@ -166,10 +166,10 @@ class SplPlugin(SplThread):
 			cast_info = self.chromecasts[device_friendly_name]
 			cast_info.online = False
 			# sent last known position for later restart
-			chromecast_info = cast_info.chromecast_info
-			chromecast_info['state_change'] = True  # set the update marker
+			cast_status = cast_info.cast_info
+			cast_status['state_change'] = True  # set the update marker
 			self.modref.message_handler.queue_event(
-				None, defaults.DEVICE_PLAY_STATUS, chromecast_info)
+				None, defaults.DEVICE_PLAY_STATUS, cast_status)
 		#self.list_devices()
 
 	def update_callback(self, uuid, name):
@@ -201,16 +201,16 @@ class SplPlugin(SplThread):
 
 	def send_device_play_status(self, device_friendly_name, state_change_flag):
 		if device_friendly_name in self.chromecasts:
-			cast_info = self.chromecasts[device_friendly_name]
-			if not cast_info.online:
+			cast_status = self.chromecasts[device_friendly_name]
+			if not cast_status.online:
 				return  # device is actual not acessable
-			cast = cast_info.cast
+			cast = cast_status.cast
 			try:
 				cast.media_controller.update_status()
 			except pychromecast.error.UnsupportedNamespace:
 				print('UnsupportedNamespace exeption: ')
 				return
-			chromecast_info = {
+			cast_info = {
 				'device_friendly_name': device_friendly_name,
 				'duration': cast.media_controller.status.duration,
 				'current_time': cast.media_controller.status.current_time,
@@ -218,15 +218,15 @@ class SplPlugin(SplThread):
 				'volume': cast.status.volume_level,
 				'state_change': state_change_flag
 			}
-			if not chromecast_info['duration']:
-				chromecast_info['duration'] = -1
+			if not cast_info['duration']:
+				cast_info['duration'] = -1
 			if cast.media_controller.status.supports_seek:
-				chromecast_info['current_time'] = cast.media_controller.status.current_time
+				cast_info['current_time'] = cast.media_controller.status.current_time
 			else:
-				chromecast_info['current_time'] = -1
-			cast_info.cast_info = chromecast_info
+				cast_info['current_time'] = -1
+			cast_status.cast_info = cast_info
 			self.modref.message_handler.queue_event(
-				None, defaults.DEVICE_PLAY_STATUS, chromecast_info)
+				None, defaults.DEVICE_PLAY_STATUS, cast_status)
 
 	def _run(self):
 		''' starts the server

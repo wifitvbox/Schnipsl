@@ -59,7 +59,7 @@
 				<v-card class="mx-auto" max-width="344">
 					<v-card-title @click="requestPlay(movie_info.uri)">{{movie_info.title +' • '+ movie_info.category}}</v-card-title>
 
-					<v-card-subtitle>{{movie_info.provider +' • '+ movie_info.date +' • '+ movie_info.duration +' • '+ movie_info.current_time}}</v-card-subtitle>
+					<v-card-subtitle>{{movie_info.provider +' • '+ movie_info.timestamp +' • '+ movie_info.duration +' • '+ movie_info.current_time}}</v-card-subtitle>
 
 					<v-card-actions>
 						<v-btn icon class="mx-4">
@@ -90,7 +90,7 @@
 				<v-list-item-content @click="requestPlay(movie_info.uri)">
 					<v-list-item-title v-text="movie_info.title +' • '+ movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="movie_info.provider +' • '+ localDate(movie_info.date,$t('locale_date_format')) +' • '+ duration(movie_info.duration)"
+						v-text="movie_info.provider +' • '+ localDate(movie_info.timestamp,$t('locale_date_format')) +' • '+ duration(movie_info.duration)"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="movie_info.description_show">
@@ -143,7 +143,7 @@ export default {
 	name: "Edit",
 	data: () => ({
 		edit_delete_dialog_show : false,
-		id: 0,
+		uuid: 0,
 		query : {
 		},
 		movie_info_list: [
@@ -157,7 +157,7 @@ export default {
 	created() {
 		try {
 			messenger.register("edit", this.messenger_onMessage, null, null);
-			this.id = this.$route.params.id;
+			this.uuid = this.$route.params.uuid;
 			if (this.$route.params.query){
 				this.query=this.$route.params.query
 				if (this.query.name!==""){
@@ -192,17 +192,17 @@ export default {
 		requestPlay(movie_uri) {
 			console.log("requestPlay",movie_uri)
 			messenger.emit("edit_play_request", {
-				edit_id: this.id,
+				uuid: this.uuid,
 				query: this.query,
 				movie_uri: movie_uri
 			})
 			this.nav2Main();
 		},
 		edit_delete() {
-			console.log("requestDelete", this.id)
+			console.log("requestDelete", this.uuid)
 			this.edit_delete_dialog_show=false
 			messenger.emit("edit_delete_request", {
-				edit_id: this.id,
+				uuid: this.uuid,
 			})
 			this.nav2Main();
 		},
