@@ -7,16 +7,18 @@
 		<v-row justify="center">
 			<v-dialog v-model="device_dialog_show" scrollable max-width="300px">
 				<v-card>
-					<v-card-title>{{ $t('player_select_device_dialog_header') }}</v-card-title>
+					<v-card-title>{{
+						$t("player_select_device_dialog_header")
+					}}</v-card-title>
 					<v-divider></v-divider>
-					<v-card-text style="height: 300px;">
+					<v-card-text style="height: 300px">
 						<v-radio-group v-model="device_info.actual_device" column>
 							<v-radio
 								v-for="item in device_info.devices"
 								:value="item"
 								:label="item"
 								:key="item"
-								:checked="item=device_info.actual_device"
+								:checked="(item = device_info.actual_device)"
 							></v-radio>
 						</v-radio-group>
 					</v-card-text>
@@ -26,20 +28,42 @@
 							color="blue darken-1"
 							text
 							@click="device_dialog_show = false"
-						>{{ $t('player_select_device_dialog_cancel') }}</v-btn>
-						<v-btn
-							color="blue darken-1"
-							text
-							@click="player_select_device()"
-						>{{ $t('player_select_device_dialog_select') }}</v-btn>
+							>{{ $t("player_select_device_dialog_cancel") }}</v-btn
+						>
+						<v-btn color="blue darken-1" text @click="player_select_device()">{{
+							$t("player_select_device_dialog_select")
+						}}</v-btn>
 					</v-card-actions>
+				</v-card>
+			</v-dialog>
+		</v-row>
+		<v-row justify="center">
+			<v-dialog v-model="offline_dialog_show" max-width="300px">
+				<v-card>
+					<v-card-title>{{
+						$t("main_noconnect")
+					}}</v-card-title>
+					<v-divider></v-divider>
+					<v-card-text style="height: 75px">
+						<v-progress-circular
+							indeterminate
+							color="primary"
+						></v-progress-circular>
+					</v-card-text>
 				</v-card>
 			</v-dialog>
 		</v-row>
 		<v-footer padless>
 			<v-card class="mx-auto" max-width="600">
-				<v-card-title>{{movie_info.title}} • {{movie_info.category}}</v-card-title>
-				<v-card-subtitle>{{movie_info.provider}} • {{localDate(movie_info.timestamp,$t('locale_date_format'))}} • {{duration(movie_info.duration)}} • {{duration(movie_info.current_time)}}</v-card-subtitle>
+				<v-card-title
+					>{{ movie_info.title }} • {{ movie_info.category }}</v-card-title
+				>
+				<v-card-subtitle
+					>{{ movie_info.provider }} •
+					{{ localDate(movie_info.timestamp, $t("locale_date_format")) }} •
+					{{ duration(movie_info.duration) }} •
+					{{ duration(movie_info.current_time) }}</v-card-subtitle
+				>
 				<v-slider
 					v-model="app_player_pos.volume"
 					prepend-icon="mdi-volume-low"
@@ -57,7 +81,9 @@
 						<v-icon size="24px">mdi-rewind-10</v-icon>
 					</v-btn>
 					<v-btn icon class="mx-4" @click="player_key('play')">
-						<v-icon>{{ app_player_pos.play ? 'mdi-pause' : 'mdi-play' }}</v-icon>
+						<v-icon>{{
+							app_player_pos.play ? "mdi-pause" : "mdi-play"
+						}}</v-icon>
 					</v-btn>
 					<v-btn icon class="mx-4" @click="player_key('plus10')">
 						<v-icon size="24px">mdi-fast-forward-10</v-icon>
@@ -66,17 +92,17 @@
 						<v-icon size="24px">mdi-skip-next</v-icon>
 					</v-btn>
 					<v-btn icon @click="show = !show">
-						<v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+						<v-icon>{{ show ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
 					</v-btn>
 				</v-card-actions>
-				{{duration(app_player_pos.current_time)}}
+				{{ duration(app_player_pos.current_time) }}
 				<v-slider v-model="sliderPosition" append-icon="mdi-timer"></v-slider>
-				{{duration(movie_info.duration -app_player_pos.current_time)}}
+				{{ duration(movie_info.duration - app_player_pos.current_time) }}
 				<v-expand-transition>
 					<div v-show="show">
 						<v-divider></v-divider>
 
-						<v-card-text>{{movie_info.description}}</v-card-text>
+						<v-card-text>{{ movie_info.description }}</v-card-text>
 					</div>
 				</v-expand-transition>
 			</v-card>
@@ -111,11 +137,17 @@ export default {
 				devices: ["TV Wohnzimmer", "TV Küche", "Chromecast Büro"],
 			},
 			device_dialog_show: false,
+			offline_dialog_show: false,
 			show: false,
 		};
 	},
 	created() {
-		messenger.register("app", this.messenger_onMessage, null, null);
+		messenger.register(
+			"app",
+			this.messenger_onMessage,
+			this.messenger_onWSConnect,
+			this.messenger_onWSClose
+		);
 	},
 	methods: {
 		messenger_onMessage(type, data) {
@@ -136,6 +168,16 @@ export default {
 					this.device_dialog_show = true;
 				}
 			}
+		},
+		messenger_onWSConnect() {
+			this.showDisconnect(false);
+		},
+		showDisconnect(disconnected) {
+			console.log("websocket disconnect?:", disconnected);
+			this.offline_dialog_show = disconnected;
+		},
+		messenger_onWSClose() {
+			this.showDisconnect(true);
 		},
 		player_key(id) {
 			console.log("Send key");

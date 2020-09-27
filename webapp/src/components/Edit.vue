@@ -120,11 +120,11 @@
 					<v-card>
 						<v-card-title>{{ $t('edit_delete_dialog_header') }}</v-card-title>
 						<v-divider></v-divider>
-						<v-card-text style="height: 300px;">
+<!-- 						<v-card-text style="height: 300px;">
 
 						</v-card-text>
 						<v-divider></v-divider>
-						<v-card-actions>
+ -->						<v-card-actions>
 							<v-btn color="blue darken-1" text @click="edit_delete_dialog_show = false">{{ $t('edit_delete_dialog_cancel') }}</v-btn>
 							<v-btn color="blue darken-1" text @click="edit_delete()">{{ $t('edit_delete_dialog_select') }}</v-btn>
 						</v-card-actions>

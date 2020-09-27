@@ -31,10 +31,8 @@ class WebService {
     console.log("Register prefix", prefix, this.modules)
   }
 
-  init(username, pw, remember) {
-    this.username = username
-    this.pw = pw
-    this.remember = remember
+  connect() {
+    let wshandler=this
     console.log("Connecting to signaling server")
     this.signaling_socket = new WebSocket(this.SIGNALING_SERVER)
     this.signaling_socket.onopen = () => {
@@ -47,13 +45,17 @@ class WebService {
       this.emit('_join', { "name": this.username })
     }
 
-    this.signaling_socket.onclose = () => {
+    this.signaling_socket.onclose = (e) => {
       console.log("Disconnected from signaling server")
       for (let prefix in this.modules) {
         if (this.modules[prefix].close) {
           this.modules[prefix].close()
         }
       }
+      console.log('Socket is closed. Reconnect will be attempted in 10 second.', e.reason);
+      setTimeout(function () {
+        wshandler.connect();
+      }, 10000);
     }
 
     //when we got a message from a signaling server 
@@ -73,13 +75,23 @@ class WebService {
     }
 
     this.signaling_socket.onerror = function (err) {
-      console.log("Got error", err)
+      console.error('Socket encountered error: ', err.message, 'Closing socket');
     }
-
 
   }
 
+  init(username, pw, remember) {
+    this.username = username
+    this.pw = pw
+    this.remember = remember
+    this.connect()
+  }
+
+
+
+
 }
+
 
 
 
