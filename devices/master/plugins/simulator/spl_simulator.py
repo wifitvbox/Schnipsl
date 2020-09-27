@@ -331,10 +331,6 @@ class SplPlugin(SplThread):
 		#print("new_event", new_event.data['config'])
 		self.modref.message_handler.queue_event_obj(new_event)
 
-	def send_movie_info(self, user,movie_list_uuid):
-		self.modref.message_handler.queue_event(user, defaults.MSG_SOCKET_MSG, {
-			'type': defaults.MSG_SOCKET_APP_MOVIE_INFO, 'config': self.movielist[movie_list_uuid]['movie_info']})
-
 	def get_movielist_uuid_by_movie_uri(self, user,movie_uri):
 		for uuid, search_movie in self.movielist.items():
 			if not search_movie['movie_info']['uri'] == movie_uri:

@@ -62,6 +62,11 @@ class SplPlugin(SplThread):
 		'''
 		print("playerhandler event handler",
 			  queue_event.type, queue_event.user)
+		if queue_event.type == '_join':
+			# update the App Play info
+			user_name = queue_event.user
+			self.refresh_app_movie_info(user_name)
+
 		if queue_event.type == defaults.PLAYER_PLAY_REQUEST or queue_event.type == defaults.PLAYER_PLAY_REQUEST_WITHOUT_DEVICE:
 			movie = queue_event.data['movie']
 			movie_uri = queue_event.data['movie_uri']
@@ -133,9 +138,9 @@ class SplPlugin(SplThread):
 			'current_time': "geschaut",
 			'description': movie.description
 		}
-
 		self.modref.message_handler.queue_event(user_name, defaults.MSG_SOCKET_MSG, {
-			'type': 'app_movie_info', 'config': app_movie_info})
+			'type': defaults.MSG_SOCKET_APP_MOVIE_INFO, 'config': app_movie_info})
+
 
 	def pause_play(self, user, device_friendly_name):
 		self.modref.message_handler.queue_event(None, defaults.DEVICE_PLAY_PAUSE, {
@@ -153,31 +158,31 @@ class SplPlugin(SplThread):
 		print('Stop play for {0}'.format(device_friendly_name))
 
 	def handle_volume(self, queue_event):
-		user = queue_event.user
+		user_name = queue_event.user
 		data = queue_event.data
 		volume = data['timer_vol']  # volume can be between 0 and 100 (%)
-		if user in self.players:
-			user_player = self.players[user]
+		if user_name in self.players:
+			user_player = self.players[user_name]
 			self.modref.message_handler.queue_event(None, defaults.DEVICE_PLAY_SETVOLUME, {
 				'device_friendly_name': user_player.device_friendly_name, 'volume': data['timer_vol']})
 
 	def handle_time(self, queue_event):
-		user = queue_event.user
+		user_name = queue_event.user
 		data = queue_event.data
 		percent_pos = data['timer_pos']
-		if user in self.players:
-			user_player = self.players[user]
+		if user_name in self.players:
+			user_player = self.players[user_name]
 			player_info = user_player.player_info
 			pos = player_info.duration * percent_pos / 100
 			self.modref.message_handler.queue_event(None, defaults.DEVICE_PLAY_SETPOS, {
 				'device_friendly_name': user_player.device_friendly_name, 'pos': pos})
 
 	def handle_keys(self, queue_event):
-		user = queue_event.user
+		user_name = queue_event.user
 		data = queue_event.data
-		if user in self.players:
+		if user_name in self.players:
 			new_pos = False
-			user_player = self.players[user]
+			user_player = self.players[user_name]
 			player_info = user_player.player_info
 			if data['keyid'] == 'prev':
 				player_info.current_time = 1
@@ -190,9 +195,9 @@ class SplPlugin(SplThread):
 			if data['keyid'] == 'play':
 				player_info.play = not player_info.play
 				if player_info.play:
-					self.resume_play(user, user_player.device_friendly_name)
+					self.resume_play(user_name, user_player.device_friendly_name)
 				else:
-					self.pause_play(user, user_player.device_friendly_name)
+					self.pause_play(user_name, user_player.device_friendly_name)
 			if data['keyid'] == 'plus10':
 				if player_info.current_time + 10*60 < player_info.duration:
 					player_info.current_time += 10*60
@@ -212,6 +217,12 @@ class SplPlugin(SplThread):
 			print('-------------------  Save State Request -------------')
 			self.modref.message_handler.queue_event(user_name, defaults.PLAYER_SAVE_STATE_REQUEST, {
 				'movie': user_player.movie, 'player_info': player_info})
+
+	def refresh_app_movie_info(self, user_name):
+		if user_name in self.players:
+			user_player = self.players[user_name]
+			movie=user_player.movie
+			self.send_app_movie_info( user_name, movie)
 
 
 	def handle_device_play_status(self, queue_event):
