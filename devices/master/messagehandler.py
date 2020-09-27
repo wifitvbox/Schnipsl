@@ -30,6 +30,7 @@ class EventListener:
 		self.priority = priority
 		self.event_handler = event_handler
 
+
 class QueryHandler:
 	''' stores query handler  specific data
 	'''
@@ -48,6 +49,7 @@ class QueueEvent:
 		self.user = user
 		self.type = ev_type
 		self.data = data
+
 
 class Query:
 	''' stores query  specific data
@@ -88,7 +90,6 @@ class MessageHandler:
 				if not queue_event:  # if eventhandler returns Null, then no further message handling
 					break
 
-
 	def add_event_handler(self, name, priority, event_handler):
 
 		self.mutex.acquire()  # avoid thread interfearence
@@ -112,10 +113,16 @@ class MessageHandler:
 		self.queue.put(queue_event)
 
 	def query(self, query):
-		res=[]
+		res = []
+		query_start_page = 0
+		try:
+			if 'query_start_page' in query.params and query.params['query_start_page'] >=0 :
+				query_start_page = query.params['query_start_page']
+		except:
+			pass # see'm not to have a page number.... 
 		for query_handler in self.query_handlers:
-			if defaults.MAX_QUERY_SIZE-len(res)<=0:
+			if defaults.MAX_QUERY_SIZE*(query_start_page+1)-len(res) < 0: # returns one result more as dictated by MAX_QUERY_SIZE to indicate that there are some more results
 				break
-			res += query_handler.query_handler(query,defaults.MAX_QUERY_SIZE-len(res))
-		return res
-
+			res += query_handler.query_handler(query,
+											   defaults.MAX_QUERY_SIZE*(query_start_page+1)-len(res)+1)# max. + 1
+		return res[defaults.MAX_QUERY_SIZE*query_start_page:defaults.MAX_QUERY_SIZE*(query_start_page+1)+1] # returns one result more as dictated by MAX_QUERY_SIZE to indicate that there are some more results

@@ -33,8 +33,8 @@ sys.path.append(os.path.abspath(ScriptPath))
 
 
 class SplPlugin(SplThread):
-	plugin_id='simulator'
-	plugin_names=['Plugin Simulator']
+	plugin_id = 'simulator'
+	plugin_names = ['Plugin Simulator']
 
 	def __init__(self, modref):
 		''' creates the simulator
@@ -43,12 +43,12 @@ class SplPlugin(SplThread):
 
 		super().__init__(modref.message_handler, self)
 		modref.message_handler.add_event_handler(
-		self.plugin_id, 0, self.event_listener)
+			self.plugin_id, 0, self.event_listener)
 		modref.message_handler.add_query_handler(
-		self.plugin_id, 0, self.query_handler)
+			self.plugin_id, 0, self.query_handler)
 		self.runFlag = True
 
-		##### plugin specific stuff
+		# plugin specific stuff
 		self.play_time = 0
 		self.play_total_secs = 90*60
 		self.player_info = {
@@ -73,23 +73,24 @@ class SplPlugin(SplThread):
 					{
 						'uuid': uuid,
 						'icon': 'mdi-magnify',
-								'iconClass': 'red lighten-1 white--text',
-								'query': movie_list_item['query'],
-								'movie_info': movie_list_item['movie_info'],
-								'current_time': ''
+						'iconClass': 'red lighten-1 white--text',
+						'query': movie_list_item['query'],
+						'movie_info': movie_list_item['movie_info'],
+						'current_time': ''
 					}
 				)
 			if movie_list_item['type'] == defaults.MOVIE_TYPE_RECORD:
-				user_current_time=str(movie_list_item['clients'][user_name]['current_time'])
+				user_current_time = str(
+					movie_list_item['clients'][user_name]['current_time'])
 
 				res['records'].append(
 					{
 						'uuid': uuid,
 						'icon': 'mdi-play-pause',
-								'iconClass': 'blue white--text',
-								'query': movie_list_item['query'],
-								'movie_info': movie_list_item['movie_info'],
-								'current_time': user_current_time
+						'iconClass': 'blue white--text',
+						'query': movie_list_item['query'],
+						'movie_info': movie_list_item['movie_info'],
+						'current_time': user_current_time
 					}
 				)
 			if movie_list_item['type'] == defaults.MOVIE_TYPE_STREAM:
@@ -97,10 +98,10 @@ class SplPlugin(SplThread):
 					{
 						'uuid': uuid,
 						'icon': 'mdi-radio-tower',
-								'iconClass': 'green lighten-1 white--text',
-								'query': movie_list_item['query'],
-								'movie_info': movie_list_item['movie_info'],
-								'current_time': ''
+						'iconClass': 'green lighten-1 white--text',
+						'query': movie_list_item['query'],
+						'movie_info': movie_list_item['movie_info'],
+						'current_time': ''
 					}
 				)
 			if movie_list_item['type'] == defaults.MOVIE_TYPE_TIMER:
@@ -108,10 +109,10 @@ class SplPlugin(SplThread):
 					{
 						'uuid': uuid,
 						'icon': 'mdi-clock',
-								'iconClass': 'amber white--text',
-								'query': movie_list_item['query'],
-								'movie_info': movie_list_item['movie_info'],
-								'current_time': ''
+						'iconClass': 'amber white--text',
+						'query': movie_list_item['query'],
+						'movie_info': movie_list_item['movie_info'],
+						'current_time': ''
 					}
 				)
 		return res
@@ -124,55 +125,62 @@ class SplPlugin(SplThread):
 			# send the movie list
 			self.send_home_movie_list(queue_event)
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_DELETE_REQUEST:
-			movie_list_uuid=queue_event.data['uuid']
-			if movie_list_uuid in self.movielist: # does the entry uuid exist
-				movie_list_entry=self.movielist[movie_list_uuid]
-				if queue_event.user in movie_list_entry['clients']: # is the user client of this entry?
+			movie_list_uuid = queue_event.data['uuid']
+			if movie_list_uuid in self.movielist:  # does the entry uuid exist
+				movie_list_entry = self.movielist[movie_list_uuid]
+				# is the user client of this entry?
+				if queue_event.user in movie_list_entry['clients']:
 					del(movie_list_entry['clients'][queue_event.user])
-				if not movie_list_entry['clients']: # are there no more clients left?
-					del (self.movielist[movie_list_uuid]) # remove the whole entry
+				# are there no more clients left?
+				if not movie_list_entry['clients']:
+					# remove the whole entry
+					del (self.movielist[movie_list_uuid])
 				self.send_home_movie_list(queue_event)
-				self.modref.store.write_users_value('movielist', self.movielist)
+				self.modref.store.write_users_value(
+					'movielist', self.movielist)
 		if queue_event.type == defaults.MSG_SOCKET_SELECT_PLAYER_DEVICE:
 				# starts to play movie on device
-				print("plays schnipsl {0} on device ".format(queue_event.data['movie_uri']))
-				movie_list = self.modref.message_handler.query(
+			print("plays schnipsl {0} on device ".format(
+				queue_event.data['movie_uri']))
+			movie_info_list = self.modref.message_handler.query(
 				Query(queue_event.user, defaults.QUERY_MOVIE_ID, queue_event.data['movie_uri']))
-				if movie_list:
-					uuid = self.get_movielist_uuid_by_movie_uri(queue_event.user,queue_event.data['movie_uri'])
-					if uuid: # movie is in movie_list, so it has a current_time time
-						current_time=self.movielist[uuid]['clients'][queue_event.user]['current_time']
-						self.modref.message_handler.queue_event(queue_event.user, defaults.PLAYER_PLAY_REQUEST, {
-			'user': queue_event.user , 'current_time': current_time, 'movie': movie_list[0], 'movie_uri': queue_event.data['movie_uri'], 'device':queue_event.data['timer_dev']})
+			if movie_info_list:
+				uuid = self.get_movielist_uuid_by_movie_uri(
+					queue_event.user, queue_event.data['movie_uri'])
+				if uuid:  # movie is in movie_list, so it has a current_time time
+					current_time = self.movielist[uuid]['clients'][queue_event.user]['current_time']
+					self.modref.message_handler.queue_event(queue_event.user, defaults.PLAYER_PLAY_REQUEST, {
+						'user': queue_event.user, 'current_time': current_time, 'movie': movie_info_list[0], 'movie_uri': queue_event.data['movie_uri'], 'device': queue_event.data['timer_dev']})
 		if queue_event.type == defaults.MSG_SOCKET_PLAYER_TIME:
 			self.play_time = queue_event.data['timer_pos'] * \
 				self.play_total_secs//100
 		if queue_event.type == defaults.MSG_SOCKET_HOME_PLAY_REQUEST:
-			movie_uri=queue_event.data['uri']
+			movie_uri = queue_event.data['uri']
 
-			movie_list = self.modref.message_handler.query(
-			Query(queue_event.user, defaults.QUERY_MOVIE_ID, movie_uri))
-			if movie_list:
-				movie_list_uuid = self.get_movielist_uuid_by_movie_uri(queue_event.user,movie_uri)
-				if movie_list_uuid: # movie is in movie_list, so it has a current_time time
+			movie_info_list = self.modref.message_handler.query(
+				Query(queue_event.user, defaults.QUERY_MOVIE_ID, movie_uri))
+			if movie_info_list:
+				movie_list_uuid = self.get_movielist_uuid_by_movie_uri(
+					queue_event.user, movie_uri)
+				if movie_list_uuid:  # movie is in movie_list, so it has a current_time time
 
-
-
-					current_time=self.movielist[movie_list_uuid]['clients'][queue_event.user]['current_time']
+					current_time = self.movielist[movie_list_uuid]['clients'][queue_event.user]['current_time']
 					self.modref.message_handler.queue_event(queue_event.user, defaults.PLAYER_PLAY_REQUEST_WITHOUT_DEVICE, {
-					'user': queue_event.user , 'current_time': current_time, 'movie': movie_list[0], 'movie_uri': movie_uri})
+						'user': queue_event.user, 'current_time': current_time, 'movie': movie_info_list[0], 'movie_uri': movie_uri})
 
+		if queue_event.type == defaults.MSG_SOCKET_EDIT_PLAY_ADD_REQUEST:
+			self.update_movie_list(queue_event)
+			
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_PLAY_REQUEST:
 			movie_list_uuid, movie_uri = self.update_movie_list(queue_event)
 			if movie_list_uuid:
-				movie_list = self.modref.message_handler.query(
-				Query(queue_event.user, defaults.QUERY_MOVIE_ID, movie_uri))
-				if movie_list:
+				movie_info_list = self.modref.message_handler.query(
+					Query(queue_event.user, defaults.QUERY_MOVIE_ID, movie_uri))
+				if movie_info_list:
 
-					current_time=self.movielist[movie_list_uuid]['clients'][queue_event.user]['current_time']
+					current_time = self.movielist[movie_list_uuid]['clients'][queue_event.user]['current_time']
 					self.modref.message_handler.queue_event(queue_event.user, defaults.PLAYER_PLAY_REQUEST_WITHOUT_DEVICE, {
-					'user': queue_event.user , 'current_time': current_time, 'movie': movie_list[0], 'movie_uri': queue_event.data['movie_uri']})
-
+						'user': queue_event.user, 'current_time': current_time, 'movie': movie_info_list[0], 'movie_uri': queue_event.data['movie_uri']})
 
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_SOURCES:
 			available_items = self.modref.message_handler.query(
@@ -208,20 +216,31 @@ class SplPlugin(SplThread):
 				'type': defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_CATEGORIES_ANSWER, 'config': data})
 
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_MOVIES:
-			movie_list = self.modref.message_handler.query(
+			query_start_page = 0
+			if 'query_start_page' in queue_event.data:
+				query_start_page = queue_event.data['query_start_page']
+			movie_info_list = self.modref.message_handler.query(
 				Query(queue_event.user, defaults.QUERY_AVAILABLE_MOVIES, queue_event.data))
+			if query_start_page < 1:
+				prev_page = -1
+			else:
+				prev_page = query_start_page-1
+			# indicates that there are some more entries
+			if len(movie_info_list) > defaults.MAX_QUERY_SIZE:
+				next_page = query_start_page+1
+			else:
+				next_page = -1
 			self.modref.message_handler.queue_event(queue_event.user, defaults.MSG_SOCKET_MSG, {
-				'type': defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_MOVIES_ANSWER, 'config': movie_list})
+				'type': defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_MOVIES_ANSWER, 'config': {'movie_info_list': movie_info_list, 'prev_page': prev_page, 'query_start_page': query_start_page, 'next_page': next_page}})
 
 		if queue_event.type == defaults.PLAYER_SAVE_STATE_REQUEST:
-			movie=queue_event.data['movie']
-			user=queue_event.user
-			player_info=queue_event.data['player_info']
-			self.handle_player_save_state_request(user,movie,player_info)
+			movie = queue_event.data['movie']
+			user = queue_event.user
+			player_info = queue_event.data['player_info']
+			self.handle_player_save_state_request(user, movie, player_info)
 
 		# for further pocessing, do not forget to return the queue event
 		return queue_event
-
 
 	def query_handler(self, queue_event, max_result_count):
 		''' try to send simulated answers
@@ -233,26 +252,27 @@ class SplPlugin(SplThread):
 	def update_movie_list(self, queue_event):
 		'''
 		'''
-				
+
 		# is it a quick search? Then update the quicksearch data first
-		quick_search_name=queue_event.data['query']['name']
+		quick_search_name = queue_event.data['query']['name']
 		if quick_search_name:
-			quick_search_entry=None
+			quick_search_entry = None
 			for movie_list_entry in self.movielist.values():
-				if movie_list_entry['query'] and movie_list_entry['query']['name'].lower()==quick_search_name.lower() and queue_event.user in movie_list_entry['clients']:
-					quick_search_entry=movie_list_entry
+				if movie_list_entry['query'] and movie_list_entry['query']['name'].lower() == quick_search_name.lower() and queue_event.user in movie_list_entry['clients']:
+					quick_search_entry = movie_list_entry
 					break
 			if not quick_search_entry:
 				quick_search_entry = {
 					'clients': {},
 				}
-				quick_search_entry['clients'][queue_event.user] = {'current_time':0}
+				quick_search_entry['clients'][queue_event.user] = {
+					'current_time': 0}
 				# new entry, so it gets its own identifier
 				quick_search_entry_id = str(uuid.uuid4())
 				self.movielist[quick_search_entry_id] = quick_search_entry
 			quick_search_entry['type'] = defaults.MOVIE_TYPE_TEMPLATE
 			quick_search_entry['query'] = queue_event.data['query']
-			quick_search_entry['movie_info']= MovieInfo(
+			quick_search_entry['movie_info'] = MovieInfo(
 				'0',  # uuid
 				quick_search_name,  # title
 				'',  # category
@@ -263,7 +283,6 @@ class SplPlugin(SplThread):
 				''  # description
 			)
 
-
 		movie_list = self.modref.message_handler.query(
 			Query(queue_event.user, defaults.QUERY_MOVIE_ID, queue_event.data['movie_uri']))
 		if movie_list:
@@ -273,7 +292,8 @@ class SplPlugin(SplThread):
 			# ist ein normaler Stream?
 			# ist es ein Record- Eintrag?
 			movie_list_uuid = queue_event.data['uuid']
-			if movie_list_uuid in self.movielist and not quick_search_name:  # an existing entry was edited, and it was not a quicksearch
+			# an existing entry was edited, and it was not a quicksearch
+			if movie_list_uuid in self.movielist and not quick_search_name:
 				print("Molist Eintrag existiert schon")
 				movie_list_entry = self.movielist[movie_list_uuid]
 			else:
@@ -282,7 +302,8 @@ class SplPlugin(SplThread):
 					'clients': {},
 
 				}
-				movie_list_entry['clients'][queue_event.user] = {'current_time':0}
+				movie_list_entry['clients'][queue_event.user] = {
+					'current_time': 0}
 				# new entry, so it gets its own identifier
 				movie_list_uuid = str(uuid.uuid4())
 				self.movielist[movie_list_uuid] = movie_list_entry
@@ -290,10 +311,10 @@ class SplPlugin(SplThread):
 			# we need to make a copy here, because in case of a new created quicksearch item the quicksearch query data and this normal item both points to the same query object,
 			# which causes an error (name="") in the quicksearch item when we remove the name here...
 			movie_list_entry['query'] = copy.copy(queue_event.data['query'])
-			#as this is not a quicksearch entry anymore, we must make sure that it does not contain a 
+			# as this is not a quicksearch entry anymore, we must make sure that it does not contain a
 			# quicksearch name anymore
-			movie_list_entry['query']['name']=''
-			movie_list_entry['movie_info']= MovieInfo(
+			movie_list_entry['query']['name'] = ''
+			movie_list_entry['movie_info'] = MovieInfo(
 				queue_event.data['movie_uri'],  # uuid
 				movie_list[0].title,  # title
 				movie_list[0].category,  # category
@@ -319,10 +340,11 @@ class SplPlugin(SplThread):
 		return res
 
 	def update_single_movie_clip(self, user_name, movie_list_uuid):
-		movie_list_item=self.movielist[movie_list_uuid]
-		current_time=movie_list_item["clients"][user_name]['current_time']
+		movie_list_item = self.movielist[movie_list_uuid]
+		current_time = movie_list_item["clients"][user_name]['current_time']
 		self.modref.message_handler.queue_event(user_name, defaults.MSG_SOCKET_MSG, {
-			'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_UPDATE, 'config': {'uuid': movie_list_uuid, 'current_time':current_time , 'movie_info': movie_list_item['movie_info']}})
+			'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_UPDATE, 'config': {'uuid': movie_list_uuid, 'current_time': current_time, 'movie_info': movie_list_item['movie_info']}})
+
 	def send_home_movie_list(self, original_queue_event):
 		new_event = copy.copy(original_queue_event)
 		new_event.type = defaults.MSG_SOCKET_MSG
@@ -331,7 +353,7 @@ class SplPlugin(SplThread):
 		#print("new_event", new_event.data['config'])
 		self.modref.message_handler.queue_event_obj(new_event)
 
-	def get_movielist_uuid_by_movie_uri(self, user,movie_uri):
+	def get_movielist_uuid_by_movie_uri(self, user, movie_uri):
 		for uuid, search_movie in self.movielist.items():
 			if not search_movie['movie_info']['uri'] == movie_uri:
 				continue
@@ -339,17 +361,15 @@ class SplPlugin(SplThread):
 				continue
 			return uuid
 		return None
-		
-		
-	def handle_player_save_state_request(self, user ,movie,player_info):
-		movie_uri=movie.uri()
-		uuid=self.get_movielist_uuid_by_movie_uri(user, movie_uri)
+
+	def handle_player_save_state_request(self, user, movie, player_info):
+		movie_uri = movie.uri()
+		uuid = self.get_movielist_uuid_by_movie_uri(user, movie_uri)
 		if uuid:
 			search_movie = self.movielist[uuid]
-			search_movie['clients'][user]['current_time']=player_info.current_time
-			self.update_single_movie_clip( user, uuid)
+			search_movie['clients'][user]['current_time'] = player_info.current_time
+			self.update_single_movie_clip(user, uuid)
 			self.modref.store.write_users_value('movielist', self.movielist)
-
 
 	def _run(self):
 		''' starts the server
