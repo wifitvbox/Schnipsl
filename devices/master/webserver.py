@@ -84,6 +84,14 @@ class WSZuulHandler(HTTPWebSocketsHandler):
 		global modref
 		modref.message_handler.queue_event(self.user.name,data['type'],data['config'])
 
+
+	def handle(self):
+		try:
+			HTTPWebSocketsHandler.handle(self)
+		except socket.error:
+			pass
+				
+
 	def on_ws_connected(self):
 		''' thows a connect event about that new connection
 		'''
