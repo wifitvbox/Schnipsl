@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+     #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 
@@ -150,7 +150,7 @@ class SplPlugin(SplThread):
 		return None
 
 	def add_callback(self, uuid, name):
-		print("Found mDNS service for cast name {}".format(name))
+		# print("Found mDNS service for cast name {}".format(name))
 		device_friendly_name = self.get_device_friendly_name_of_uuid(uuid)
 		if device_friendly_name in self.chromecasts:
 			cast_info = self.chromecasts[device_friendly_name]
@@ -159,8 +159,8 @@ class SplPlugin(SplThread):
 		#self.list_devices()
 
 	def remove_callback(self, uuid, name, service):
-		print("Lost mDNS service for cast name {} {}".format(
-			name, service))
+		# print("Lost mDNS service for cast name {} {}".format(
+		#	name, service))
 		device_friendly_name = self.get_device_friendly_name_of_uuid(uuid)
 		if device_friendly_name in self.chromecasts:
 			cast_info = self.chromecasts[device_friendly_name]
@@ -173,7 +173,7 @@ class SplPlugin(SplThread):
 		#self.list_devices()
 
 	def update_callback(self, uuid, name):
-		print("Updated mDNS service for name {}".format(name))
+		# print("Updated mDNS service for name {}".format(name))
 		device_friendly_name = self.get_device_friendly_name_of_uuid(uuid)
 		if device_friendly_name in self.chromecasts:
 			self.send_device_play_status(device_friendly_name, False)
@@ -208,7 +208,7 @@ class SplPlugin(SplThread):
 			try:
 				cast.media_controller.update_status()
 			except pychromecast.error.UnsupportedNamespace:
-				print('UnsupportedNamespace exeption: ')
+				pass #print('UnsupportedNamespace exeption: ')
 				return
 			cast_info = {
 				'device_friendly_name': device_friendly_name,
