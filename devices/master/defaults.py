@@ -43,6 +43,7 @@ QUERY_MOVIE_ID = 'movieid'
 PLAYER_PLAY_REQUEST = 'playerplayrequest'
 PLAYER_PLAY_REQUEST_WITHOUT_DEVICE = 'playerplayrequestwithoutdevice'
 PLAYER_SAVE_STATE_REQUEST = 'playersavestaterequest'
+
 # device messages
 DEVICE_PLAY_REQUEST = 'deviceplayrequest'
 DEVICE_PLAY_PAUSE = 'deviceplaypause'
@@ -51,6 +52,10 @@ DEVICE_PLAY_STOP = 'deviceplaystop'
 DEVICE_PLAY_SETPOS = 'deviceplaysetpos'
 DEVICE_PLAY_SETVOLUME = 'deviceplaysetvolume'
 DEVICE_PLAY_STATUS = 'deviceplaystatus'
+
+# stream messages
+STREAM_REQUEST_PLAY_LIST = 'streamrequestplaylist'
+STREAM_ANSWER_PLAY_LIST = 'streamanswerplaylist'
 
 # limits the number of search results when do a query
 MAX_QUERY_SIZE = 40

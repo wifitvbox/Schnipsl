@@ -141,7 +141,6 @@ class SplPlugin(SplThread):
 		self.modref.message_handler.queue_event(user_name, defaults.MSG_SOCKET_MSG, {
 			'type': defaults.MSG_SOCKET_APP_MOVIE_INFO, 'config': app_movie_info})
 
-
 	def pause_play(self, user, device_friendly_name):
 		self.modref.message_handler.queue_event(None, defaults.DEVICE_PLAY_PAUSE, {
 			'device_friendly_name': device_friendly_name})

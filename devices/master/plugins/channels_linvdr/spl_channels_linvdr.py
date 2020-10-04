@@ -147,7 +147,6 @@ class SplPlugin(SplThread):
 			return res
 		return[]
 
-
 	def _run(self):
 		''' starts the server
 		'''
@@ -156,7 +155,6 @@ class SplPlugin(SplThread):
 
 	def _stop(self):
 		self.runFlag = False
-
 
 	#------ plugin specific routines
 

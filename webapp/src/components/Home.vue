@@ -37,9 +37,10 @@
 				</v-list-item-avatar>
 
 				<v-list-item-content @click="nav2Play(item.movie_info.uri)">
-					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
+					<v-list-item-title v-text="item.movie_info.title +' • '+ localMinutes(item.current_time)"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.provider +' • '+ localDate(item.movie_info.timestamp,$t('locale_date_format')) +' • '+ duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
+						v-text="item.movie_info.provider +' • '+ localDateTime
+			(item.movie_info.timestamp,$t('locale_time_format')) +' • '+ item.movie_info.category"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -71,7 +72,8 @@
 				<v-list-item-content @click="nav2Play(item.movie_info.uri)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.provider +' • '+ localDate(item.movie_info.timestamp,$t('locale_date_format')) +' • ' + duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
+						v-text="item.movie_info.provider +' • '+ localDateTime
+			(item.movie_info.timestamp,$t('locale_date_format')) +' • ' + duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -103,7 +105,8 @@
 				<v-list-item-content @click="nav2Play(item.movie_info.uri)">
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
-						v-text="item.movie_info.provider +' • '+ localDate(item.movie_info.timestamp,$t('locale_date_format')) +' • '+ duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
+						v-text="item.movie_info.provider +' • '+ localDateTime
+			(item.movie_info.timestamp,$t('locale_date_format')) +' • '+ duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -287,8 +290,8 @@ export default {
 				this.movie_list[data.uuid] = data;
 			}
 		},
-		localDate(timestamp, locale){
-			return moment.unix(timestamp).local().format(locale)
+		localDateTime(timestamp, locale){
+			return moment.unix(timestamp).local(true).format(locale)
 		},
 		duration(secondsValue){
 			var seconds=parseInt(secondsValue,10) 
@@ -299,6 +302,17 @@ export default {
 				return moment.unix(seconds).format("mm:ss")
 			}else{
 				return moment.unix(seconds).format("HH:mm:ss")
+			}
+		},
+		localMinutes(secondsValue){
+			var seconds=parseInt(secondsValue,10) 
+			if (!Number.isInteger(seconds || seconds < 0)){
+				return ''
+			}
+			if (seconds < 3600){
+				return moment.unix(seconds).format("mm [min]")
+			}else{
+				return moment.unix(seconds).format("HH:mm")
 			}
 		},
 	}

@@ -23,10 +23,10 @@ class MovieInfo(dict):
 		self['uri'] = uri
 		self['query'] = query
 		self['title'] = title
-		self['category'] = category
+		self['category'] = category		# for live stream infos this will be used as the title of the 2. movie
 		self['provider'] = provider
-		self['timestamp'] = timestamp
-		self['duration'] = duration
+		self['timestamp'] = timestamp	# for live stream infos this will be used as the start time of the 2. movie
+		self['duration'] = duration 	# for live stream infos this will be used as the remaining time of the 1. movie
 		self['description'] = description
 		self['description_show'] = False # helper flag for Vue
 

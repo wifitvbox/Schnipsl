@@ -21,7 +21,8 @@
 	"edit_delete_dialog_header":"Schnipsl löschen?",
 	"edit_delete_dialog_cancel":"Abbruch",
 	"edit_delete_dialog_select":"Löschen",
-	"locale_date_format":"DD.MM.YYYY"
+	"locale_date_format":"DD.MM.YYYY",
+	"locale_time_format":"HH:mm"
 }
 
 
