@@ -225,21 +225,24 @@ class SplPlugin(SplThread):
 
 
 	def handle_device_play_status(self, queue_event):
-		cast_info = queue_event.data.cast_info
-		# msg comes from device, so does not have a valid user name
-		for user_name, user_player in self.players.items():  # does the user has a player?
-			player_info = user_player.player_info
-			if user_player.device_friendly_name == cast_info['device_friendly_name']:
-				player_info.play = cast_info['play']
-				player_info.current_time = cast_info['current_time']
-				player_info.duration = cast_info['duration']
-				player_info.volume = cast_info['volume']*100
-				if cast_info['state_change']:
-					print('-------------------  Save State Request -------------')
-					self.player_save_state(user_name)
-					#self.modref.message_handler.queue_event(user_name, defaults.PLAYER_SAVE_STATE_REQUEST, {
-					#	'movie': user_player.movie, 'player_info': player_info})
-				self.send_player_status(user_name, player_info)
+		try:
+			cast_info = queue_event.data.cast_info
+			# msg comes from device, so does not have a valid user name
+			for user_name, user_player in self.players.items():  # does the user has a player?
+				player_info = user_player.player_info
+				if user_player.device_friendly_name == cast_info['device_friendly_name']:
+					player_info.play = cast_info['play']
+					player_info.current_time = cast_info['current_time']
+					player_info.duration = cast_info['duration']
+					player_info.volume = cast_info['volume']*100
+					if cast_info['state_change']:
+						print('-------------------  Save State Request -------------')
+						self.player_save_state(user_name)
+						#self.modref.message_handler.queue_event(user_name, defaults.PLAYER_SAVE_STATE_REQUEST, {
+						#	'movie': user_player.movie, 'player_info': player_info})
+					self.send_player_status(user_name, player_info)
+		except:
+			pass
 
 	def send_player_status(self, user_name, player_info):
 		self.modref.message_handler.queue_event(user_name, defaults.MSG_SOCKET_MSG, {
