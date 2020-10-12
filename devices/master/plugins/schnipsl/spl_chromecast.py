@@ -52,7 +52,8 @@ class SplPlugin(SplThread):
 		self.runFlag = True
 
 		# plugin specific stuff
-		self.chromecasts = {}
+		self.devices = {}
+		self.zconf = zeroconf.Zeroconf()
 
 	def event_listener(self, queue_event):
 		if queue_event.type == defaults.DEVICE_PLAY_REQUEST:
@@ -74,7 +75,7 @@ class SplPlugin(SplThread):
 				#if queue_event.data['current_time']:
 				#	self.set_seek(cast, queue_event.data['current_time'])
 				print(mc.status)
-				self.chromecasts[queue_event.data['device_friendly_name']] = type('', (object,), {
+				self.devices[queue_event.data['device_friendly_name']] = type('', (object,), {
 					'cast': cast,
 					'cast_info': None,
 					'online': True
@@ -132,7 +133,7 @@ class SplPlugin(SplThread):
 
 	def get_cast(self, device_friendly_name):
 		try:
-			return self.chromecasts[device_friendly_name].cast
+			return self.devices[device_friendly_name].cast
 		except:
 			return None
 
@@ -149,21 +150,21 @@ class SplPlugin(SplThread):
 			return device_friedly_name
 		return None
 
-	def add_callback(self, uuid, name):
+	def add_service(self, uuid, name):
 		# print("Found mDNS service for cast name {}".format(name))
 		device_friendly_name = self.get_device_friendly_name_of_uuid(uuid)
-		if device_friendly_name in self.chromecasts:
-			cast_info = self.chromecasts[device_friendly_name]
+		if device_friendly_name in self.devices:
+			cast_info = self.devices[device_friendly_name]
 			cast_info.online = True
 
 		#self.list_devices()
 
-	def remove_callback(self, uuid, name, service):
+	def remove_service(self, uuid, name, service):
 		# print("Lost mDNS service for cast name {} {}".format(
 		#	name, service))
 		device_friendly_name = self.get_device_friendly_name_of_uuid(uuid)
-		if device_friendly_name in self.chromecasts:
-			cast_info = self.chromecasts[device_friendly_name]
+		if device_friendly_name in self.devices:
+			cast_info = self.devices[device_friendly_name]
 			cast_info.online = False
 			# sent last known position for later restart
 			cast_status = cast_info.cast_info
@@ -175,7 +176,7 @@ class SplPlugin(SplThread):
 	def update_callback(self, uuid, name):
 		# print("Updated mDNS service for name {}".format(name))
 		device_friendly_name = self.get_device_friendly_name_of_uuid(uuid)
-		if device_friendly_name in self.chromecasts:
+		if device_friendly_name in self.devices:
 			self.send_device_play_status(device_friendly_name, False)
 		#self.list_devices()
 
@@ -200,8 +201,8 @@ class SplPlugin(SplThread):
 		cast.set_volume(volume)
 
 	def send_device_play_status(self, device_friendly_name, state_change_flag):
-		if device_friendly_name in self.chromecasts:
-			cast_status = self.chromecasts[device_friendly_name]
+		if device_friendly_name in self.devices:
+			cast_status = self.devices[device_friendly_name]
 			if not cast_status.online:
 				return  # device is actual not acessable
 			cast = cast_status.cast
@@ -232,13 +233,12 @@ class SplPlugin(SplThread):
 		''' starts the server
 		'''
 		self.listener = pychromecast.CastListener(
-			self.add_callback, self.remove_callback, self.update_callback)
-		zconf = zeroconf.Zeroconf()
+			self.add_service, self.remove_service, self.update_callback)
 		self.browser = pychromecast.discovery.start_discovery(
-			self.listener, zconf)
+			self.listener, self.zconf)
 		while self.runFlag:
 			time.sleep(2)
-			for device_friendly_name in self.chromecasts:
+			for device_friendly_name in self.devices:
 				self.send_device_play_status(device_friendly_name, False)
 
 	def _stop(self):
