@@ -216,7 +216,7 @@ class SplPlugin(SplThread):
 				'duration': cast.media_controller.status.duration,
 				'current_time': cast.media_controller.status.current_time,
 				'play': cast.media_controller.status.player_state == "PLAYING",
-				'volume': cast.status.volume_level,
+				'volume': int(cast.status.volume_level*100), #chromecasts handles volumes between 0 and 1.0, Schnipsl from 0 to 100
 				'state_change': state_change_flag
 			}
 			if not cast_info['duration']:

@@ -39,6 +39,9 @@ class Kodi:
 		self.host=service_info.server
 		self.port=service_info.port
 		self.cast=self
+		self.current_time=-1
+		self.duration=0
+		self.player_id=0
 		self.cast_info  = {
 				'device_friendly_name': self.device_friendly_name,
 				'duration': 0,
@@ -47,6 +50,9 @@ class Kodi:
 				'volume': 0,
 				'state_change': True
 			}
+
+# usefull link: https://www.loxwiki.eu/plugins/servlet/mobile?contentId=60556203#content/view/60556203
+
 
 
 	def play_media(self,movie_url,movie_mime_type,current_time=0):
@@ -58,29 +64,147 @@ class Kodi:
 		else:
 			self.cast_info['current_time'] = -1
 
-		url='http://'+self.host+':8080/jsonrpc'
-		print('Kodi play request',url)
-		payload ={"jsonrpc":"2.0", "id":1, "method": "Player.Open", "params":{"item":{"file":movie_url}}}
-
-		response = requests.post(url, json=payload).json()
-
-		print(response)
-
+		print('Kodi play request',movie_url)
+		payload ={
+			"jsonrpc":"2.0",
+			"id":1,
+			"method": "Player.Open",
+			"params":{
+				"item":{
+					"file":movie_url
+				}
+			}
+		}
+		response=self.doJsonRPC(payload)
+		print("wo ist die richtige PlayerID??")
+		try:
+			self.cast_info['play']=response['result']=='OK'
+		except:
+			self.cast_info['play']=False
+		self.player_id=1
+		self.update_status()
+		if self.cast_info['play'] and self.supports_seek and current_time>0:
+			self.seek(current_time)
 
 	def play(self):
-		pass
+		print('Kodi play')
+		payload ={
+			"jsonrpc":"2.0",
+			"id":1,
+			"method": "Player.PlayPause",
+			"params":{
+				"playerid": self.player_id,
+				"play": True
+			 }
+		}
+		self.doJsonRPC(payload)
 
 	def seek(self, position):
-		pass
+		print('Kodi seek')
+		payload ={
+			"jsonrpc":"2.0",
+			"id":1,
+			"method": "Player.Seek",
+			"params":{
+				"playerid": self.player_id,
+				"value": position *100/self.duration
+			 }
+		}
+		self.doJsonRPC(payload)
 
 	def pause(self):
-		pass
+		print('Kodi pause')
+		payload ={
+			"jsonrpc":"2.0",
+			"id":1,
+			"method": "Player.PlayPause",
+			"params":{
+				"playerid": self.player_id,
+				"play": False
+			 }
+		}
+		self.doJsonRPC(payload)
 
 	def update_status(self):
-		pass
+		print('Kodi update_status')
+		player_just_stopped=False
+		payload ={
+			"jsonrpc":"2.0",
+			"id":1,
+			"method": "Player.GetProperties",
+			"params":{
+				"properties": [
+					"type",
+					"totaltime",
+					"canseek",
+					"live",
+					"speed",
+					"position",
+					"time",
+					"playlistid"
+				],
+				"playerid": self.player_id
+			}
+		}
+		response=self.doJsonRPC(payload)
+		try:
+			self.cast_info['duration']=self.time_to_timestamp(response['result']['totaltime'])
+			self.cast_info['current_time']=self.time_to_timestamp(response['result']['time'])
+			self.supports_seek=response['result']['canseek']
+			self.supports_pause=not response['result']['live']
+			self.duration=self.cast_info['duration']
+			self.current_time=self.cast_info['current_time']
+			previous_player_state=self.cast_info['play']
+			self.cast_info['play']=response['result']['speed']>0
+			self.cast_info['state_change']=previous_player_state and not self.cast_info['play']
+			pass
+		except:
+			pass
+
+		payload ={
+			"jsonrpc":"2.0",
+			"id":1,
+			"method": "Application.GetProperties",
+			"params":{
+				"properties": [
+					"volume"
+				],
+				#"playerid": self.player_id
+			}
+		}
+		response=self.doJsonRPC(payload)
+		try:
+			self.cast_info['volume']=response['result']['volume']
+			pass
+		except:
+			pass
+
 
 	def set_volume(self, volume):
-		pass
+		print('Kodi set_volume',volume)
+		payload ={
+			"jsonrpc":"2.0",
+			"id":1,
+			"method": "Application.SetVolume",
+			"params":{ "volume": volume }
+		}
+		self.doJsonRPC(payload)
+
+	def doJsonRPC(self,payload):
+		try:
+			url='http://'+self.host+':8080/jsonrpc'
+			response = requests.post(url, json=payload).json()
+			print(payload,response)
+			return response
+		except:
+			return None
+
+	def time_to_timestamp(self,time_struct):
+		try:
+			return time_struct['hours']*3600+time_struct['minutes']*60+time_struct['seconds']
+		except:
+			return 0
+
 
 
 class SplPlugin(SplThread):
@@ -133,8 +257,8 @@ class SplPlugin(SplThread):
 				self.set_seek(cast, pos)
 		if queue_event.type == defaults.DEVICE_PLAY_SETVOLUME:
 			cast = self.get_cast(queue_event.data['device_friendly_name'])
-			# schnipsl handles the volume as percent value from 1 to 100, chromecasts from 0 .. 1.0
-			volume = queue_event.data['volume'] / 100
+			# schnipsl handles the volume as percent value from 1 to 100, Kodi also from 0 .. 100
+			volume = int(queue_event.data['volume'])
 			if cast:
 				self.set_volume(cast, volume)
 
@@ -217,11 +341,11 @@ class SplPlugin(SplThread):
 			return
 
 	def set_volume(self, cast, volume):
-		if volume > 1.0:
-			volume = 1.0
-		if volume < 0.0:
-			volume = 0.0
-		cast.set_volume(volume)
+		if volume > 100:
+			volume = 100
+		if volume < 0:
+			volume = 0
+		cast.set_volume(int(volume))
 
 	def send_device_play_status(self, device_friendly_name, state_change_flag):
 		if device_friendly_name in self.devices:
@@ -231,7 +355,7 @@ class SplPlugin(SplThread):
 			cast.update_status()
 
 			cast_info =cast.cast_info
-			cast_info['state_change']= state_change_flag
+			cast_info['state_change']= cast_info['state_change'] or state_change_flag # state change is set either on request or of kodi itself is asking for
 
 			if not cast_info['duration']:
 				cast_info['duration'] = -1
@@ -246,13 +370,8 @@ class SplPlugin(SplThread):
 	def _run(self):
 		''' starts the server
 		'''
-
-		listener = MyListener()
-
 		self.browser = zeroconf.ServiceBrowser(
 			self.zeroconf, "_xbmc-jsonrpc._tcp.local.", self)
-#		self.browser = zeroconf.ServiceBrowser(
-#			self.zeroconf, "_xbmc-jsonrpc._tcp.local.", listener)
 		while self.runFlag:
 			time.sleep(2)
 			for device_friendly_name in self.devices:
@@ -262,12 +381,5 @@ class SplPlugin(SplThread):
 		self.zeroconf.close()
 		self.runFlag = False
 
-class MyListener:
 
-    def remove_service(self, zeroconf, type, name):
-        print("Service %s removed" % (name,))
-
-    def add_service(self, zeroconf, type, name):
-        info = zeroconf.get_service_info(type, name)
-        print("Service %s added, service info: %s" % (name, info))
 

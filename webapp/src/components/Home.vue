@@ -295,7 +295,7 @@ export default {
 		},
 		duration(secondsValue){
 			var seconds=parseInt(secondsValue,10) 
-			if (!Number.isInteger(seconds || seconds < 0)){
+			if (!Number.isInteger(seconds )|| seconds < 0){
 				return ''
 			}
 			if (seconds < 3600){

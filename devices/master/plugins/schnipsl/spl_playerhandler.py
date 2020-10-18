@@ -60,8 +60,8 @@ class SplPlugin(SplThread):
 	def event_listener(self, queue_event):
 		''' react on events
 		'''
-		print("playerhandler event handler",
-			  queue_event.type, queue_event.user)
+		#print("playerhandler event handler",
+		#	  queue_event.type, queue_event.user)
 		if queue_event.type == '_join':
 			# update the App Play info
 			user_name = queue_event.user
@@ -234,7 +234,7 @@ class SplPlugin(SplThread):
 					player_info.play = cast_info['play']
 					player_info.current_time = cast_info['current_time']
 					player_info.duration = cast_info['duration']
-					player_info.volume = cast_info['volume']*100
+					player_info.volume = cast_info['volume']
 					if cast_info['state_change']:
 						print('-------------------  Save State Request -------------')
 						self.player_save_state(user_name)

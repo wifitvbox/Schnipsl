@@ -86,7 +86,7 @@ class SplPlugin(SplThread):
 	def event_listener(self, queue_event):
 		''' react on events
 		'''
-		print("xmltvepg event handler", queue_event.type, queue_event.user)
+		#print("xmltvepg event handler", queue_event.type, queue_event.user)
 		if queue_event.type == defaults.STREAM_REQUEST_PLAY_LIST:
 			self.stream_answer_play_list(queue_event)
 			return None  # no further processing needed
@@ -195,6 +195,7 @@ class SplPlugin(SplThread):
 	def load_filmlist(self, file_name):
 		origin_dir = os.path.dirname(__file__)
 		file_name = os.path.join(origin_dir, file_name)
+		update_list=None
 		print(os.path.abspath(file_name))
 		try:  # does the file exist at all already?
 			xmltv_updates_time_stamp = os.path.getmtime(file_name)
@@ -215,16 +216,17 @@ class SplPlugin(SplThread):
 			print('failed xmltv_updates read', str(e))
 		epg_data = self.config.read('epg', {})
 		collect_lastmodified = {}
-		for channel in update_list.iterfind('channel'):
-			channel_id = channel.attrib['id']
-			self.allChannels.add(channel_id)
-			if channel_id in self.favorite_channels:
-				if not channel_id in collect_lastmodified:
-					collect_lastmodified[channel_id] = {}
-				for datafor in channel.iterfind('datafor'):
-					day_text = datafor.text
-					last_modified = datafor.attrib['lastmodified']
-					collect_lastmodified[channel_id][day_text] = last_modified
+		if update_list:
+			for channel in update_list.iterfind('channel'):
+				channel_id = channel.attrib['id']
+				self.allChannels.add(channel_id)
+				if channel_id in self.favorite_channels:
+					if not channel_id in collect_lastmodified:
+						collect_lastmodified[channel_id] = {}
+					for datafor in channel.iterfind('datafor'):
+						day_text = datafor.text
+						last_modified = datafor.attrib['lastmodified']
+						collect_lastmodified[channel_id][day_text] = last_modified
 		# first we delete old, outdated dates
 		for channel_id in list(epg_data):
 			if not channel_id in collect_lastmodified:
