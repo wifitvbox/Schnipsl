@@ -55,9 +55,10 @@ class Query:
 	''' stores query  specific data
 	'''
 
-	def __init__(self, user, qu_type, params):
+	def __init__(self, user, qu_type, params,unlimed_nr_of_results=False):
 		self.user = user
 		self.type = qu_type
+		self.unlimed_nr_of_results = unlimed_nr_of_results
 		self.params = params
 
 
@@ -116,13 +117,30 @@ class MessageHandler:
 		res = []
 		query_start_page = 0
 		try:
-			if 'query_start_page' in query.params and query.params['query_start_page'] >=0 :
+			if 'query_start_page' in query.params and query.params['query_start_page'] >= 0:
 				query_start_page = query.params['query_start_page']
 		except:
-			pass # see'm not to have a page number.... 
-		for query_handler in self.query_handlers:
-			if defaults.MAX_QUERY_SIZE*(query_start_page+1)-len(res) < 0: # returns one result more as dictated by MAX_QUERY_SIZE to indicate that there are some more results
-				break
-			res += query_handler.query_handler(query,
-											   defaults.MAX_QUERY_SIZE*(query_start_page+1)-len(res)+1)# max. + 1
-		return res[defaults.MAX_QUERY_SIZE*query_start_page:defaults.MAX_QUERY_SIZE*(query_start_page+1)+1] # returns one result more as dictated by MAX_QUERY_SIZE to indicate that there are some more results
+			pass  # see'm not to have a page number....
+		if query.unlimed_nr_of_results:
+			for query_handler in self.query_handlers:
+				all_received = False
+				query_start_size = 1
+				this_res = []
+				while not all_received:
+					this_res = query_handler.query_handler(query,
+														   defaults.MAX_QUERY_SIZE*query_start_size+1)
+					# there are more result
+					all_received = len(
+						this_res) <= defaults.MAX_QUERY_SIZE*query_start_size
+					query_start_size *= 2  # double the block size for another loop, if needed
+				res += this_res
+			return res
+		else:
+			for query_handler in self.query_handlers:
+				# returns one result more as dictated by MAX_QUERY_SIZE to indicate that there are some more results
+				if defaults.MAX_QUERY_SIZE*(query_start_page+1)-len(res) < 0:
+					break
+				res += query_handler.query_handler(query,
+												   defaults.MAX_QUERY_SIZE*(query_start_page+1)-len(res)+1)  # max. + 1
+			# returns one result more as dictated by MAX_QUERY_SIZE to indicate that there are some more results
+			return res[defaults.MAX_QUERY_SIZE*query_start_page:defaults.MAX_QUERY_SIZE*(query_start_page+1)+1]

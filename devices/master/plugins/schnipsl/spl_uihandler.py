@@ -124,7 +124,7 @@ class SplPlugin(SplThread):
 						'user': queue_event.user, 'current_time': current_time, 'movie': movie_info_list[0], 'movie_uri': queue_event.data['movie_uri']})
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_SOURCES:
 			available_items = self.modref.message_handler.query(
-				Query(queue_event.user, defaults.QUERY_AVAILABLE_SOURCES, None))
+				Query(queue_event.user, defaults.QUERY_AVAILABLE_SOURCES, None,unlimed_nr_of_results=True))
 			available_items.sort()
 			data = {
 				'select_items': available_items,
@@ -134,7 +134,7 @@ class SplPlugin(SplThread):
 				'type': defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_SOURCES_ANSWER, 'config': data})
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_PROVIDERS:
 			available_items = self.modref.message_handler.query(
-				Query(queue_event.user, defaults.QUERY_AVAILABLE_PROVIDERS, queue_event.data))
+				Query(queue_event.user, defaults.QUERY_AVAILABLE_PROVIDERS, queue_event.data,unlimed_nr_of_results=True))
 			available_items.sort()
 			data = {
 				'select_items': available_items,
@@ -144,7 +144,7 @@ class SplPlugin(SplThread):
 				'type': defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_PROVIDERS_ANSWER, 'config': data})
 		if queue_event.type == defaults.MSG_SOCKET_EDIT_QUERY_AVAILABLE_CATEGORIES:
 			available_items = self.modref.message_handler.query(
-				Query(queue_event.user, defaults.QUERY_AVAILABLE_CATEGORIES, queue_event.data))
+				Query(queue_event.user, defaults.QUERY_AVAILABLE_CATEGORIES, queue_event.data,unlimed_nr_of_results=True))
 			available_items.sort()
 			data = {
 				'select_items': available_items,
