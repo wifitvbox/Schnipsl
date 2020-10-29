@@ -4,6 +4,9 @@ curl -s "http-URL.ts"  | nodejs epg_grap.js 1
 
 reads ts stream from stdin, read epg data and stops after n repeats of the same time stamp.
 The received epg data is dumped as json string to stdout
+
+docu about how to receive rtsp streams: http://www.live555.com/liveMedia/#testProgs
+
 */
 
 var dvbtee = require('dvbtee')
@@ -15,7 +18,13 @@ var parser = new dvbtee.Parser
 var result = { 'service_ids': new Object(), 'details': new Object() }
 
 var details = result.details
-var nrOfLoops=parseInt(process.argv[2])
+
+var channel_name = process.argv[2].toLowerCase()
+var nrOfLoops = parseInt(process.argv[3])
+var timeout = parseInt(process.argv[4]) * 1000
+var channel_service_id = 0
+setTimeout(function() { 
+		rs.destroy()	}, timeout);
 
 parser.on('data', function (data) {
 	//console.log("table name ",data.tableName)
@@ -34,9 +43,12 @@ parser.on('data', function (data) {
 					service.descriptors.forEach(function (descriptor) {
 						if (descriptor.descriptorTag == 72) {
 							var serviceName = descriptor.serviceName
-							//var providerName = descriptor.providerName
+							var providerName = descriptor.providerName
 							//console.log(serviceId, providerName,serviceName)
 							result.service_ids[serviceId] = serviceName
+							if (serviceName.toLowerCase() === (channel_name)) {
+								channel_service_id = serviceId
+							}
 						}
 					})
 				}
@@ -52,6 +64,12 @@ parser.on('data', function (data) {
 					'\ntable data:\n', JSON.stringify(data, null, 2)
 				)
 		*/
+		if (channel_service_id == 0) {
+			return
+		}
+		if (channel_service_id != data.serviceId) {
+			return
+		}
 		if (data.events) {
 			data.events.forEach(function (item) {
 				var name = ''
@@ -69,7 +87,7 @@ parser.on('data', function (data) {
 							title = descriptor.text
 						}
 						if (descriptor.descriptorTag == 78) {
-							description += descriptor.text.replace(/[\u008A]/g,'\n')
+							description += descriptor.text.replace(/[\u008A]/g, '\n')
 						}
 					})
 				}
@@ -79,8 +97,6 @@ parser.on('data', function (data) {
 					//console.log('Double try..', title, name,details[key].counter)
 					if (details[key].counter > nrOfLoops) {
 						//console.log('Double - try to break..',title)
-						//console.log(JSON.stringify(result, replacer, 2))
-						console.log(JSON.stringify(result, null, 2))
 						rs.destroy()
 
 					}
@@ -110,9 +126,12 @@ parser.on('data', function (data) {
 
 	}
 })
-parser.on('end', function () {})
-
 rs = process.stdin
+
+rs.on('close', function () {
+	console.log(JSON.stringify(result, null, 2))
+ })
+
 //rs.on('error', function(err) {console.log(err)}); // Handle the error
-//rs.on('end', function(){})
+//rs.on('end', function(){}) // end ist not reached when destroy the stream before
 rs.pipe(parser, { end: false })
