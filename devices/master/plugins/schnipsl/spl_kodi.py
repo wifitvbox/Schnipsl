@@ -54,7 +54,6 @@ class Kodi:
 # usefull link: https://www.loxwiki.eu/plugins/servlet/mobile?contentId=60556203#content/view/60556203
 
 
-
 	def play_media(self,movie_url,movie_mime_type,current_time=0):
 
 		if not self.cast_info['duration']:
@@ -125,9 +124,19 @@ class Kodi:
 		}
 		self.doJsonRPC(payload)
 
+	def stop(self):
+		print('Kodi stop')
+		payload ={
+			"jsonrpc":"2.0",
+			"id":1,
+			"method": "Player.Stop",
+			"params":{
+				"playerid": self.player_id
+			 }
+		}
+		self.doJsonRPC(payload)
+
 	def update_status(self):
-		print('Kodi update_status')
-		player_just_stopped=False
 		payload ={
 			"jsonrpc":"2.0",
 			"id":1,
@@ -179,7 +188,6 @@ class Kodi:
 		except:
 			pass
 
-
 	def set_volume(self, volume):
 		print('Kodi set_volume',volume)
 		payload ={
@@ -194,7 +202,7 @@ class Kodi:
 		try:
 			url='http://'+self.host+':8080/jsonrpc'
 			response = requests.post(url, json=payload).json()
-			print(payload,response)
+			#print(payload,response)
 			return response
 		except:
 			return None
@@ -244,7 +252,10 @@ class SplPlugin(SplThread):
 					queue_event.data['device_friendly_name'], True)
 
 		if queue_event.type == defaults.DEVICE_PLAY_STOP:
-			pass
+			cast = self.get_cast(queue_event.data['device_friendly_name'])
+			if cast and cast.online:
+				print(repr(cast))
+				cast.stop()
 
 		if queue_event.type == defaults.DEVICE_PLAY_RESUME:
 			cast = self.get_cast(queue_event.data['device_friendly_name'])
@@ -326,6 +337,10 @@ class SplPlugin(SplThread):
 			self.modref.message_handler.queue_event(
 				None, defaults.DEVICE_PLAY_STATUS, cast_status)
 		self.list_devices()
+
+	def update_service(self, zeroconf, type, uuid):
+		# can be empty, but it's required by zeroconfig browser
+		pass
 
 	def set_seek(self, cast, position):
 		if cast.supports_seek is False:

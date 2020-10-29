@@ -88,9 +88,7 @@ class SplPlugin(SplThread):
 		'''
 		#print("xmltvepg event handler", queue_event.type, queue_event.user)
 		if queue_event.type == defaults.STREAM_REQUEST_PLAY_LIST:
-			self.stream_answer_play_list(queue_event)
-			return None  # no further processing needed
-		return queue_event
+			return self.stream_answer_play_list(queue_event) # returns None if no further query handling is needed
 		return queue_event  # dont forget the  event for further pocessing...
 
 	def query_handler(self, queue_event, max_result_count):
@@ -381,6 +379,9 @@ class SplPlugin(SplThread):
 
 	def stream_answer_play_list(self,queue_event):
 		uri_elements = queue_event.data['uri'].split(':')
+		source=uri_elements[0]
+		if source != self.plugin_names[1]:
+			return queue_event
 		provider = uri_elements[1]
 		time_stamp = time.time()
 		try:
