@@ -63,9 +63,10 @@ class SplPlugin(SplThread):
 		self.runFlag = True
 
 		# plugin specific stuff
+		self.stream_source='LinVDR Live'
 		self.origin_dir = os.path.dirname(__file__)
 		self.config = JsonStorage(os.path.join(
-			self.origin_dir, "data.json"), {})
+			self.origin_dir, "config.json"), {'epgloops':1, 'epgtimeout':60})
 
 		self.epgbuffer_file_name = os.path.join(self.origin_dir, "epgbuffer.ts")
 
@@ -195,7 +196,9 @@ class SplPlugin(SplThread):
 		# refill the internal lists
 		self.providers = set()
 		self.categories = set()
-		plugin_name = self.plugin_names[0]
+		# we'll use the name of the stream source plugin instead the name of the EPG plugin itself
+		# plugin_name = self.plugin_names[0]
+		plugin_name = self.stream_source
 		if not plugin_name in self.movies:  # this is an indicator that the epg was loaded from disk and not updated from xmltv.se, so we need to fill a few structures
 			self.movies[plugin_name] = {}
 		for provider, movie_data in self.all_EPG_Data.items():
@@ -230,7 +233,7 @@ class SplPlugin(SplThread):
 		'''
 ./epg_grap.sh "http://192.168.1.7:3000/S19.2E-1-1079-28006.ts" ZDF 1
 		'''
-		attr=[os.path.join(	self.origin_dir, 'epg_grap.sh') , url, provider , '1', '60'] # process arguments
+		attr=[os.path.join(	self.origin_dir, 'epg_grap.sh') , url, provider , str(self.config.read('epgloops')), str(self.config.read('epgtimeout'))] # process arguments
 		print ("epg_grap started",provider, url,repr(attr))
 		try:
 			self.process = subprocess.Popen(attr, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -258,7 +261,9 @@ class SplPlugin(SplThread):
 					category =  ''
 					count += 1
 
-					plugin_name = self.plugin_names[0]
+					# we'll use the name of the stream source plugin instead the name of the EPG plugin itself
+					# plugin_name = self.plugin_names[0]
+					plugin_name = self.stream_source
 					self.providers.add(provider)
 					self.categories.add(category)
 					new_movie = Movie(
@@ -300,7 +305,7 @@ class SplPlugin(SplThread):
 		uri= queue_event.data['uri']
 		uri_elements =uri.split(':')
 		source=uri_elements[0]
-		if source != 'LinVDR Live':
+		if source != self.stream_source:
 			return queue_event
 		provider = uri_elements[1]
 		if not provider in self.all_EPG_Data:

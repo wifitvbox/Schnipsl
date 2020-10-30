@@ -178,8 +178,11 @@ class SplPlugin(SplThread):
 			movie_uri=queue_event.data['uri']
 			movie_info=queue_event.data['movie_info']
 			for uuid, search_movie in self.movielist.items():
-				if not search_movie['movie_info']['uri'] == movie_uri:
+				short_search_movie_uri=':'.join(search_movie['movie_info']['uri'].split(':')[:2])
+				short_movie_uri=':'.join(movie_uri.split(':')[:2])
+				if not short_search_movie_uri == short_movie_uri:
 					continue
+				self.movielist[uuid]['movie_info']=movie_info
 				for user_name in search_movie['clients']:
 					self.update_live_movie_clip( user_name, uuid,movie_info)
 		# for further pocessing, do not forget to return the queue event
