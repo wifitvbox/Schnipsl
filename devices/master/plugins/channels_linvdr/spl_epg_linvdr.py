@@ -216,7 +216,7 @@ class SplPlugin(SplThread):
 					timestamp=movie_info['timestamp'],
 					duration=movie_info['duration'],
 					description=movie_info['description'],
-					url=None
+					url=movie_data['url']
 				)
 				self.categories.add(movie_info['category'])
 		for epg_list in self.timeline.values():
@@ -310,7 +310,7 @@ class SplPlugin(SplThread):
 		provider = uri_elements[1]
 		if not provider in self.all_EPG_Data:
 			movie_info_list = self.modref.message_handler.query(
-				Query(None, defaults.QUERY_MOVIE_ID, uri))
+				Query(None, defaults.QUERY_MOVIE_ID, source+':'+provider+':0'))
 			if movie_info_list:
 				movie= movie_info_list[0]
 				url=movie.url
