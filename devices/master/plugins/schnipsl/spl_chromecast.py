@@ -115,8 +115,7 @@ class SplPlugin(SplThread):
 	def query_handler(self, queue_event, max_result_count):
 		''' try to send simulated answers
 		'''
-		print("chromecast query handler", queue_event.type,
-			  queue_event.user, max_result_count)
+		# print("chromecast query handler", queue_event.type, queue_event.user, max_result_count)
 		if queue_event.type == defaults.QUERY_FEASIBLE_DEVICES:
 			res = []
 			print("start storing chromecast devices")

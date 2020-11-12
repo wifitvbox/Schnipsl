@@ -63,7 +63,7 @@ class SplPlugin(SplThread):
 		self.runFlag = True
 
 		# plugin specific stuff
-		self.stream_source='LinVDR Live'
+		self.stream_source='LinVDR Live' # this defines who is the real data provider for the entries found in the EPG data
 		self.origin_dir = os.path.dirname(__file__)
 		self.config = JsonStorage(os.path.join(
 			self.origin_dir, "config.json"), {'epgloops':1, 'epgtimeout':60})
@@ -71,7 +71,9 @@ class SplPlugin(SplThread):
 		self.epgbuffer_file_name = os.path.join(self.origin_dir, "epgbuffer.ts")
 
 		self.process=None
-		self.all_EPG_Data = {}
+		self.epg_storage = JsonStorage(os.path.join(
+			self.origin_dir, "epgdata.json"), {'epgdata':{}})
+		self.all_EPG_Data = self.epg_storage.read('epgdata')
 		self.providers = set()
 		self.categories = set()
 		self.movies = {}
@@ -91,8 +93,7 @@ class SplPlugin(SplThread):
 	def query_handler(self, queue_event, max_result_count):
 		''' answers with list[] of results
 		'''
-		print("linvdrepg query handler", queue_event.type,
-			  queue_event.user, max_result_count)
+		# print("linvdrepg query handler", queue_event.type,  queue_event.user, max_result_count)
 		if queue_event.type == defaults.QUERY_AVAILABLE_SOURCES:
 			return self.plugin_names
 		if queue_event.type == defaults.QUERY_AVAILABLE_PROVIDERS:
@@ -135,32 +136,37 @@ class SplPlugin(SplThread):
 			for plugin_name in self.plugin_names:
 				# this plugin is one of the wanted
 				if plugin_name in queue_event.params['select_source_values']:
-					if plugin_name in self.movies:  # are there any movies stored for this plugin?
-						for movie in self.movies[plugin_name].values():
-							if movie.provider in queue_event.params['select_provider_values']:
-								if titles:
-									found = False
-									for title in titles:
-										if title.lower() in movie.title.lower():
-											found = True
-										if title.lower() in movie.category.lower():
-											found = True
-									if not found:
-										continue
-								if description_regexs:
-									found = False
-									for description_regex in description_regexs:
-										if re.search(description_regex, movie.description):
-											found = True
-									if not found:
-										continue
 
-								if max_result_count > 0:
-									res.append(
-										MovieInfo.movie_to_movie_info(movie, ''))
-									max_result_count -= 1
-								else:
-									return res  # maximal number of results reached
+					# now we need to do a dirty trick, because in our movies the entries are not store be the correct plugin name,
+					# but the real data source instead, which is slighty confusing,,
+					plugin_name=self.stream_source
+					if plugin_name in self.movies:  # are there any movies stored for this plugin?
+						with self.lock:
+							for movie in self.movies[plugin_name].values():
+								if movie.provider in queue_event.params['select_provider_values']:
+									if titles:
+										found = False
+										for title in titles:
+											if title.lower() in movie.title.lower():
+												found = True
+											if title.lower() in movie.category.lower():
+												found = True
+										if not found:
+											continue
+									if description_regexs:
+										found = False
+										for description_regex in description_regexs:
+											if re.search(description_regex, movie.description):
+												found = True
+										if not found:
+											continue
+
+									if max_result_count > 0:
+										res.append(
+											MovieInfo.movie_to_movie_info(movie, ''))
+										max_result_count -= 1
+									else:
+										return res  # maximal number of results reached
 			return res
 		return[]
 
@@ -169,8 +175,7 @@ class SplPlugin(SplThread):
 		'''
 		tick = 0
 		while self.runFlag:
-			with self.lock:
-				self.check_for_updates()
+			self.check_for_updates()
 			time.sleep(10)
 
 	def _stop(self):
@@ -183,15 +188,30 @@ class SplPlugin(SplThread):
 
 	def check_for_updates(self):
 		# check for updates:
+		new_epg_loaded=False
 		for provider in self.all_EPG_Data:
 			if self.all_EPG_Data[provider]['requested']:
-				if self.all_EPG_Data[provider]['lastmodified']<time.time()-60*60:
-						epg_details = self.get_epg_from_linvdr(
-							provider,self.all_EPG_Data[provider]['url'])
-						if epg_details:
-							self.all_EPG_Data[provider]['epg_data'] = epg_details
+				actual_time=time.time()
+				if self.all_EPG_Data[provider]['lastmodified']<actual_time-60*60:
+					epg_details = self.get_epg_from_linvdr(
+						provider,self.all_EPG_Data[provider]['url'])
+					if epg_details:
+						new_epg_loaded=True
+						with self.lock:
 							self.all_EPG_Data[provider]['lastmodified'] = time.time()
 							self.all_EPG_Data[provider]['requested']=False
+							for start_time, movie_info in epg_details.items():
+								# refresh or add data
+								self.all_EPG_Data[provider]['epg_data'][start_time] = movie_info
+							movie_infos_to_delete=[]
+							for start_time, movie_info in self.all_EPG_Data[provider]['epg_data'].items():
+								if int(start_time) + movie_info['duration']<actual_time - 60*60: # the movie ended at least one hour ago
+									movie_infos_to_delete.append(start_time)
+							for start_time in movie_infos_to_delete:
+								del(self.all_EPG_Data[provider]['epg_data'][start_time])
+		if self.providers and not new_epg_loaded: # if this is not the first call (self.provides contains already data),but no new epg data
+			return
+		self.epg_storage.write('epgdata',self.all_EPG_Data)
 
 		# refill the internal lists
 		self.providers = set()
@@ -199,12 +219,12 @@ class SplPlugin(SplThread):
 		# we'll use the name of the stream source plugin instead the name of the EPG plugin itself
 		# plugin_name = self.plugin_names[0]
 		plugin_name = self.stream_source
-		if not plugin_name in self.movies:  # this is an indicator that the epg was loaded from disk and not updated from xmltv.se, so we need to fill a few structures
+		if not plugin_name in self.movies: 
 			self.movies[plugin_name] = {}
 		for provider, movie_data in self.all_EPG_Data.items():
 			self.providers.add(provider)
 			self.timeline[provider] = []
-			for movie_info in movie_data['epg_data']:
+			for movie_info in movie_data['epg_data'].values():
 				self.timeline[provider].append(type('', (object,), {
 												'timestamp': movie_info['timestamp'], 'movie_info': movie_info})())
 				self.movies[plugin_name][movie_info['uri']] = Movie(
@@ -248,7 +268,7 @@ class SplPlugin(SplThread):
 				print ("epg_grap' ended")
 				epg_json_string=epg_out.decode()
 				epg_json = json.loads(epg_json_string)
-				result = []
+				result = {}
 				count = 0
 				for json_movie in epg_json['details'].values():
 					start = json_movie['unixTimeBegin']
@@ -282,7 +302,7 @@ class SplPlugin(SplThread):
 						self.movies[plugin_name] = {}
 					self.movies[plugin_name][new_movie.uri()] = new_movie
 					movie_info = MovieInfo.movie_to_movie_info(new_movie, category)
-					result.append(movie_info)
+					result[start]=movie_info
 				print("epg loaded, {0} entries".format(count))
 				return result
 		except Exception as ex:

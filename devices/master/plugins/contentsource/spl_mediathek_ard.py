@@ -72,8 +72,7 @@ class SplPlugin(SplThread):
 	def query_handler(self, queue_event, max_result_count):
 		''' answers with list[] of results
 		'''
-		print("mediathek_ard query handler", queue_event.type,
-		      queue_event.user, max_result_count)
+		# print("mediathek_ard query handler", queue_event.type, queue_event.user, max_result_count)
 		if queue_event.type == defaults.QUERY_AVAILABLE_SOURCES:
 			return self.plugin_names
 		if queue_event.type == defaults.QUERY_AVAILABLE_PROVIDERS:

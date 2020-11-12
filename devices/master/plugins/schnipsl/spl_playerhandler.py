@@ -109,8 +109,7 @@ class SplPlugin(SplThread):
 	def query_handler(self, queue_event, max_result_count):
 		''' answers with list[] of results
 		'''
-		print("playerhandler query handler", queue_event.type,
-			  queue_event.user, max_result_count)
+		# print("playerhandler query handler", queue_event.type, queue_event.user, max_result_count)
 		return[]
 
 	def start_play(self, user, device_friendly_name, movie, movie_uri, current_time):
@@ -172,7 +171,7 @@ class SplPlugin(SplThread):
 		if user_name in self.players:
 			user_player = self.players[user_name]
 			player_info = user_player.player_info
-			pos = player_info.duration * percent_pos / 100
+			pos = player_info.duration * percent_pos // 100
 			self.modref.message_handler.queue_event(None, defaults.DEVICE_PLAY_SETPOS, {
 				'device_friendly_name': user_player.device_friendly_name, 'pos': pos})
 

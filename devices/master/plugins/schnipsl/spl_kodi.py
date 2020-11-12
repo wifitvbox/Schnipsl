@@ -100,13 +100,17 @@ class Kodi:
 
 	def seek(self, position):
 		print('Kodi seek')
+		try:
+			duration=position *100/self.duration
+		except: #catch devision py zero
+			duration=0
 		payload ={
 			"jsonrpc":"2.0",
 			"id":1,
 			"method": "Player.Seek",
 			"params":{
 				"playerid": self.player_id,
-				"value": position *100/self.duration
+				"value": duration
 			 }
 		}
 		self.doJsonRPC(payload)
@@ -279,8 +283,7 @@ class SplPlugin(SplThread):
 	def query_handler(self, queue_event, max_result_count):
 		''' try to send simulated answers
 		'''
-		print("kodi query handler", queue_event.type,
-			  queue_event.user, max_result_count)
+		# print("kodi query handler", queue_event.type, queue_event.user, max_result_count)
 		if queue_event.type == defaults.QUERY_FEASIBLE_DEVICES:
 			res = []
 			for device_friedly_name in self.devices:

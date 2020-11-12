@@ -131,7 +131,7 @@
 					<v-btn icon class="mx-4" @click="requestPlayAdd(movie_info.uri)">
 						<v-icon size="24px">mdi-video-plus</v-icon>
 					</v-btn>
-					<v-btn icon class="mx-4">
+					<v-btn icon class="mx-4" @click="requestRecordAdd(movie_info.uri)">
 						<v-icon size="24px">mdi-record</v-icon>
 					</v-btn>
 					<v-btn
@@ -242,6 +242,14 @@ export default {
 		requestPlayAdd(movie_uri) {
 			console.log("requestPlayAdd", movie_uri);
 			messenger.emit("edit_play_add_request", {
+				uuid: this.uuid,
+				query: this.query,
+				movie_uri: movie_uri,
+			});
+		},
+		requestRecordAdd(movie_uri) {
+			console.log("requestRecordAdd", movie_uri);
+			messenger.emit("edit_record_add_request", {
 				uuid: this.uuid,
 				query: this.query,
 				movie_uri: movie_uri,

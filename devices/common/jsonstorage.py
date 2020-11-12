@@ -31,15 +31,19 @@ class JsonStorage:
 		except:
 			logger.warning(
 				"couldn't load config file {0}".format(self.file_name))
+			# self default config to have a configable file on disk
+			self.save()
 
 
 	def read(self, key, default=None):
 		''' read value from config, identified by key
 
 		Args:
-		key (:obj:`str`): lookup index
+		key (:obj:`str`): lookup index. if key == 'all', it returns the whole config object
 		'''
 
+		if key=='all':
+			return self.config
 		if key in self.config:
 			return self.config[key]
 		return default
