@@ -124,7 +124,10 @@ class SplPlugin(SplThread):
 									
 
 								if max_result_count>0:
-									res.append(MovieInfo.movie_to_movie_info(movie,''))
+									movie_info=MovieInfo.movie_to_movie_info(movie,'')
+									movie_info['streamable']=True
+									movie_info['recordable']=True
+									res.append(movie_info)
 									max_result_count-=1
 								else:
 									return res # maximal number of results reached

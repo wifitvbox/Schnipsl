@@ -40,7 +40,7 @@
 					<v-list-item-title v-text="item.movie_info.title +' • '+ localMinutes(item.current_time)"></v-list-item-title>
 					<v-list-item-subtitle
 						v-text="item.movie_info.provider +' • '+ localDateTime
-			(item.movie_info.timestamp,$t('locale_time_format')) +' • '+ item.movie_info.category"
+			(item.movie_info.timestamp,$t('locale_date_time_format')) +' • '+ item.movie_info.category"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -56,6 +56,9 @@
 					</v-btn>
 					<v-btn icon @click="share(item.uuid)">
 						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
+					</v-btn>
+					<v-btn icon class="mx-4" v-if="item.movie_info.recordable" @click="requestRecordAdd(item.movie_info.uri)">
+						<v-icon size="24px">mdi-record</v-icon>
 					</v-btn>
 					<v-btn icon @click="item.movie_info.description_show = !item.movie_info.description_show">
 						<v-icon>{{ item.movie_info.description_show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
@@ -73,7 +76,7 @@
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
 						v-text="item.movie_info.provider +' • '+ localDateTime
-			(item.movie_info.timestamp,$t('locale_date_format')) +' • ' + duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
+			(item.movie_info.timestamp,$t('locale_date_time_format')) +' • ' + duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">
@@ -91,6 +94,9 @@
 					<v-btn icon @click="share(item.uuid)">
 						<v-icon color="grey lighten-1">mdi-share-variant</v-icon>
 					</v-btn>
+					<v-btn icon class="mx-4" v-if="item.movie_info.recordable" @click="requestRecordAdd(item.movie_info.uri)">
+						<v-icon size="24px">mdi-record</v-icon>
+					</v-btn>
 					<v-btn icon @click="item.movie_info.description_show = !item.movie_info.description_show">
 						<v-icon>{{ item.movie_info.description_show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
 					</v-btn>
@@ -106,7 +112,7 @@
 					<v-list-item-title v-text="item.movie_info.title +' • '+ item.movie_info.category"></v-list-item-title>
 					<v-list-item-subtitle
 						v-text="item.movie_info.provider +' • '+ localDateTime
-			(item.movie_info.timestamp,$t('locale_date_format')) +' • '+ duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
+			(item.movie_info.timestamp,$t('locale_date_time_format')) +' • '+ duration(item.movie_info.duration) +' • '+ duration(item.current_time)"
 					></v-list-item-subtitle>
 					<v-expand-transition>
 						<div v-show="item.movie_info.description_show">

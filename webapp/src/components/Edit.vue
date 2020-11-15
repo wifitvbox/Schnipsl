@@ -105,7 +105,7 @@
 					<v-icon :class="[item.iconClass]" v-text="item.icon"></v-icon>
 				</v-list-item-avatar>
  -->
-				<v-list-item-content @click="requestPlay(movie_info.uri)">
+				<v-list-item-content v-on="movie_info.streamable ? { click : () => requestPlay(movie_info.uri) } : {}" >
 					<v-list-item-title
 						v-text="movie_info.title + ' • ' + movie_info.category"
 					></v-list-item-title>
@@ -113,7 +113,7 @@
 						v-text="
 							movie_info.provider +
 							' • ' +
-							localDate(movie_info.timestamp, $t('locale_date_format')) +
+							localDate(movie_info.timestamp, $t('locale_date_time_format')) +
 							' • ' +
 							duration(movie_info.duration)
 						"
@@ -128,10 +128,10 @@
 				</v-list-item-content>
 
 				<v-list-item-action>
-					<v-btn icon class="mx-4" @click="requestPlayAdd(movie_info.uri)">
+					<v-btn icon class="mx-4" v-if="movie_info.streamable" @click="requestPlayAdd(movie_info.uri)">
 						<v-icon size="24px">mdi-video-plus</v-icon>
 					</v-btn>
-					<v-btn icon class="mx-4" @click="requestRecordAdd(movie_info.uri)">
+					<v-btn icon class="mx-4" v-if="movie_info.recordable" @click="requestRecordAdd(movie_info.uri)">
 						<v-icon size="24px">mdi-record</v-icon>
 					</v-btn>
 					<v-btn

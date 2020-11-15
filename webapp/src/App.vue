@@ -88,8 +88,11 @@
 					<v-btn icon class="mx-4" @click="player_key('plus10')">
 						<v-icon size="24px">mdi-fast-forward-10</v-icon>
 					</v-btn>
-					<v-btn icon class="mx-4" @click="player_key('next')">
-						<v-icon size="24px">mdi-skip-next</v-icon>
+					<v-btn icon class="mx-4" @click="player_key('stop')">
+						<v-icon size="24px">mdi-stop</v-icon>
+					</v-btn>
+					<v-btn icon class="mx-4" v-if="movie_info.recordable" @click="stopAndRecord(movie_info.uri)">
+						<v-icon size="24px">mdi-bed</v-icon>
 					</v-btn>
 					<v-btn icon @click="show = !show">
 						<v-icon>{{ show ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
@@ -212,6 +215,12 @@ export default {
 			} else {
 				return moment.unix(seconds).format("HH:mm:ss");
 			}
+		},
+		stopAndRecord(movie_uri) {
+			console.log("stopAndRecord", movie_uri);
+			messenger.emit("stop_and_record", {
+				movie_uri: movie_uri,
+			});
 		},
 	},
 	computed: {

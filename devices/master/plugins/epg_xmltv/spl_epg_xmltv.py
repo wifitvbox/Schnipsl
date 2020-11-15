@@ -165,8 +165,10 @@ class SplPlugin(SplThread):
 										continue
 
 								if max_result_count > 0:
-									res.append(
-										MovieInfo.movie_to_movie_info(movie, ''))
+									movie_info=MovieInfo.movie_to_movie_info(movie,'')
+									movie_info['streamable']=False
+									movie_info['recordable']=True
+									res.append(movie_info)
 									max_result_count -= 1
 								else:
 									return res  # maximal number of results reached
@@ -360,6 +362,7 @@ class SplPlugin(SplThread):
 				self.movies[plugin_name] = {}
 			self.movies[plugin_name][new_movie.uri()] = new_movie
 			movie_info = MovieInfo.movie_to_movie_info(new_movie, category)
+			movie_info['recordable']=True
 			result.append(movie_info)
 		print("epg loaded, {0} entries".format(count))
 		return result
@@ -403,6 +406,7 @@ class SplPlugin(SplThread):
 					description=first_movie_info['description'],
 					query=first_movie_info['query']
 				)
+				combined_movie_info['recordable']=True
 				self.modref.message_handler.queue_event(None, defaults.STREAM_ANSWER_PLAY_LIST, {'uri': queue_event.data['uri'],'movie_info':combined_movie_info})
 		except:
 			print('unknown provider', provider)

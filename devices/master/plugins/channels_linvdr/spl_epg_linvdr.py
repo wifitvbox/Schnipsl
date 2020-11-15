@@ -19,14 +19,12 @@ import datetime
 import calendar
 import subprocess
 
-
 from pprint import pprint
 
 import re
 
 
 # Non standard modules (install with pip)
-
 
 ScriptPath = os.path.realpath(os.path.join(
 	os.path.dirname(__file__), "../../../common"))
@@ -79,7 +77,6 @@ class SplPlugin(SplThread):
 		self.movies = {}
 		self.timeline = {}
 		self.lock=Lock()
-
 
 	def event_listener(self, queue_event):
 		''' react on events
@@ -144,26 +141,28 @@ class SplPlugin(SplThread):
 						with self.lock:
 							for movie in self.movies[plugin_name].values():
 								if movie.provider in queue_event.params['select_provider_values']:
-									if titles:
-										found = False
-										for title in titles:
-											if title.lower() in movie.title.lower():
-												found = True
-											if title.lower() in movie.category.lower():
-												found = True
-										if not found:
-											continue
-									if description_regexs:
-										found = False
-										for description_regex in description_regexs:
-											if re.search(description_regex, movie.description):
-												found = True
-										if not found:
-											continue
+									if titles or description_regexs: # in case any search criteria is given
+										if titles:
+											found = False
+											for title in titles:
+												if title.lower() in movie.title.lower():
+													found = True
+												if title.lower() in movie.category.lower():
+													found = True
+											if not found:
+												continue
+										if description_regexs:
+											found = False
+											for description_regex in description_regexs:
+												if re.search(description_regex, movie.description):
+													found = True
+											if not found:
+												continue
 
 									if max_result_count > 0:
-										res.append(
-											MovieInfo.movie_to_movie_info(movie, ''))
+										movie_info=MovieInfo.movie_to_movie_info(movie,'')
+										movie_info['recordable']=True
+										res.append(movie_info)
 										max_result_count -= 1
 									else:
 										return res  # maximal number of results reached
@@ -189,9 +188,9 @@ class SplPlugin(SplThread):
 	def check_for_updates(self):
 		# check for updates:
 		new_epg_loaded=False
+		actual_time=time.time()
 		for provider in self.all_EPG_Data:
 			if self.all_EPG_Data[provider]['requested']:
-				actual_time=time.time()
 				if self.all_EPG_Data[provider]['lastmodified']<actual_time-60*60:
 					epg_details = self.get_epg_from_linvdr(
 						provider,self.all_EPG_Data[provider]['url'])
@@ -203,12 +202,14 @@ class SplPlugin(SplThread):
 							for start_time, movie_info in epg_details.items():
 								# refresh or add data
 								self.all_EPG_Data[provider]['epg_data'][start_time] = movie_info
-							movie_infos_to_delete=[]
-							for start_time, movie_info in self.all_EPG_Data[provider]['epg_data'].items():
-								if int(start_time) + movie_info['duration']<actual_time - 60*60: # the movie ended at least one hour ago
-									movie_infos_to_delete.append(start_time)
-							for start_time in movie_infos_to_delete:
-								del(self.all_EPG_Data[provider]['epg_data'][start_time])
+			with self.lock:
+				movie_infos_to_delete=[]
+				for start_time, movie_info in self.all_EPG_Data[provider]['epg_data'].items():
+					if int(start_time) + movie_info['duration']<actual_time - 60*60: # the movie ended at least one hour ago
+						movie_infos_to_delete.append(start_time)
+				for start_time in movie_infos_to_delete:
+					del(self.all_EPG_Data[provider]['epg_data'][start_time])
+					new_epg_loaded=True
 		if self.providers and not new_epg_loaded: # if this is not the first call (self.provides contains already data),but no new epg data
 			return
 		self.epg_storage.write('epgdata',self.all_EPG_Data)
@@ -250,9 +251,6 @@ class SplPlugin(SplThread):
 					return channel_info
 
 	def get_epg_from_linvdr(self, provider,url):
-		'''
-./epg_grap.sh "http://192.168.1.7:3000/S19.2E-1-1079-28006.ts" ZDF 1
-		'''
 		attr=[os.path.join(	self.origin_dir, 'epg_grap.sh') , url, provider , str(self.config.read('epgloops')), str(self.config.read('epgtimeout'))] # process arguments
 		print ("epg_grap started",provider, url,repr(attr))
 		try:
@@ -302,6 +300,7 @@ class SplPlugin(SplThread):
 						self.movies[plugin_name] = {}
 					self.movies[plugin_name][new_movie.uri()] = new_movie
 					movie_info = MovieInfo.movie_to_movie_info(new_movie, category)
+					movie_info['recordable']=True
 					result[start]=movie_info
 				print("epg loaded, {0} entries".format(count))
 				return result
@@ -362,6 +361,7 @@ class SplPlugin(SplThread):
 					description=first_movie_info['description'],
 					query=first_movie_info['query']
 				)
+				combined_movie_info['recordable']=True
 				self.modref.message_handler.queue_event(None, defaults.STREAM_ANSWER_PLAY_LIST, {'uri': queue_event.data['uri'],'movie_info':combined_movie_info})
 		except:
 			print('unknown provider', provider)

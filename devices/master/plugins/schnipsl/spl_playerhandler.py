@@ -4,6 +4,11 @@
 
 # Standard module
 
+from messagehandler import Query
+from classes import MovieInfo
+from classes import Movie
+import defaults
+from splthread import SplThread
 import sys
 import os
 import threading
@@ -32,11 +37,7 @@ ScriptPath = os.path.realpath(os.path.join(
 # Add the directory containing your module to the Python path (wants absolute paths)
 sys.path.append(os.path.abspath(ScriptPath))
 # own local modules
-from splthread import SplThread
-import defaults
-from classes import Movie
-from classes import MovieInfo
-from messagehandler import Query
+
 
 class SplPlugin(SplThread):
 	plugin_id = 'playerhandler'
@@ -60,7 +61,7 @@ class SplPlugin(SplThread):
 	def event_listener(self, queue_event):
 		''' react on events
 		'''
-		#print("playerhandler event handler",
+		# print("playerhandler event handler",
 		#	  queue_event.type, queue_event.user)
 		if queue_event.type == '_join':
 			# update the App Play info
@@ -69,9 +70,10 @@ class SplPlugin(SplThread):
 
 		if queue_event.type == defaults.PLAYER_PLAY_REQUEST or queue_event.type == defaults.PLAYER_PLAY_REQUEST_WITHOUT_DEVICE:
 			movie = queue_event.data['movie']
-			movie_uri = queue_event.data['movie_uri']
+			movie_info = queue_event.data['movie_info']
+			movie_uri = movie_info['uri']
 			current_time = queue_event.data['current_time']
-			device_friendly_name=''
+			device_friendly_name = ''
 			if queue_event.type == defaults.PLAYER_PLAY_REQUEST_WITHOUT_DEVICE:  # this is a message is send
 				feasible_devices = self.modref.message_handler.query(Query(
 					queue_event.user, defaults.QUERY_FEASIBLE_DEVICES, movie_uri))
@@ -81,7 +83,7 @@ class SplPlugin(SplThread):
 						queue_event.user, feasible_devices, movie_uri)
 					return queue_event
 				user_player = self.players[queue_event.user]
-				if not user_player.player_info.play: # the player is not playing
+				if not user_player.player_info.play:  # the player is not playing
 					self.send_player_devices(
 						queue_event.user, feasible_devices, movie_uri)
 					return queue_event
@@ -93,9 +95,9 @@ class SplPlugin(SplThread):
 			else:
 				device_friendly_name = queue_event.data['device']
 			self.player_save_state(queue_event.user)
-			self.stop_play( queue_event.user, device_friendly_name)
+			self.stop_play(queue_event.user, device_friendly_name)
 			self.start_play(queue_event.user,
-							device_friendly_name, movie, movie_uri, current_time)
+							device_friendly_name, movie, movie_uri, movie_info, current_time)
 		if queue_event.type == defaults.MSG_SOCKET_PLAYER_KEY:
 			self.handle_keys(queue_event)
 		if queue_event.type == defaults.MSG_SOCKET_PLAYER_VOLUME:
@@ -104,6 +106,17 @@ class SplPlugin(SplThread):
 			self.handle_time(queue_event)
 		if queue_event.type == defaults.DEVICE_PLAY_STATUS:
 			self.handle_device_play_status(queue_event)
+		if queue_event.type == defaults.STREAM_ANSWER_PLAY_LIST:
+			uri = queue_event.data['uri']
+			movie_info = queue_event.data['movie_info']
+			for user_name in self.players:
+				user_player = self.players[user_name]
+				short_search_movie_uri = ':'.join(
+					user_player.uri.split(':')[:2])
+				short_movie_uri = ':'.join(uri.split(':')[:2])
+				if short_movie_uri == short_search_movie_uri:
+					self.send_app_movie_info(user_name, None, movie_info)
+
 		return queue_event
 
 	def query_handler(self, queue_event, max_result_count):
@@ -112,8 +125,8 @@ class SplPlugin(SplThread):
 		# print("playerhandler query handler", queue_event.type, queue_event.user, max_result_count)
 		return[]
 
-	def start_play(self, user, device_friendly_name, movie, movie_uri, current_time):
-		self.players[user] = type('', (object,), {'movie': movie, 'device_friendly_name': device_friendly_name, 'player_info': type('', (object,), {
+	def start_play(self, user, device_friendly_name, movie, uri, movie_info, current_time):
+		self.players[user] = type('', (object,), {'movie': movie,'uri': uri, 'device_friendly_name': device_friendly_name, 'player_info': type('', (object,), {
 			'play': True,
 			'position': 0,
 			'volume': 3,
@@ -123,22 +136,23 @@ class SplPlugin(SplThread):
 		})()
 		self.modref.message_handler.queue_event(None, defaults.DEVICE_PLAY_REQUEST, {
 			'movie_url': movie.url, 'current_time': current_time, 'movie_mime_type': 'video/mp4', 'device_friendly_name': device_friendly_name})
-		self.send_app_movie_info(user, movie)
+		self.send_app_movie_info(user, movie, movie_info)
 		print('Start play for {0} {1} {2} {3}'.format(
-			user, device_friendly_name, movie_uri, movie.url))
+			user, device_friendly_name, uri, movie.url))
 
-	def send_app_movie_info(self, user_name, movie):
-		app_movie_info = {
-			'title': movie.title,
-			'category': movie.category,
-			'provider': movie.provider,
-			'timestamp': movie.timestamp,
-			'duration': movie.duration,
-			'current_time': "geschaut",
-			'description': movie.description
-		}
+	def send_app_movie_info(self, user_name, movie, movie_info=None):
+		if not movie_info:
+			movie_info = {
+				'title': movie.title,
+				'category': movie.category,
+				'provider': movie.provider,
+				'timestamp': movie.timestamp,
+				'duration': movie.duration,
+				'current_time': 0,
+				'description': movie.description
+			}
 		self.modref.message_handler.queue_event(user_name, defaults.MSG_SOCKET_MSG, {
-			'type': defaults.MSG_SOCKET_APP_MOVIE_INFO, 'config': app_movie_info})
+			'type': defaults.MSG_SOCKET_APP_MOVIE_INFO, 'config': movie_info})
 
 	def pause_play(self, user, device_friendly_name):
 		self.modref.message_handler.queue_event(None, defaults.DEVICE_PLAY_PAUSE, {
@@ -193,9 +207,11 @@ class SplPlugin(SplThread):
 			if data['keyid'] == 'play':
 				player_info.play = not player_info.play
 				if player_info.play:
-					self.resume_play(user_name, user_player.device_friendly_name)
+					self.resume_play(
+						user_name, user_player.device_friendly_name)
 				else:
-					self.pause_play(user_name, user_player.device_friendly_name)
+					self.pause_play(
+						user_name, user_player.device_friendly_name)
 			if data['keyid'] == 'plus10':
 				if player_info.current_time + 10*60 < player_info.duration:
 					player_info.current_time += 10*60
@@ -219,9 +235,8 @@ class SplPlugin(SplThread):
 	def refresh_app_movie_info(self, user_name):
 		if user_name in self.players:
 			user_player = self.players[user_name]
-			movie=user_player.movie
-			self.send_app_movie_info( user_name, movie)
-
+			movie = user_player.movie
+			self.send_app_movie_info(user_name, movie)
 
 	def handle_device_play_status(self, queue_event):
 		try:
@@ -237,7 +252,7 @@ class SplPlugin(SplThread):
 					if cast_info['state_change']:
 						print('-------------------  Save State Request -------------')
 						self.player_save_state(user_name)
-						#self.modref.message_handler.queue_event(user_name, defaults.PLAYER_SAVE_STATE_REQUEST, {
+						# self.modref.message_handler.queue_event(user_name, defaults.PLAYER_SAVE_STATE_REQUEST, {
 						#	'movie': user_player.movie, 'player_info': player_info})
 					self.send_player_status(user_name, player_info)
 		except:

@@ -19,6 +19,7 @@ MSG_SOCKET_HOME_PLAY_REQUEST = 'home_play_request'
 MSG_SOCKET_PLAYER_TIME = 'player_time'
 MSG_SOCKET_PLAYER_KEY = 'player_key'
 MSG_SOCKET_PLAYER_VOLUME = 'player_volume'
+MSG_SOCKET_PLAYER_STOP_AND_RECORD = 'player_stop_and_record'
 MSG_SOCKET_SELECT_PLAYER_DEVICE = 'select_player_device'
 MSG_SOCKET_APP_MOVIE_INFO = 'app_movie_info'
 
@@ -39,6 +40,7 @@ QUERY_AVAILABLE_PROVIDERS = 'availableproviders'
 QUERY_AVAILABLE_CATEGORIES = 'availablecategories'
 QUERY_AVAILABLE_MOVIES = 'availablemovies'
 QUERY_MOVIE_ID = 'movieid'
+QUERY_VALID_MOVIE_RECORDS = 'queryvalidmovierecords'
 
 # player messages
 PLAYER_PLAY_REQUEST = 'playerplayrequest'

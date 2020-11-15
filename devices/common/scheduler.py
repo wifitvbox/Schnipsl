@@ -11,11 +11,11 @@ class Scheduler:
 	interval,
 	With a positive interval it's waited first before the function is called
 	'''
-	task_list = {}
 
 	def __init__(self, calls):
 		''' calls is a list of functions and their wanted time interval
 		'''
+		self.task_list = {}
 		for function, interval in calls:
 			self.set(function, interval)
 

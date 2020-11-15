@@ -29,6 +29,9 @@ class MovieInfo(dict):
 		self['duration'] = duration 	# for live stream infos this will be used as the remaining time of the 1. movie
 		self['description'] = description
 		self['description_show'] = False # helper flag for Vue
+		self['streamable'] = False # e.g. EPG items can not be streamed, only recorded
+		self['recordable'] = False # live streams can not be recorded, as they don't have a duration, they are endless
+
 
 class Movie:
 	'''object holds all information about a movie clip source

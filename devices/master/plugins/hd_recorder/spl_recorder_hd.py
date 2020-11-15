@@ -62,6 +62,7 @@ class SplPlugin(SplThread):
 		self.records = JsonStorage(os.path.join(
 			self.origin_dir, "records.json"), {})
 		self.record_threats={} # we need to store the thread pointers seperate from self.records, as we can't store them as json
+		self.last_recorded_time =  0 # remembers how long the last recording action is away
 
 	def event_listener(self, queue_event):
 		if queue_event.type == defaults.TIMER_RECORD_REQUEST:
@@ -96,7 +97,7 @@ class SplPlugin(SplThread):
 		''' starts the server
 		'''
 		scheduler = Scheduler(
-			[(self.check_for_records, 30), (self.cleanup_records, 60)])
+			[(self.check_for_records, 10), (self.cleanup_records, 60)])
 		while self.runFlag:
 			scheduler.execute()
 			time.sleep(2)
@@ -144,28 +145,27 @@ class SplPlugin(SplThread):
 						'state': record_states.WAIT_FOR_RECORDING
 					})
 				if movie.source_type == defaults.MOVIE_TYPE_STREAM:
-					self.records.write(uri, {
-						'record_starttime': int(movie.timestamp),
-						'record_duration': movie.duration,
-						'category': movie.category,
-						'title': movie.title,
-						'timestamp': movie.timestamp,
-						'duration': movie.duration,
-						'description': movie.description,
-						'url': movie.url,
+					# recording a stream with a duration of 0 is a very bad idea, because it would never stop..
+					if movie.duration:
+						self.records.write(uri, {
+							'record_starttime': int(movie.timestamp),
+							'record_duration': movie.duration,
+							'category': movie.category,
+							'title': movie.title,
+							'timestamp': movie.timestamp,
+							'duration': movie.duration,
+							'description': movie.description,
+							'url': movie.url,
 
-						'uri': uri,
-						'new_uri': self.plugin_names[0]+':'+uri_base64,
-						'new_url': self.config.read('www-root')+uri_base64+ext,
-						'uuid': uuid,
-						'ext': ext,
-						'file_path': file_path,
-						'state': record_states.WAIT_FOR_RECORDING
-					})
+							'uri': uri,
+							'new_uri': self.plugin_names[0]+':'+uri_base64,
+							'new_url': self.config.read('www-root')+uri_base64+ext,
+							'uuid': uuid,
+							'ext': ext,
+							'file_path': file_path,
+							'state': record_states.WAIT_FOR_RECORDING
+						})
 	
-	def path_to_url(self, file_path):
-		return file_path
-
 	def check_for_records(self):
 		act_time = time.time()
 		for uri, record in self.records.config.items():
@@ -189,6 +189,12 @@ class SplPlugin(SplThread):
 					continue
 
 	def cleanup_records(self):
+		print('removal of unused recordings not implemented yet')
+		records_to_delete={}
+		act_time=time.time()
+		# request which movies are still in the UI list
+		valid_movieuri_list = self.modref.message_handler.query(
+				Query(None, defaults.QUERY_VALID_MOVIE_RECORDS, {'source':self.plugin_names[0]}))
 		for uri, record in self.records.config.items():
 			if uri in self.record_threats:
 				# recording is finished, so deploy the result
@@ -196,7 +202,35 @@ class SplPlugin(SplThread):
 					del(self.record_threats[uri])  # we destroy the thread
 					self.deploy_record_result(record,
 						record['state'] == record_states.RECORDING_FINISHED)
-		print('removal of unused recordings not implemented yet')
+					self.last_recorded_time=act_time
+			if self.last_recorded_time> act_time-5*60:
+				return # don't do any delete action if the last record is just 5 mins ago to give the UI some time to adapt the new movie
+			if record['state'] == record_states.RECORDING_FINISHED or record['state'] == record_states.RECORDING_FAILED:
+				new_uri=record['new_uri']
+				print('Record on disk:',new_uri) 
+				if not new_uri in valid_movieuri_list:
+					records_to_delete[uri]=record
+		# some debug output
+		for uri in valid_movieuri_list:
+			print('recoder uri:',uri)
+		if records_to_delete:
+			# go through the list of records to be deleted
+			for uri,  record in records_to_delete.items():
+				# delete the file
+				file_path=record['file_path']
+				print('try to delete file',file_path )
+				if os.path.exists(file_path):
+					try:
+						os.remove(file_path)
+						del(self.records.config[uri])
+						self.records.save()
+					except Exception as ex:
+						print("Cant delete record file {0}. Error: {1}".format(file_path,str(ex)))
+				else:
+					# remove the entry
+					print('remove the entry',uri )
+					del(self.records.config[uri])
+					self.records.save()
 
 	def deploy_record_result(self, record, sucess):
 		self.modref.message_handler.queue_event(None, defaults.TIMER_RECORD_RESULT, {
@@ -218,11 +252,12 @@ def record_thread(record, padding_time):
 	act_time = time.time()
 	remaining_time = record['record_starttime']+record['record_duration']-act_time
 	attr = None
-	if ext.lower() == '.mp4':
-		attr = ['curl', '-s', url, '-o', file_path]  # process arguments
-	if ext.lower() == '.ts':
+	# does the record has a duration? then we've use ffmeg to limit the duration
+	if record['record_duration']:
 		attr = ['ffmpeg', '-y', '-i', url, '-vcodec', 'copy', '-acodec', 'copy',
 				'-map', '0:v', '-map', '0:a', '-t', str(remaining_time+padding_time), '-f', 'mp4' , file_path]
+	else:
+		attr = ['curl', '-s', url, '-o', file_path]  # process arguments
 	if attr:
 		print("recorder started", repr(attr))
 		try:

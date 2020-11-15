@@ -22,6 +22,7 @@
 	"edit_delete_dialog_cancel":"Abbruch",
 	"edit_delete_dialog_select":"Löschen",
 	"locale_date_format":"DD.MM.YYYY",
+	"locale_date_time_format":"DD.MM.YYYY HH:mm",
 	"locale_time_format":"HH:mm"
 }
 
