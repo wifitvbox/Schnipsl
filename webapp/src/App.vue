@@ -36,6 +36,23 @@
 					</v-card-actions>
 				</v-card>
 			</v-dialog>
+			<v-dialog v-model="stop_and_record_dialog_show" scrollable max-width="300px">
+				<v-card>
+					<v-card-title>{{ $t("player_stop_and_record_dialog_header") }}</v-card-title>
+					<v-divider></v-divider>
+					<v-card-actions>
+						<v-btn
+							color="blue darken-1"
+							text
+							@click="stop_and_record_dialog_show = false"
+							>{{ $t("player_stop_and_record_dialog_cancel") }}</v-btn
+						>
+						<v-btn color="blue darken-1" text @click="stopAndRecord(movie_info.uri)">{{
+							$t("player_stop_and_record_dialog_select")
+						}}</v-btn>
+					</v-card-actions>
+				</v-card>
+			</v-dialog>
 		</v-row>
 		<v-row justify="center">
 			<v-dialog v-model="offline_dialog_show" max-width="300px">
@@ -91,7 +108,7 @@
 					<v-btn icon class="mx-4" @click="player_key('stop')">
 						<v-icon size="24px">mdi-stop</v-icon>
 					</v-btn>
-					<v-btn icon class="mx-4" v-if="movie_info.recordable" @click="stopAndRecord(movie_info.uri)">
+					<v-btn icon class="mx-4" v-if="movie_info.recordable" @click="stop_and_record_dialog_show = true">
 						<v-icon size="24px">mdi-bed</v-icon>
 					</v-btn>
 					<v-btn icon @click="show = !show">
@@ -141,6 +158,7 @@ export default {
 			},
 			device_dialog_show: false,
 			offline_dialog_show: false,
+			stop_and_record_dialog_show: false,
 			show: false,
 		};
 	},
@@ -218,7 +236,8 @@ export default {
 		},
 		stopAndRecord(movie_uri) {
 			console.log("stopAndRecord", movie_uri);
-			messenger.emit("stop_and_record", {
+			this.stop_and_record_dialog_show = false
+			messenger.emit("player_stop_and_record", {
 				movie_uri: movie_uri,
 			});
 		},

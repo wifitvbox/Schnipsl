@@ -70,7 +70,7 @@ class JsonStorage:
 			with open(self.file_name, 'w') as outfile:
 				json.dump(self.config, outfile, sort_keys=True,
 						  indent=4, separators=(',', ': '))
-		except:
-			logger.warning("couldn't write config file {0}".format(
-				self.file_name))
+		except Exception as ex:
+			logger.warning("couldn't write config file {0}: {1}".format(
+				self.file_name,str(ex)))
 

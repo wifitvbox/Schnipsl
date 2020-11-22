@@ -21,6 +21,9 @@
 	"edit_delete_dialog_header":"Schnipsl löschen?",
 	"edit_delete_dialog_cancel":"Abbruch",
 	"edit_delete_dialog_select":"Löschen",
+	"player_stop_and_record_dialog_header":"Ins Bett gehen und den Rest aufnehmen?",
+	"player_stop_and_record_dialog_cancel":"Abbruch",
+	"player_stop_and_record_dialog_select":"Aufnehmen",
 	"locale_date_format":"DD.MM.YYYY",
 	"locale_date_time_format":"DD.MM.YYYY HH:mm",
 	"locale_time_format":"HH:mm"

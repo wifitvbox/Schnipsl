@@ -212,6 +212,10 @@ class SplPlugin(SplThread):
 				else:
 					self.pause_play(
 						user_name, user_player.device_friendly_name)
+			if data['keyid'] == 'stop':
+				player_info.play = False
+				self.stop_play(user_name, user_player.device_friendly_name)
+
 			if data['keyid'] == 'plus10':
 				if player_info.current_time + 10*60 < player_info.duration:
 					player_info.current_time += 10*60

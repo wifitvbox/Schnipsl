@@ -189,7 +189,6 @@ class SplPlugin(SplThread):
 					continue
 
 	def cleanup_records(self):
-		print('removal of unused recordings not implemented yet')
 		records_to_delete={}
 		act_time=time.time()
 		# request which movies are still in the UI list
@@ -224,6 +223,7 @@ class SplPlugin(SplThread):
 						os.remove(file_path)
 						del(self.records.config[uri])
 						self.records.save()
+						print('file deleted',file_path )
 					except Exception as ex:
 						print("Cant delete record file {0}. Error: {1}".format(file_path,str(ex)))
 				else:

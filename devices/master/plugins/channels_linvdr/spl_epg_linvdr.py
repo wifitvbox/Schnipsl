@@ -191,7 +191,7 @@ class SplPlugin(SplThread):
 		actual_time=time.time()
 		for provider in self.all_EPG_Data:
 			if self.all_EPG_Data[provider]['requested']:
-				if self.all_EPG_Data[provider]['lastmodified']<actual_time-60*60:
+				if self.all_EPG_Data[provider]['lastmodified']<actual_time-60*60 or not self.all_EPG_Data[provider]['epg_data']:
 					epg_details = self.get_epg_from_linvdr(
 						provider,self.all_EPG_Data[provider]['url'])
 					if epg_details:
@@ -340,6 +340,8 @@ class SplPlugin(SplThread):
 						'epg_data' : {},
 						'lastmodified' : 0
 					}
+		else:
+			self.all_EPG_Data[provider]['requested']=True
 		time_stamp = time.time()
 		try:
 			epg_list = self.timeline[provider]
