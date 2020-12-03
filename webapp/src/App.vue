@@ -151,7 +151,7 @@ export default {
 				current_time: 65,
 				description: "Beschreibung",
 			},
-			movie_uri: null,
+			uri: null,
 			device_info: {
 				actual_device: "",
 				devices: ["TV Wohnzimmer", "TV Küche", "Chromecast Büro"],
@@ -180,7 +180,7 @@ export default {
 				this.movie_info = data;
 			}
 			if (type == "app_device_info") {
-				this.movie_uri = data.movie_uri;
+				this.uri = data.movie_uri;
 				this.device_info.devices = data.devices;
 				// force the dialog for now
 				// better would be: If actual device is not in devices...
@@ -216,7 +216,7 @@ export default {
 			if (this.device_info.actual_device != "") {
 				messenger.emit("select_player_device", {
 					timer_dev: this.device_info.actual_device,
-					movie_uri: this.movie_uri,
+					uri: this.uri,
 				});
 			}
 		},
@@ -234,11 +234,11 @@ export default {
 				return moment.unix(seconds).format("HH:mm:ss");
 			}
 		},
-		stopAndRecord(movie_uri) {
-			console.log("stopAndRecord", movie_uri);
+		stopAndRecord(uri) {
+			console.log("stopAndRecord", uri);
 			this.stop_and_record_dialog_show = false
 			messenger.emit("player_stop_and_record", {
-				movie_uri: movie_uri,
+				uri: uri,
 			});
 		},
 	},

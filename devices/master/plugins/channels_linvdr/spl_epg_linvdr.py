@@ -43,7 +43,6 @@ sys.path.append(os.path.abspath(ScriptPath))
 
 # own local modules
 
-
 class SplPlugin(SplThread):
 	plugin_id = 'linvdrepg'
 	plugin_names = ['LINVDR EPG']
@@ -344,13 +343,14 @@ class SplPlugin(SplThread):
 			self.all_EPG_Data[provider]['requested']=True
 		time_stamp = time.time()
 		try:
-			epg_list = self.timeline[provider]
-			found = None
+			epg_list =[]
+			if provider in self.timeline:
+				epg_list = self.timeline[provider]
 			nr_of_entries = len(epg_list)
 			i = 0
 			while i < nr_of_entries and time_stamp > int(epg_list[i].timestamp):
 				i += 1
-			if i < nr_of_entries and i>0:  # we found an entry
+			if i < nr_of_entries and i>0 and time_stamp <  int(epg_list[i-1].timestamp)+int(epg_list[i-1].movie_info['duration']):  # we found an entry
 				first_movie_info=epg_list[i-1].movie_info
 				second_movie_info=epg_list[i].movie_info
 				combined_movie_info=MovieInfo(
@@ -364,9 +364,22 @@ class SplPlugin(SplThread):
 					query=first_movie_info['query']
 				)
 				combined_movie_info['recordable']=True
-				self.modref.message_handler.queue_event(None, defaults.STREAM_ANSWER_PLAY_LIST, {'uri': queue_event.data['uri'],'movie_info':combined_movie_info})
-		except:
-			print('unknown provider', provider)
+			else:
+				combined_movie_info=MovieInfo(
+					uri=':'.join([self.stream_source,provider,'0']),
+					title='-',
+					category='',
+					provider=provider,
+					timestamp=time_stamp,
+					duration=0,  # 
+					description='',
+					query=None
+				)
+				combined_movie_info['recordable']=False
+
+			self.modref.message_handler.queue_event(None, defaults.STREAM_ANSWER_PLAY_LIST, {'uri': queue_event.data['uri'],'movie_info':combined_movie_info})
+		except Exception as e:
+			print('unknown provider', provider, str(e))
 
 	def cleanProcess(self):
 		try:

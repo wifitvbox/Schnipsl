@@ -84,12 +84,12 @@ class SplPlugin(SplThread):
 		if queue_event.type == defaults.MSG_SOCKET_SELECT_PLAYER_DEVICE:
 				# starts to play movie on device
 			print("plays schnipsl {0} on device ".format(
-				queue_event.data['movie_uri']))
+				queue_event.data['uri']))
 			movie_info_list = self.modref.message_handler.query(
-				Query(queue_event.user, defaults.QUERY_MOVIE_ID, queue_event.data['movie_uri']))
+				Query(queue_event.user, defaults.QUERY_MOVIE_ID, queue_event.data['uri']))
 			if movie_info_list:
 				uuid = self.get_movielist_uuid_by_movie_uri(
-					queue_event.user, queue_event.data['movie_uri'])
+					queue_event.user, queue_event.data['uri'])
 				if uuid:  # movie is in movie_list, so it has a current_time time
 					current_time = self.movielist[uuid]['clients'][queue_event.user]['current_time']
 					movie_info = self.movielist[uuid]['movie_info']
@@ -224,11 +224,12 @@ class SplPlugin(SplThread):
 							'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_LIST, 'config': self.prepare_movie_list(user_name)})
 					self.modref.store.write_users_value(
 						'movielist', self.movielist)
-		if queue_event.type == defaults.MSG_SOCKET_PLAYER_STOP_AND_RECORD:
-			self.modref.message_handler.queue_event(queue_event.user, defaults.MSG_SOCKET_PLAYER_KEY, {
-				'keyid': 'stop'})
-			print('Stop play for user {0}'.format(queue_event.user))
-			uuid=self.get_movielist_uuid_by_movie_uri(queue_event.user,queue_event.data['movie_uri'])
+		if queue_event.type == defaults.MSG_SOCKET_PLAYER_STOP_AND_RECORD or queue_event.type == defaults.MSG_SOCKET_HOME_RECORD_REQUEST:
+			if queue_event.type == defaults.MSG_SOCKET_PLAYER_STOP_AND_RECORD:
+				self.modref.message_handler.queue_event(queue_event.user, defaults.MSG_SOCKET_PLAYER_KEY, {
+					'keyid': 'stop'})
+				print('Stop play for user {0}'.format(queue_event.user))
+			uuid=self.get_movielist_uuid_by_movie_uri(queue_event.user,queue_event.data['uri'])
 			query = {
 				'category_items': [],
 				'category_values': [],
@@ -240,7 +241,8 @@ class SplPlugin(SplThread):
 				'source_values': [],
 				'title': ''
 			}
-			self.create_new_movie_list_item(queue_event.user, None, queue_event.data['movie_uri'], uuid, query, True)
+			with self.lock:
+				self.create_new_movie_list_item(queue_event.user, None, queue_event.data['uri'], uuid, query, True)
 		# for further pocessing, do not forget to return the queue event
 		return queue_event
 
@@ -451,12 +453,14 @@ class SplPlugin(SplThread):
 			'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_UPDATE, 'config': {'uuid': movie_list_uuid, 'current_time': current_time, 'movie_info': live_music_info}})
 
 	def send_home_movie_list(self, original_queue_event):
-		new_event = copy.copy(original_queue_event)
-		new_event.type = defaults.MSG_SOCKET_MSG
-		new_event.data = {
-			'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_LIST, 'config': self.prepare_movie_list(original_queue_event.user)}
+		#new_event = copy.copy(original_queue_event)
+		#new_event.type = defaults.MSG_SOCKET_MSG
+		#new_event.data = {
+		#	'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_LIST, 'config': self.prepare_movie_list(original_queue_event.user)}
 		#print("new_event", new_event.data['config'])
-		self.modref.message_handler.queue_event_obj(new_event)
+		#self.modref.message_handler.queue_event_obj(new_event)
+		self.modref.message_handler.queue_event(original_queue_event.user, defaults.MSG_SOCKET_HOME_MOVIE_INFO_LIST, self.prepare_movie_list(original_queue_event.user))
+
 
 	def get_movielist_uuid_by_movie_uri(self, user, movie_uri):
 		for uuid, search_movie in self.movielist.items():

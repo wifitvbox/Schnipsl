@@ -250,6 +250,10 @@ export default {
 			console.log("click for Play uri", uri);
 			messenger.emit("home_play_request", { uri: uri });
 		},
+		requestRecordAdd(uri) {
+			console.log("click for record uri", uri);
+			messenger.emit("home_record_request", { uri: uri });
+		},
 		share(uuid) {
 			console.log("click for share", uuid);
 		},
