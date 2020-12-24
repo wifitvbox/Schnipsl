@@ -1,0 +1,1 @@
+just a loose collection of small helper scripts used during the development

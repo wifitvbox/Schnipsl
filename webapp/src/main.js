@@ -6,6 +6,9 @@ import router from './router'
 
 import VueI18n from 'vue-i18n'
 import messages from './lang'
+console.log('joo')
+import './registerServiceWorker'
+console.log('joo 2')
 
 Vue.config.productionTip = false
 

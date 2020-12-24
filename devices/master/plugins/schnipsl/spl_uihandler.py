@@ -459,7 +459,8 @@ class SplPlugin(SplThread):
 		#	'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_LIST, 'config': self.prepare_movie_list(original_queue_event.user)}
 		#print("new_event", new_event.data['config'])
 		#self.modref.message_handler.queue_event_obj(new_event)
-		self.modref.message_handler.queue_event(original_queue_event.user, defaults.MSG_SOCKET_HOME_MOVIE_INFO_LIST, self.prepare_movie_list(original_queue_event.user))
+		self.modref.message_handler.queue_event(original_queue_event.user, defaults.MSG_SOCKET_MSG, {
+			'type': defaults.MSG_SOCKET_HOME_MOVIE_INFO_LIST, 'config': self.prepare_movie_list(original_queue_event.user)})
 
 
 	def get_movielist_uuid_by_movie_uri(self, user, movie_uri):

@@ -20,6 +20,7 @@ import calendar
 import subprocess
 
 from pprint import pprint
+from urllib.parse import urlparse, urlunparse
 
 import re
 
@@ -173,7 +174,8 @@ class SplPlugin(SplThread):
 		'''
 		tick = 0
 		while self.runFlag:
-			self.check_for_updates()
+			with self.lock:
+				self.check_for_updates()
 			time.sleep(10)
 
 	def _stop(self):
@@ -195,13 +197,11 @@ class SplPlugin(SplThread):
 						provider,self.all_EPG_Data[provider]['url'])
 					if epg_details:
 						new_epg_loaded=True
-						with self.lock:
-							self.all_EPG_Data[provider]['lastmodified'] = time.time()
-							self.all_EPG_Data[provider]['requested']=False
-							for start_time, movie_info in epg_details.items():
-								# refresh or add data
-								self.all_EPG_Data[provider]['epg_data'][start_time] = movie_info
-			with self.lock:
+						self.all_EPG_Data[provider]['lastmodified'] = time.time()
+						self.all_EPG_Data[provider]['requested']=False
+						for start_time, movie_info in epg_details.items():
+							# refresh or add data
+							self.all_EPG_Data[provider]['epg_data'][start_time] = movie_info
 				movie_infos_to_delete=[]
 				for start_time, movie_info in self.all_EPG_Data[provider]['epg_data'].items():
 					if int(start_time) + movie_info['duration']<actual_time - 60*60: # the movie ended at least one hour ago
@@ -250,6 +250,29 @@ class SplPlugin(SplThread):
 					return channel_info
 
 	def get_epg_from_linvdr(self, provider,url):
+		# reduce the pids to the ones containing SDT (0x11) and EIT (0x12)
+		url_st = urlparse(url)
+		queries = url_st.query
+		new_queries = ""
+		if queries:
+			for eq in queries.split("&"):
+				key = eq.split("=")[0]
+				value = eq.split("=")[1]
+				if key == 'pids':
+					value = "0,17,18"
+				new_queries += key + "=" + value + "&"
+		new_queries = new_queries.strip("&")
+		url = urlunparse((
+			url_st.scheme,
+			url_st.netloc,
+			url_st.path,
+			url_st.params,
+			new_queries,
+			url_st.fragment,
+		))
+
+
+
 		attr=[os.path.join(	self.origin_dir, 'epg_grap.sh') , url, provider , str(self.config.read('epgloops')), str(self.config.read('epgtimeout'))] # process arguments
 		print ("epg_grap started",provider, url,repr(attr))
 		try:

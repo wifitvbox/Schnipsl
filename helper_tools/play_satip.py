@@ -1,8 +1,8 @@
-import requests
+#import requests
 import json
 import sys
 import socket
-from urllib.parse import urlparse
+from urlparse import urlparse
 import re
 import time
 
@@ -147,9 +147,10 @@ example: kodi_play_satip 'rtsp://192.168.1.99:554/?src=1&freq=12188&pol=h&ro=0.3
 
 	#satip_url=sys.argv[1]
 	cseq=0
-	# Das ERSTE HD satip_url='rtsp://192.168.1.99:554/?src=1&freq=11494&pol=h&ro=0.35&msys=dvbs2&mtype=8psk&plts=on&sr=22000&fec=23&pids=0,17,18,5100,5101,5102,5104'
+	# Das ERSTE HD
+	satip_url='rtsp://192.168.1.99:554/?src=1&freq=11494&pol=h&ro=0.35&msys=dvbs2&mtype=8psk&plts=on&sr=22000&fec=23&pids=0,17,18,5100,5101,5102,5104'
 	# 3SAT HD
-	satip_url='rtsp://192.168.1.99:554/?src=1&freq=11347&pol=v&ro=0.35&msys=dvbs2&mtype=8psk&plts=on&sr=22000&fec=23&pids=0,17,18,6500,6510,6520,6530'
+	#satip_url='rtsp://192.168.1.99:554/?src=1&freq=11347&pol=v&ro=0.35&msys=dvbs2&mtype=8psk&plts=on&sr=22000&fec=23&pids=0,17,18,6500,6510,6520,6530'
 	satip_url_object=urlparse(satip_url)
 
 	sat_ip_socket=SimpleSocket()
@@ -158,8 +159,7 @@ example: kodi_play_satip 'rtsp://192.168.1.99:554/?src=1&freq=12188&pol=h&ro=0.3
 	#setu="SETUP "+adr+" RTSP/1.0\r\nCSeq: 0\r\nUser-Agent: python\r\nTransport: RTP/AVP;unicast;client_port="+str(clientports[0])+"-"+str(clientports[1])+"\r\n\r\n"
 
 	if not sat_ip_socket.send_with_params(
-		"SETUP SATIP_URL RTSP/1.0\r\nCSeq: SEQUENCE\r\nUser-Agent: python\r\nTransport: RTP/AVP;unicast;;client_port=LOWPORT-HIGHPORT\r\n\r\n",
-		#"SETUP SATIP_URL RTSP/1.0\r\nCSeq: SEQUENCE\r\nUser-Agent: python\r\nTransport: RTP/AVP;unicast;destination=DEST_IP;client_port=LOWPORT-HIGHPORT\r\n\r\n",
+		"SETUP SATIP_URL RTSP/1.0\r\nCSeq: SEQUENCE\r\nUser-Agent: python\r\nTransport: RTP/AVP;unicast;client_port=LOWPORT-HIGHPORT\r\n\r\n",
 		#"SETUP SATIP_URL RTSP/1.0\r\nCSeq: SEQUENCE\r\nUser-Agent: python\r\nTransport: RTP/AVP;multicast;destination=DEST_IP;client_port=LOWPORT-HIGHPORT\r\n\r\n",
 		#"SETUP SATIP_URL RTSP/1.0\r\nCSeq: SEQUENCE\r\nUser-Agent: python\r\nTransport: RTP/AVP;multicast;client_port=LOWPORT-HIGHPORT\r\n\r\n",
 		{
@@ -214,14 +214,42 @@ example: kodi_play_satip 'rtsp://192.168.1.99:554/?src=1&freq=12188&pol=h&ro=0.3
 	kodi_udp_url='udp://'+satip_url_object.hostname+':'+str(clientports[0])
 	kodi_udp_url='udp://@0.0.0.0:'+str(clientports[0])
 	kodi_udp_url='rtp://@'+multicast_ip+':'+str(clientports[0])
-	
+
 	print('kodi_udp_url',kodi_udp_url)
 	if False:
 		payload ={"jsonrpc":"2.0", "id":1, "method": "Player.Open", "params":{"item":{"file":kodi_udp_url}}}
 		response = requests.post(kodi_url, json=payload).json()
 		print(response)
+	else:
+		client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		server_address = ('127.0.0.1', 8080)
+		client_socket.connect(server_address)
+		jsonstr='{"jsonrpc": "2.0", "id": 1, "method": "Player.Open", "params": {"item": {"file": "rtp://@192.168.1.127:60784"}}}'
+		request_header='''\
+POST /jsonrpc HTTP/1.1\r
+Host: 127.0.0.1:8080\r
+User-Agent: schnipsl\r
+Accept-Encoding: gzip, deflate\r
+Accept: */*\r
+Connection: close\r
+Content-Length: '''+str(len(jsonstr))+'''\r
+Content-Type: application/json\r
+\r
+'''+jsonstr
+		client_socket.send(request_header)
+		print request_header
+		response = ''
+		while True:
+	    		recv = client_socket.recv(1024)
+			print recv
+	    		if not recv:
+	        		break
+	    		response += recv
 
-	ticks = 5
+		print response
+		client_socket.close()
+
+	ticks = 10
 	while ticks:
 		ticks -=1
 		time.sleep(45)
@@ -238,3 +266,4 @@ example: kodi_play_satip 'rtsp://192.168.1.99:554/?src=1&freq=12188&pol=h&ro=0.3
 
 if __name__ == "__main__":
 	main()
+

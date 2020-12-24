@@ -79,7 +79,7 @@ class WSZuulHandler(HTTPWebSocketsHandler):
 		if data['type'] == 'msg':
 			self.log_message('msg %s', data['data'])
 		if data['type'] == '_join':
-			self.user.name= data['config']['name']
+			self.user.name= data['config']['name'].lower()
 
 		global modref
 		modref.message_handler.queue_event(self.user.name,data['type'],data['config'])
