@@ -20,13 +20,20 @@ ScriptPath = os.path.realpath(os.path.join(
 # Add the directory containing your module to the Python path (wants absolute paths)
 sys.path.append(os.path.abspath(ScriptPath))
 # own local modules
-
+from jsonstorage import JsonStorage
 
 class PluginManager():
 	''' loads all schnipsl plugins
 	'''
 
 	def __init__(self, modref, plugin_root_dir):
+		self.origin_dir = os.path.dirname(__file__)
+		self.config = JsonStorage(os.path.join(
+			self.origin_dir, "plugins.json"), {
+				'plugins':{}
+			}
+		)
+
 		self.plugins = {}
 		regex = re.compile(r'^spl_.+.py$')
 		try:
@@ -34,6 +41,8 @@ class PluginManager():
 				os.path.dirname(__file__), plugin_root_dir))
 			list_subfolders_with_paths = [
 				f.path for f in os.scandir(plugin_path) if f.is_dir()]
+			new_plugins_found=False
+			config_plugins=self.config.read('plugins')
 			for sub_folder in list_subfolders_with_paths:
 				list_file_infos = [f for f in os.scandir(
 					sub_folder) if f.is_file()]
@@ -44,10 +53,19 @@ class PluginManager():
 						module_spec = importlib.util.spec_from_file_location(file_info.name, file_info.path)
 						my_module = importlib.util.module_from_spec(module_spec)
 						module_spec.loader.exec_module(my_module)
+						plugin_id=my_module.SplPlugin.plugin_id
+						if not plugin_id in config_plugins: #new module
+							config_plugins[plugin_id]={'active':False}
+							new_plugins_found=True
+							continue
+						if not config_plugins[plugin_id]['active']:
+							continue
 
 						instance = my_module.SplPlugin(modref)
 						instance.run()
 						self.plugins[file_info.name] =instance
+			if new_plugins_found:
+				self.config.write('plugins',config_plugins)
 		except Exception as e:
 			print("Can't load plugin "+str(e))
 			traceback.print_exc(file=sys.stdout)
