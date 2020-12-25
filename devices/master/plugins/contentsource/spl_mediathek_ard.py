@@ -68,6 +68,8 @@ class SplPlugin(SplThread):
 		''' react on events
 		'''
 		#print("mediathek_ard event handler", queue_event.type, queue_event.user)
+		# for further pocessing, do not forget to return the queue event
+		return queue_event
 
 	def query_handler(self, queue_event, max_result_count):
 		''' answers with list[] of results
