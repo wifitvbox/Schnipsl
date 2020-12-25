@@ -196,13 +196,13 @@ class SplPlugin(SplThread):
 		actual_time=time.time()
 		for provider in self.all_EPG_Data:
 			if self.all_EPG_Data[provider]['requested']:
+				self.all_EPG_Data[provider]['requested']=False
 				if self.all_EPG_Data[provider]['lastmodified']<actual_time-60*60 or not self.all_EPG_Data[provider]['epg_data']:
 					epg_details = self.get_epg_from_linvdr(
 						provider,self.all_EPG_Data[provider]['url'])
 					if epg_details:
 						new_epg_loaded=True
 						self.all_EPG_Data[provider]['lastmodified'] = time.time()
-						self.all_EPG_Data[provider]['requested']=False
 						for start_time, movie_info in epg_details.items():
 							# refresh or add data
 							self.all_EPG_Data[provider]['epg_data'][start_time] = movie_info
@@ -213,6 +213,10 @@ class SplPlugin(SplThread):
 				for start_time in movie_infos_to_delete:
 					del(self.all_EPG_Data[provider]['epg_data'][start_time])
 					new_epg_loaded=True
+		for provider_reference in list(self.all_EPG_Data.keys()):
+			if self.all_EPG_Data[provider_reference]['lastmodified']<actual_time-24*60*60: # no update the last 24 h? remove it..
+				del(self.all_EPG_Data[provider_reference])
+				new_epg_loaded=True
 		if self.providers and not new_epg_loaded: # if this is not the first call (self.provides contains already data),but no new epg data
 			return
 		self.epg_storage.write('epgdata',self.all_EPG_Data)

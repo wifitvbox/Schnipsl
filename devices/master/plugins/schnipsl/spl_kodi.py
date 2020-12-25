@@ -85,7 +85,7 @@ class Kodi:
 			self.cast_info['play']=response['result']=='OK'
 		except:
 			self.cast_info['play']=False
-		self.player_id=0
+		self.player_id=1
 		self.update_status()
 		if self.cast_info['play'] and self.supports_seek and current_time>0:
 			self.seek(current_time)

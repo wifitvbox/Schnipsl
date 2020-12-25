@@ -138,6 +138,7 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 				if queue_event.user == None or queue_event.user==user.name:
 					 user.ws.emit(queue_event.data['type'], queue_event.data['config'])
 			return None # no futher handling of this event
+		# for further pocessing, do not forget to return the queue event
 		return queue_event
 
 
