@@ -232,7 +232,7 @@ class SplPlugin(SplThread):
 		if user_name in self.players:
 			user_player = self.players[user_name]
 			player_info = user_player.player_info
-			print('-------------------  Save State Request -------------')
+			print('------------------- player_save_state Save State Request -------------')
 			self.modref.message_handler.queue_event(user_name, defaults.PLAYER_SAVE_STATE_REQUEST, {
 				'movie': user_player.movie, 'player_info': player_info})
 
@@ -254,7 +254,7 @@ class SplPlugin(SplThread):
 					player_info.duration = cast_info['duration']
 					player_info.volume = cast_info['volume']
 					if cast_info['state_change']:
-						print('-------------------  Save State Request -------------')
+						print('------------------- handle_device_play_status Save State Request -------------')
 						self.player_save_state(user_name)
 						# self.modref.message_handler.queue_event(user_name, defaults.PLAYER_SAVE_STATE_REQUEST, {
 						#	'movie': user_player.movie, 'player_info': player_info})

@@ -45,8 +45,8 @@ sys.path.append(os.path.abspath(ScriptPath))
 # own local modules
 
 class SplPlugin(SplThread):
-	plugin_id = 'linvdrepg'
-	plugin_names = ['LINVDR EPG']
+	plugin_id = 'satepg'
+	plugin_names = ['SAT EPG']
 
 	def __init__(self, modref):
 		''' creates the object
@@ -61,10 +61,15 @@ class SplPlugin(SplThread):
 		self.runFlag = True
 
 		# plugin specific stuff
-		self.stream_source='LinVDR Live' # this defines who is the real data provider for the entries found in the EPG data
 		self.origin_dir = os.path.dirname(__file__)
 		self.config = JsonStorage(os.path.join(
-			self.origin_dir, "config.json"), {'epgloops':1, 'epgtimeout':60})
+			self.origin_dir, "config.json"), {
+				'epgloops':1,
+				'epgtimeout':60,
+				'stream_source':'SatIP Live'
+			}
+		)
+		self.stream_source=self.config.read('stream_source') # this defines who is the real data provider for the entries found in the EPG data
 
 		self.epgbuffer_file_name = os.path.join(self.origin_dir, "epgbuffer.ts")
 
@@ -81,16 +86,15 @@ class SplPlugin(SplThread):
 	def event_listener(self, queue_event):
 		''' react on events
 		'''
-		#print("xmltvepg event handler", queue_event.type, queue_event.user)
+		#print("event handler", self.plugin_id, queue_event.type, queue_event.user)
 		if queue_event.type == defaults.STREAM_REQUEST_PLAY_LIST:
 			self.stream_answer_play_list(queue_event)
-			return None  # no further processing needed
 		return queue_event  # dont forget the  event for further pocessing...
 
 	def query_handler(self, queue_event, max_result_count):
 		''' answers with list[] of results
 		'''
-		# print("linvdrepg query handler", queue_event.type,  queue_event.user, max_result_count)
+		# print("query handler", self.plugin_id, queue_event.type,  queue_event.user, max_result_count)
 		if queue_event.type == defaults.QUERY_AVAILABLE_SOURCES:
 			return self.plugin_names
 		if queue_event.type == defaults.QUERY_AVAILABLE_PROVIDERS:
@@ -251,6 +255,7 @@ class SplPlugin(SplThread):
 
 	def get_epg_from_linvdr(self, provider,url):
 		# reduce the pids to the ones containing SDT (0x11) and EIT (0x12)
+		print('original URL:',url)
 		url_st = urlparse(url)
 		queries = url_st.query
 		new_queries = ""

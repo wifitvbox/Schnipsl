@@ -32,11 +32,11 @@ sys.path.append(os.path.abspath(ScriptPath))
 
 
 class SplPlugin(SplThread):
-	plugin_id = 'simulator'
-	plugin_names = ['Plugin Simulator']
+	plugin_id = 'uihandler'
+	plugin_names = ['UI Handler']
 
 	def __init__(self, modref):
-		''' creates the simulator
+		''' creates the uihandler
 		'''
 		self.modref = modref
 
@@ -63,7 +63,7 @@ class SplPlugin(SplThread):
 	def event_listener(self, queue_event):
 		''' try to send simulated answers
 		'''
-		#print("simulator event handler", queue_event.type, queue_event.user)
+		#print("uihandler event handler", queue_event.type, queue_event.user)
 		if queue_event.type == '_join':
 			# send the movie list
 			self.send_home_movie_list(queue_event)

@@ -30,7 +30,32 @@ class PluginManager():
 		self.origin_dir = os.path.dirname(__file__)
 		self.config = JsonStorage(os.path.join(
 			self.origin_dir, "plugins.json"), {
-				'plugins':{}
+				'plugins':{
+					"channels_satip": {
+						"active": True
+					},
+					"chromecast": {
+						"active": True
+					},
+					"kodi": {
+						"active": True
+					},
+					"mediathek_ard": {
+						"active": True
+					},
+					"playerhandler": {
+						"active": True
+					},
+					"record_hd": {
+						"active": True
+					},
+					"satepg": {
+						"active": True
+					},
+					"uihandler": {
+						"active": True
+					}
+				}
 			}
 		)
 

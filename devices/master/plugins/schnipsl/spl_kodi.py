@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Standard module
 import json
 import os
 import sys
@@ -8,13 +9,13 @@ import time
 from base64 import b64encode
 from pprint import pprint
 
-import defaults
+from threading import Timer , Lock
+
+
 import requests
 import zeroconf
-from classes import MovieInfo
-from messagehandler import Query
-# Standard module
-from splthread import SplThread
+
+
 
 # Non standard modules (install with pip)
 
@@ -23,6 +24,10 @@ from splthread import SplThread
 ScriptPath = os.path.realpath(os.path.join(
 	os.path.dirname(__file__), "../common"))
 
+import defaults
+from classes import MovieInfo
+from messagehandler import Query
+from splthread import SplThread
 
 # Add the directory containing your module to the Python path (wants absolute paths)
 sys.path.append(os.path.abspath(ScriptPath))
@@ -80,7 +85,7 @@ class Kodi:
 			self.cast_info['play']=response['result']=='OK'
 		except:
 			self.cast_info['play']=False
-		self.player_id=1
+		self.player_id=0
 		self.update_status()
 		if self.cast_info['play'] and self.supports_seek and current_time>0:
 			self.seek(current_time)
@@ -170,9 +175,8 @@ class Kodi:
 			previous_player_state=self.cast_info['play']
 			self.cast_info['play']=response['result']['speed']>0
 			self.cast_info['state_change']=previous_player_state and not self.cast_info['play']
-			pass
 		except:
-			pass
+			self.cast_info['state_change']=False
 
 		payload ={
 			"jsonrpc":"2.0",
@@ -238,6 +242,7 @@ class SplPlugin(SplThread):
 		# plugin specific stuff
 		self.devices = {}
 		self.zeroconf = zeroconf.Zeroconf()
+		self.lock=Lock()
 
 	def event_listener(self, queue_event):
 		if queue_event.type == defaults.DEVICE_PLAY_REQUEST:
@@ -322,7 +327,8 @@ class SplPlugin(SplThread):
 			cast = self.devices[device_friendly_name]
 		else:
 			cast = Kodi(service_info)
-			self.devices[cast.device_friendly_name] = cast
+			with self.lock:
+				self.devices[cast.device_friendly_name] = cast
 		cast.online = True
 		self.list_devices()
 
@@ -392,8 +398,9 @@ class SplPlugin(SplThread):
 			self.zeroconf, "_xbmc-jsonrpc._tcp.local.", self)
 		while self.runFlag:
 			time.sleep(2)
-			for device_friendly_name in self.devices:
-				self.send_device_play_status(device_friendly_name, False)
+			with self.lock:
+				for device_friendly_name in self.devices:
+					self.send_device_play_status(device_friendly_name, False)
 
 	def _stop(self):
 		self.zeroconf.close()
